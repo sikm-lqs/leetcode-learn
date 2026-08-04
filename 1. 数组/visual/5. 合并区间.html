@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5. 合并区间 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--primary-light:#F4F8FC;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.interval-line{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:8px 0;font-family:Consolas,Monaco,monospace}
+.interval{display:inline-flex;align-items:center;padding:6px 10px;border-radius:20px;font-size:13px;font-weight:600;border:2px solid;position:relative}
+.interval.i1{border-color:#3B7DD8;background:#E9EFF7;color:#1E40AF}
+.interval.i2{border-color:#D4744C;background:#F5E6DE;color:#A05A3A}
+.interval.i3{border-color:#16A34A;background:#DCFCE7;color:#15803D}
+.interval.i4{border-color:#7C3AED;background:#EDE9FE;color:#6D28D9}
+.interval.merged{border-color:#16A34A;background:#DCFCE7;color:#15803D;box-shadow:0 0 0 3px rgba(22,163,74,0.15)}
+.arrow{color:var(--text-light);font-weight:bold;margin:0 4px}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 56 · 中等</div>
+  <h1>5. 合并区间</h1>
+  <p class="subtitle">给定若干区间，合并所有重叠的区间。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：排序 + 合并</a>
+  <a href="#walkthrough">3. 详细过程模拟</a>
+  <a href="#code">4. 代码逐段解释</a>
+  <a href="#complexity">5. 复杂度分析</a>
+  <a href="#pitfalls">6. 常见易错点</a>
+  <a href="#summary">7. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定一组区间 <code>intervals = [[start, end]]</code>，合并所有重叠的区间，返回恰好覆盖输入中所有区间的不重叠区间数组。</p>
+
+  <h3>示例</h3>
+  <pre><code>输入：intervals = [[1,3],[2,6],[8,10],[15,18]]
+输出：[[1,6],[8,10],[15,18]]</code></pre>
+
+  <div class="interval-line">
+    <span class="interval i1">[1, 3]</span>
+    <span class="interval i2">[2, 6]</span>
+    <span class="arrow">→</span>
+    <span class="interval merged">[1, 6]</span>
+  </div>
+  <div class="interval-line">
+    <span class="interval i3">[8, 10]</span>
+    <span class="arrow">→</span>
+    <span class="interval merged">[8, 10]</span>
+  </div>
+  <div class="interval-line">
+    <span class="interval i4">[15, 18]</span>
+    <span class="arrow">→</span>
+    <span class="interval merged">[15, 18]</span>
+  </div>
+
+  <div class="note blue">[1,3] 和 [2,6] 有重叠（3 ≥ 2），合并为 [1,6]。[8,10] 与 [15,18] 无重叠，保持不变。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：排序 + 合并</h2>
+  <ol>
+    <li>按区间<strong>起点</strong>排序</li>
+    <li>遍历区间，维护结果数组 <code>res</code></li>
+    <li>如果当前区间起点 > res 最后区间的终点 → 无重叠，直接加入</li>
+    <li>否则 → 有重叠，更新最后区间的终点为两者较大值</li>
+  </ol>
+
+  <div class="formula">重叠判断：cur[0] > last[1] → 不重叠，否则重叠</div>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>排序后只需 O(n) 一次遍历。重叠的判断只需比较当前区间的左端点和已合并区间的右端点，无需复杂数据结构。
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>3. 详细过程模拟</h2>
+  <p>以 <code>intervals = [[1,3],[2,6],[8,10],[15,18]]</code> 为例。</p>
+
+  <h3>排序后</h3>
+  <p>已经是按起点排好序的。</p>
+
+  <h3>遍历</h3>
+  <table>
+    <tr><th>cur</th><th>res 最后</th><th>cur[0] > last[1]?</th><th>操作</th><th>res</th></tr>
+    <tr><td>[1,3]</td><td>—</td><td>—</td><td>直接加入</td><td>[[1,3]]</td></tr>
+    <tr><td>[2,6]</td><td>[1,3]</td><td>2 > 3? ❌</td><td>合并：max(3,6)=6</td><td>[[1,6]]</td></tr>
+    <tr><td>[8,10]</td><td>[1,6]</td><td>8 > 6? ✅</td><td>无重叠，加入</td><td>[[1,6],[8,10]]</td></tr>
+    <tr><td>[15,18]</td><td>[8,10]</td><td>15 > 10? ✅</td><td>无重叠，加入</td><td>[[1,6],[8,10],[15,18]]</td></tr>
+  </table>
+
+  <div class="note green">最终结果：<strong>[[1,6],[8,10],[15,18]]</strong> ✅</div>
+</section>
+
+<section class="card" id="code">
+  <h2>4. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">merge</span>(self, intervals: List[List[int]]) -> List[List[int]]:
+        intervals.<span style="color:#D4744C">sort</span>()                     <span style="color:#6B7280"># 按起点排序</span>
+        res = []
+        <span style="color:#6B7280">for</span> cur <span style="color:#6B7280">in</span> intervals:
+            <span style="color:#6B7280">if</span> <span style="color:#6B7280">not</span> res <span style="color:#6B7280">or</span> cur[<span style="color:#CA8A04">0</span>] > res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>]:
+                res.<span style="color:#D4744C">append</span>(cur)                <span style="color:#6B7280"># 无重叠，直接加入</span>
+            <span style="color:#6B7280">else</span>:
+                res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>] = <span style="color:#D4744C">max</span>(res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>], cur[<span style="color:#CA8A04">1</span>])  <span style="color:#6B7280"># 合并终点</span>
+        <span style="color:#6B7280">return</span> res</code></pre>
+
+  <p><strong>intervals.sort()</strong>：按起点升序排序。Python 默认对列表按第一个元素排序。</p>
+  <p><strong>if not res or cur[0] > res[-1][1]</strong>：如果结果为空，或者当前区间起点超过已合并区间的终点 → 无重叠。</p>
+  <p><strong>res[-1][1] = max(res[-1][1], cur[1])</strong>：有重叠，取较大的终点作为合并后的终点。</p>
+
+  <div class="note warm">按起点排序后，重叠的判断变得异常简单：只关心已合并区间的终点。</div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>5. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n log n)</strong></td><td>排序 O(n log n)，合并遍历 O(n)</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>除结果数组外，只用常数空间</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>6. 常见易错点</h2>
+  <h3>错误：忘记排序</h3>
+  <p>如果不排序，无法保证当前区间之前的区间已被处理完，合并逻辑会错乱。</p>
+
+  <h3>错误：合并时取小值</h3>
+  <pre><code>res[-1][1] = cur[1]  # ❌ 应该取较大值</code></pre>
+  <pre><code>res[-1][1] = max(res[-1][1], cur[1])  # ✅</code></pre>
+
+  <h3>边界：单区间、空数组</h3>
+  <p>空数组返回 []，单个区间返回自身。</p>
+</section>
+
+<section class="card" id="summary">
+  <h2>7. 总结</h2>
+  <div class="note green">
+    <p><strong>合并区间</strong> 解法精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>按起点<strong>排序</strong></li>
+      <li>一次遍历，比较当前起点与已合并终点</li>
+      <li>重叠则取较大终点，不重叠则直接加入</li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">merge</span>(self, intervals):
+        intervals.<span style="color:#D4744C">sort</span>()
+        res = []
+        <span style="color:#6B7280">for</span> cur <span style="color:#6B7280">in</span> intervals:
+            <span style="color:#6B7280">if</span> <span style="color:#6B7280">not</span> res <span style="color:#6B7280">or</span> cur[<span style="color:#CA8A04">0</span>] > res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>]:
+                res.<span style="color:#D4744C">append</span>(cur)
+            <span style="color:#6B7280">else</span>:
+                res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>] = <span style="color:#D4744C">max</span>(res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>], cur[<span style="color:#CA8A04">1</span>])
+        <span style="color:#6B7280">return</span> res</code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：排序一遍过，不重叠直接加，重叠取大终点。</p>
+</section>
+</main>
+<footer>合并区间 · 算法学习页</footer>
+</body>
+</html>

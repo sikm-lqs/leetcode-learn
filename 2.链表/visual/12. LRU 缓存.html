@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12. LRU 缓存 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.mini-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:#FAFBFC}
+.mini-card h3{margin:0 0 6px;font-size:15px}
+.mini-card p{margin:4px 0;font-size:13px}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+
+/* ===== 链表节点可视化工具集（所有链表题目共用） ===== */
+.ll-row{display:flex;flex-wrap:wrap;gap:0;align-items:flex-end;justify-content:center;margin:18px 0;font-family:Consolas,Monaco,monospace}
+.ll-node{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;padding-top:24px}
+.ll-val{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:44px;padding:4px 12px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:15px;font-family:Consolas,Monaco,monospace;transition:all .35s ease}
+.ll-val.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-3px);box-shadow:0 0 0 3px rgba(212,116,76,0.15)}
+.ll-val.done{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.ll-val.target{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.2)}
+.ll-val.dim{opacity:.5;color:#9CA3AF}
+.ll-val.hi{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(59,125,216,0.15)}
+.ll-label{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;font-family:Consolas,Monaco,monospace;white-space:nowrap;padding:2px 7px;border-radius:6px;background:#F1F5F9;color:#6B7280;min-height:16px}
+.ll-label.warm{background:var(--warm-soft);color:var(--warm)}
+.ll-label.cur{background:var(--primary-soft);color:var(--primary)}
+.ll-label.yellow{background:var(--accent-yellow-soft);color:var(--accent-yellow)}
+.ll-label.green{background:var(--accent-green-soft);color:var(--accent-green)}
+.ll-label.purple{background:var(--accent-purple-soft);color:var(--accent-purple)}
+.ll-arrow{display:inline-flex;align-items:center;justify-content:center;padding:0 3px;color:#94A3B8;font-size:22px;font-weight:700;line-height:44px;transition:all .35s ease;min-height:44px}
+.ll-arrow.rev{color:var(--accent-green)}
+.ll-arrow.cut{color:var(--warm);transform:scale(1.15)}
+.ll-arrow.hot{color:var(--primary)}
+.ll-null{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:4px 10px;border-radius:10px;border:2px dashed #CBD5E1;background:#F8FAFC;color:#6B7280;font-weight:600;font-size:13px;font-family:Consolas,Monaco,monospace;line-height:44px}
+
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.viz-map{margin:12px 0;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-family:Consolas,Monaco,monospace;font-size:13px;min-height:40px}
+.viz-map strong{color:var(--warm)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.ll-val{min-width:40px;height:38px;font-size:13px}.ll-null{height:38px;line-height:38px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 146 · 中等</div>
+  <h1>12. LRU 缓存</h1>
+  <p class="subtitle">设计 LRU（最近最少使用）缓存。get(key) 存在则返回值并标记为最近使用，否则 -1；put(key,value) 不存在则插入，超过容量时淘汰最久未使用。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：哈希表 + 双向链表</a>
+  <a href="#viz">3. 交互可视化演示</a>
+  <a href="#walkthrough">4. 详细过程模拟</a>
+  <a href="#code">5. 代码逐段解释</a>
+  <a href="#complexity">6. 复杂度分析</a>
+  <a href="#pitfalls">7. 常见易错点</a>
+  <a href="#summary">8. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>设计并实现一个 <strong>LRU（Least Recently Used）缓存</strong> 数据结构，需要支持两种操作：</p>
+  <ul>
+    <li><code>get(key)</code>：若关键字存在于缓存中，返回其对应的值，并把它<strong>标记为最近使用</strong>；否则返回 <code>-1</code>。</li>
+    <li><code>put(key, value)</code>：若关键字已存在，则变更其值并标记为最近使用；若不存在，则插入该组关键字-值。当缓存容量达到上限时，<strong>淘汰最久未使用</strong>的关键字后再插入。</li>
+  </ul>
+
+  <div class="note blue">
+    <strong>关键：</strong>两种操作都要求 <strong>O(1)</strong> 平均时间复杂度完成。
+  </div>
+
+  <h3>函数签名与示例</h3>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">LRUCache</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">__init__</span>(self, capacity: <span style="color:#3B7DD8">int</span>): ...
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">get</span>(self, key: <span style="color:#3B7DD8">int</span>) -> <span style="color:#3B7DD8">int</span>: ...
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">put</span>(self, key: <span style="color:#3B7DD8">int</span>, value: <span style="color:#3B7DD8">int</span>) -> <span style="color:#6B7280">None</span>: ...
+
+<span style="color:#6B7280"># 输入</span>
+[<span style="color:#3B7DD8">"LRUCache"</span>, <span style="color:#3B7DD8">"put"</span>, <span style="color:#3B7DD8">"put"</span>, <span style="color:#3B7DD8">"get"</span>, <span style="color:#3B7DD8">"put"</span>, <span style="color:#3B7DD8">"get"</span>, <span style="color:#3B7DD8">"get"</span>]
+[[2],        [1,1],  [2,2],  [1],    [3,3],  [2],    [1]]
+<span style="color:#6B7280"># 输出</span>
+[<span style="color:#6B7280">null</span>,        <span style="color:#6B7280">null</span>,   <span style="color:#6B7280">null</span>,   1,      <span style="color:#6B7280">null</span>,   -1,     -1]</code></pre>
+  <p style="color:var(--text-light);font-size:13px;">容量为 2：put(1,1) → put(2,2) → get(1)=1 → put(3,3) 淘汰 2 → get(2)=-1 → get(1)=1。</p>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：哈希表 + 双向链表</h2>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <h3>🗂️ 哈希表 map</h3>
+      <p><code>key → 链表节点</code>。O(1) 判断 key 是否存在并拿到节点指针。</p>
+    </div>
+    <div class="mini-card">
+      <h3>🔗 双向链表</h3>
+      <p>维护访问顺序。head 一端是「最近用」，tail 一端是「最久未用」。</p>
+    </div>
+  </div>
+
+  <h3>两个 O(1) 链表操作</h3>
+  <table>
+    <tr><th>操作</th><th>作用</th></tr>
+    <tr><td><code>_remove(node)</code></td><td>把节点从链表中摘下（改两个方向的指针）</td></tr>
+    <tr><td><code>_add_to_head(node)</code></td><td>把节点插到 head 之后，标记为最新使用</td></tr>
+  </table>
+
+  <h3>算法流程</h3>
+  <ol>
+    <li><code>get(key)</code>：map 中无 → 返回 <code>-1</code>；有 → <code>_remove</code> + <code>_add_to_head</code>，返回值。</li>
+    <li><code>put(key, value)</code>：</li>
+    <li style="list-style:none;">&nbsp;&nbsp;key 已存在 → 更新 value，<code>_remove</code> + <code>_add_to_head</code>。</li>
+    <li style="list-style:none;">&nbsp;&nbsp;key 不存在 → 新建节点，map[key]=node，<code>_add_to_head</code>。</li>
+    <li style="list-style:none;">&nbsp;&nbsp;若超容量 → <code>old = tail.prev</code>，<code>_remove(old)</code>，<code>del map[old.key]</code>。</li>
+  </ol>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>哈希表 + 双向链表组合，<code>_remove</code> 与 <code>_add_to_head</code> 均 O(1)；访问与插入统一为「移到头部」，淘汰即「删尾」。双向链表能在 O(1) 内摘下任意节点（因为节点自带 prev 指针）。
+  </div>
+
+  <h3>为什么需要双向链表？</h3>
+  <p>删除尾节点时要访问它的<strong>前驱</strong>。单链表找前驱需 O(n)，双向链表直接 <code>node.prev</code> 即 O(1)。同时引入 <code>head / tail</code> 两个<strong>哨兵节点</strong>，永远不为空，省去处理空链表与边界的大量判空逻辑。</p>
+
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">head</span></span>
+    <span class="ll-arrow hot">⇄</span>
+    <span class="ll-node"><span class="ll-label cur">最近用</span><span class="ll-val cur">k1=v1</span></span>
+    <span class="ll-arrow">⇄</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">k2=v2</span></span>
+    <span class="ll-arrow cut">⇄</span>
+    <span class="ll-node"><span class="ll-label warm">最久未用</span><span class="ll-val">k3=v3</span></span>
+    <span class="ll-arrow hot">⇄</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">tail</span></span>
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>3. 交互可视化演示</h2>
+  <p>容量 <code>capacity = 2</code>，点击「下一步」观察双向链表与哈希表的联动。最近操作的节点以暖色高亮，被淘汰节点以红色提示。</p>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 操作序列：put(1,1) → put(2,2) → get(1) → put(3,3) → get(2) → get(3)</div>
+    <div class="viz-info" id="vizInfo">capacity = 2 · 等待操作</div>
+
+    <div class="ll-row" id="vizCells"></div>
+    <div class="viz-map" id="vizMap"><strong>map</strong>: {}</div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 7</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+
+    <div class="viz-desc" id="vizDesc">点击「下一步」开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>4. 详细过程模拟</h2>
+  <p>以 <code>capacity = 2</code> 为例，重点看两个关键画面：<strong>get 命中移到头部</strong> 与 <strong>put 超容量淘汰尾部</strong>。</p>
+
+  <h3>画面一：get(1) 命中 → 移到头部</h3>
+  <p>操作前链表：head ⇄ [2=2] ⇄ [1=1] ⇄ tail（1 在尾部，最久未用）。<code>get(1)</code> 命中后：<code>_remove(node1)</code> 把 1 摘下，再 <code>_add_to_head(node1)</code> 把 1 插到 head 之后。</p>
+
+  <p style="font-size:13px;color:var(--text-light);"><strong>_remove(node1)</strong>：node1.prev.next = node1.next（[2].next → tail）；node1.next.prev = node1.prev（tail.prev → [2]）。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">head</span></span>
+    <span class="ll-arrow hot">⇄</span>
+    <span class="ll-node"><span class="ll-label cur">cur</span><span class="ll-val cur">2=2</span></span>
+    <span class="ll-arrow cut">⇄</span>
+    <span class="ll-node"><span class="ll-label warm">摘下</span><span class="ll-val done">1=1</span></span>
+    <span class="ll-arrow hot">⇄</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">tail</span></span>
+  </div>
+
+  <p style="font-size:13px;color:var(--text-light);"><strong>_add_to_head(node1)</strong>：node1.next = head.next（→ [2]）；node1.prev = head；head.next.prev = node1（[2].prev → [1]）；head.next = node1。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">head</span></span>
+    <span class="ll-arrow hot">⇄</span>
+    <span class="ll-node"><span class="ll-label green">最新</span><span class="ll-val target">1=1</span></span>
+    <span class="ll-arrow hot">⇄</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2=2</span></span>
+    <span class="ll-arrow hot">⇄</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">tail</span></span>
+  </div>
+  <div class="note green">✅ get(1) 返回 1，链表变为 head ⇄ [1=1] ⇄ [2=2] ⇄ tail。</div>
+
+  <h3>画面二：put(3,3) 容量满 → 淘汰尾部 + 插入头部</h3>
+  <p>当前链表 head ⇄ [1=1] ⇄ [3=3] ⇄ tail <span style="color:var(--text-light)">(假设前一步是 put(3,3) 已淘汰 2)</span>。这里演示更典型的「put(3,3) 触发淘汰 2」的瞬间：先 <code>old = tail.prev</code>（节点 [2=2]），<code>_remove(old)</code> 删尾，<code>del map[2]</code>，再 <code>_add_to_head(node3)</code>。</p>
+
+  <p style="font-size:13px;color:var(--text-light);"><strong>淘汰 old = [2=2]</strong>：old.prev.next = old.next（[1].next → tail）；old.next.prev = old.prev（tail.prev → [1]）。同步 <code>del map[2]</code>。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">head</span></span>
+    <span class="ll-arrow hot">⇄</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1=1</span></span>
+    <span class="ll-arrow cut">⇄</span>
+    <span class="ll-node"><span class="ll-label warm">淘汰</span><span class="ll-val" style="border-color:var(--accent-red);background:var(--accent-red-soft);text-decoration:line-through">2=2</span></span>
+    <span class="ll-arrow cut">⇄</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">tail</span></span>
+  </div>
+
+  <p style="font-size:13px;color:var(--text-light);"><strong>插入 [3=3]</strong>：新建节点，map[3]=node3，<code>_add_to_head</code> 放到 head 之后。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">head</span></span>
+    <span class="ll-arrow hot">⇄</span>
+    <span class="ll-node"><span class="ll-label green">最新</span><span class="ll-val target">3=3</span></span>
+    <span class="ll-arrow hot">⇄</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1=1</span></span>
+    <span class="ll-arrow hot">⇄</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">tail</span></span>
+  </div>
+  <div class="note red">⚠️ 容量回到 2，节点 2 已从链表与 map 中彻底移除。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>5. 代码逐段解释</h2>
+
+  <h3>完整代码</h3>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Node</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">__init__</span>(self, key=0, value=0):
+        self.key = key
+        self.value = value
+        self.prev = <span style="color:#6B7280">None</span>
+        self.next = <span style="color:#6B7280">None</span>
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">LRUCache</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">__init__</span>(self, capacity: <span style="color:#3B7DD8">int</span>):
+        self.capacity = capacity
+        self.map = {}
+        self.head = <span style="color:#3B7DD8">Node</span>()
+        self.tail = <span style="color:#3B7DD8">Node</span>()
+        self.head.next = self.tail
+        self.tail.prev = self.head
+
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">get</span>(self, key: <span style="color:#3B7DD8">int</span>) -> <span style="color:#6B7280">int</span>:
+        <span style="color:#6B7280">if</span> key <span style="color:#6B7280">not in</span> self.map:
+            <span style="color:#6B7280">return</span> -1
+        node = self.map[key]
+        self._remove(node)
+        self._add_to_head(node)
+        <span style="color:#6B7280">return</span> node.value
+
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">put</span>(self, key: <span style="color:#6B7280">int</span>, value: <span style="color:#6B7280">int</span>) -> <span style="color:#6B7280">None</span>:
+        <span style="color:#6B7280">if</span> key <span style="color:#6B7280">in</span> self.map:
+            node = self.map[key]
+            node.value = value
+            self._remove(node)
+            self._add_to_head(node)
+        <span style="color:#6B7280">else</span>:
+            node = <span style="color:#3B7DD8">Node</span>(key, value)
+            self.map[key] = node
+            self._add_to_head(node)
+            <span style="color:#6B7280">if</span> <span style="color:#D4744C">len</span>(self.map) > self.capacity:
+                old = self.tail.prev
+                self._remove(old)
+                <span style="color:#6B7280">del</span> self.map[old.key]
+
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">_remove</span>(self, node):
+        node.prev.next = node.next
+        node.next.prev = node.prev
+
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">_add_to_head</span>(self, node):
+        node.next = self.head.next
+        node.prev = self.head
+        self.head.next.prev = node
+        self.head.next = node</code></pre>
+
+  <h3>逐段说明</h3>
+
+  <p><strong>第 1 段：Node 节点定义</strong></p>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Node</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">__init__</span>(self, key=0, value=0):
+        self.key = key
+        self.value = value
+        self.prev = <span style="color:#6B7280">None</span>
+        self.next = <span style="color:#6B7280">None</span></code></pre>
+  <p>每个节点保存 <code>key</code>、<code>value</code> 与前后指针。<strong>存 key 是为了淘汰时反向从 map 删除</strong>（<code>del map[old.key]</code>）。</p>
+
+  <p><strong>第 2 段：初始化（哨兵）</strong></p>
+  <pre><code>self.head = <span style="color:#3B7DD8">Node</span>()
+self.tail = <span style="color:#3B7DD8">Node</span>()
+self.head.next = self.tail
+self.tail.prev = self.head</code></pre>
+  <p>head、tail 是空壳哨兵，互相首尾相连形成空链表。之后所有插入/删除都在 head 与 tail 之间进行，<strong>永远不必判空链表</strong>。</p>
+
+  <p><strong>第 3 段：_remove（摘下节点）</strong></p>
+  <pre><code>node.prev.next = node.next   <span style="color:#6B7280"># 前驱的 next 跳过我</span>
+node.next.prev = node.prev   <span style="color:#6B7280"># 后继的 prev 跳过我</span></code></pre>
+  <p>两条赋值即可把 node 从链表中移除，O(1)。注意：<strong>没有清 node 自身的 prev/next</strong>，因为它马上要被 _add_to_head 重新接线。</p>
+
+  <p><strong>第 4 段：_add_to_head（插到头部）</strong></p>
+  <pre><code>node.next = self.head.next      <span style="color:#6B7280"># 新节点接原首节点</span>
+node.prev = self.head          <span style="color:#6B7280"># 新节点接 head</span>
+self.head.next.prev = node     <span style="color:#6B7280"># 原首节点回接新节点</span>
+self.head.next = node          <span style="color:#6B7280"># head 接新节点</span></code></pre>
+  <p>四步把 node 插到 head 之后。顺序很关键：先改「新节点两侧」、再改「两侧回指」，避免引用丢失。</p>
+
+  <p><strong>第 5 段：put 超容量淘汰</strong></p>
+  <pre><code><span style="color:#6B7280">if</span> <span style="color:#D4744C">len</span>(self.map) > self.capacity:
+    old = self.tail.prev
+    self._remove(old)
+    <span style="color:#6B7280">del</span> self.map[old.key]</code></pre>
+  <p>tail.prev 就是最久未用的节点。摘链后<strong>必须同步删 map</strong>，否则 map 残留指向已失效节点的引用。</p>
+
+  <div class="note warm">
+    get 与 put 命中/更新分支都走「<code>_remove</code> + <code>_add_to_head</code>」两步，逻辑统一。
+  </div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>6. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>get 时间</td><td><strong>O(1)</strong></td><td>哈希表查找 + 两次 O(1) 链表操作。</td></tr>
+    <tr><td>put 时间</td><td><strong>O(1)</strong></td><td>同上；淘汰分支也只删一个尾节点。</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(capacity)</strong></td><td>最多存 capacity 个节点（map + 链表同规模）。</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>7. 常见易错点</h2>
+
+  <h3>错误一：删尾节点后忘记同步删 map</h3>
+  <pre><code><span style="color:#6B7280">if</span> <span style="color:#D4744C">len</span>(self.map) > self.capacity:
+    old = self.tail.prev
+    self._remove(old)
+    <span style="color:#6B7280"># ❌ 缺 del self.map[old.key]</span></code></pre>
+  <p>此时链表已无 old，但 <code>map[old.key]</code> 仍指向它。后续 <code>get(old.key)</code> 会命中 map 却拿到游离节点，逻辑彻底错乱。<strong>必须 <code>del self.map[old.key]</code></strong>。</p>
+
+  <h3>错误二：双向链表只改了一个方向</h3>
+  <pre><code><span style="color:#6B7280">def</span> <span style="color:#3B7DD8">_remove</span>(self, node):
+    node.prev.next = node.next   <span style="color:#6B7280"># ✅ 前驱跳过</span>
+    <span style="color:#6B7280"># ❌ 忘了 node.next.prev = node.prev</span></code></pre>
+  <p>双向链表的精髓是<strong>两根指针都得改</strong>。漏掉 <code>node.next.prev</code> 会留下「回指已删节点」的野指针，遍历时进入死循环或报错。</p>
+
+  <h3>错误三：不引入哨兵，边界判空爆炸</h3>
+  <pre><code><span style="color:#6B7280"># ❌ 没有 head/tail 哨兵，每次都要判空</span>
+<span style="color:#6B7280">if</span> self.first <span style="color:#6B7280">is None</span>:
+    self.first = self.last = node
+<span style="color:#6B7280">elif</span> node <span style="color:#6B7280">is</span> self.last:
+    ...   <span style="color:#6B7280"># 各种特殊分支</span></code></pre>
+  <p>用 <code>head / tail</code> 哨兵节点，链表<strong>永远非空</strong>，<code>_remove</code> / <code>_add_to_head</code> 逻辑对所有情况一致，无需任何判空。</p>
+
+  <h3>边界情况</h3>
+  <table>
+    <tr><th>输入</th><th>说明</th></tr>
+    <tr><td><code>capacity = 0</code></td><td>题目通常保证 ≥1；若需支持 0，应在 put 入口直接 return。</td></tr>
+    <tr><td><code>put 已存在的 key</code></td><td>不新增节点，只更新 value 并移到头部，<strong>不触发容量检查</strong>。</td></tr>
+    <tr><td><code>get 未命中</code></td><td>直接返回 -1，链表与 map 不动。</td></tr>
+  </table>
+</section>
+
+<section class="card" id="summary">
+  <h2>8. 总结</h2>
+  <div class="note green">
+    <p><strong>LRU 缓存</strong> 精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>哈希表 <strong>O(1) 查找</strong> + 双向链表 <strong>O(1) 调序</strong></li>
+      <li>访问/插入统一为「<strong>移到头部</strong>」，淘汰即「<strong>删尾</strong>」</li>
+      <li>head/tail <strong>哨兵节点</strong> 消除空链表边界</li>
+      <li>删链节点必须<strong>同步 del map</strong></li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">LRUCache</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">get</span>(self, key):
+        <span style="color:#6B7280">if</span> key <span style="color:#6B7280">not in</span> self.map: <span style="color:#6B7280">return</span> -1
+        node = self.map[key]
+        self._remove(node); self._add_to_head(node)
+        <span style="color:#6B7280">return</span> node.value
+
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">put</span>(self, key, value):
+        <span style="color:#6B7280">if</span> key <span style="color:#6B7280">in</span> self.map:
+            node = self.map[key]; node.value = value
+            self._remove(node); self._add_to_head(node)
+        <span style="color:#6B7280">else</span>:
+            self.map[key] = self._add_to_head(<span style="color:#3B7DD8">Node</span>(key, value))
+            <span style="color:#6B7280">if</span> <span style="color:#D4744C">len</span>(self.map) > self.capacity:
+                self._remove(self.tail.prev)  <span style="color:#6B7280"># 实际实现中需 del map</span></code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：哈希查、链表调，命中都往头上挪；超容就把尾巴削，del map 别漏掉。</p>
+</section>
+</main>
+
+<footer>LRU 缓存 · 算法学习页</footer>
+
+<script>
+(function(){
+// 每步状态：list 为从 head 到 tail 的节点顺序（不含哨兵），map 为哈希表键集，
+// highlight 为本步刚操作/插入的 key，evict 为本步被淘汰的 key
+const steps = [
+  { op:'初始状态',        list:[],                          map:{},                       highlight:null, evict:null, desc:'初始：空缓存。head ⇄ tail，map 为空。' },
+  { op:'put(1,1)',        list:[{k:1,v:1}],                 map:{1:1},                    highlight:1,    evict:null, desc:'插入 (1,1)：新建节点，map[1]=node1，_add_to_head 放到 head 之后。缓存：[1, 1]。' },
+  { op:'put(2,2)',        list:[{k:2,v:2},{k:1,v:1}],       map:{1:1,2:2},                highlight:2,    evict:null, desc:'插入 (2,2) 到头部。现在缓存有 2、1（head 端为最近）。未超容量(=2)。' },
+  { op:'get(1) → 1',      list:[{k:1,v:1},{k:2,v:2}],       map:{1:1,2:2},                highlight:1,    evict:null, desc:'get(1)：命中，返回 1。_remove(1) 摘下后 _add_to_head(1)，把 1 移到头部标记为最近使用。' },
+  { op:'put(3,3)',        list:[{k:3,v:3},{k:1,v:1}],       map:{1:1,3:3},                highlight:3,    evict:2,    desc:'put(3,3)：容量已满(2)，淘汰尾部最久未用的 2（del map[2]），再把 3 插到头部。' },
+  { op:'get(2) → -1',     list:[{k:3,v:3},{k:1,v:1}],       map:{1:1,3:3},                highlight:null, evict:null, desc:'get(2)：2 已在上一步被淘汰，map 不含 2，返回 -1。链表与 map 不变。' },
+  { op:'get(3) → 3',      list:[{k:3,v:3},{k:1,v:1}],       map:{1:1,3:3},                highlight:3,    evict:null, desc:'get(3)：命中，返回 3，并把 3 移到头部。链表顺序保持 [3, 1]。✅ 演示完成。' },
+];
+
+let curStep = 0, isPlaying = false, interval = null;
+const $ = id => document.getElementById(id);
+const vizCells = $('vizCells'), vizDesc = $('vizDesc'), stepInfo = $('stepInfo');
+const vizInfo = $('vizInfo'), vizMap = $('vizMap');
+const prevBtn = $('prevBtn'), nextBtn = $('nextBtn'), playBtn = $('playBtn'), resetBtn = $('resetBtn');
+
+function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function render(i){
+  const s = steps[i];
+  // 顶部操作信息
+  vizInfo.textContent = `capacity = 2 · 当前操作：${s.op}`;
+
+  // 双向链表行：head ⇄ ... ⇄ tail
+  let h = '';
+  h += `<span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">head</span></span>`;
+  h += `<span class="ll-arrow hot">⇄</span>`;
+  s.list.forEach((n, idx) => {
+    let ncls = '';
+    let lcls = '';
+    let ltxt = '';
+    if(n.k === s.evict){
+      ncls = ''; // 被淘汰节点单独样式（红/删除）
+      lcls = 'warm'; ltxt = '淘汰';
+    } else if(n.k === s.highlight){
+      ncls = 'cur';
+      lcls = 'cur'; ltxt = idx === 0 ? '最近用' : '本次';
+    } else {
+      ncls = '';
+      if(idx === 0){ lcls='green'; ltxt='最近'; }
+      else if(idx === s.list.length - 1){ lcls='warm'; ltxt='最久未用'; }
+    }
+    const inner = `${n.k}=${n.v}`;
+    if(n.k === s.evict){
+      h += `<span class="ll-node"><span class="ll-label ${lcls}">${ltxt}</span><span class="ll-val" style="border-color:var(--accent-red);background:var(--accent-red-soft);text-decoration:line-through">${esc(inner)}</span></span>`;
+    } else {
+      h += `<span class="ll-node"><span class="ll-label ${lcls}">${ltxt}</span><span class="ll-val ${ncls}">${esc(inner)}</span></span>`;
+    }
+    // 后续双向箭头
+    const isLast = idx === s.list.length - 1;
+    if(!isLast){
+      h += `<span class="ll-arrow hot">⇄</span>`;
+    }
+  });
+  if(s.list.length === 0){
+    // 空链表：head 直接连 tail
+  }
+  h += `<span class="ll-arrow hot">⇄</span>`;
+  h += `<span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="min-width:54px">tail</span></span>`;
+  vizCells.innerHTML = h;
+
+  // 哈希表面板
+  const keys = Object.keys(s.map);
+  let mapInner;
+  if(keys.length === 0){
+    mapInner = `{}`;
+  } else {
+    const items = keys.map(k => `<strong>${k}</strong>: node(${k}=${s.map[k]})`);
+    mapInner = `{ ${items.join(', ')} }`;
+  }
+  vizMap.innerHTML = `<strong>map</strong>: ${mapInner}  <span style="color:var(--text-light)"> · size = ${keys.length}</span>`;
+
+  // 描述
+  vizDesc.textContent = s.desc;
+  stepInfo.textContent = `步骤 ${i+1} / ${steps.length}`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === steps.length - 1;
+}
+
+function go(i){ if(i>=0 && i<steps.length){curStep=i; render(curStep);} }
+function nextStep(){ if(curStep<steps.length-1) go(curStep+1); else if(isPlaying) stopPlay(); }
+function prevStep(){ if(curStep>0) go(curStep-1); }
+function togglePlay(){ isPlaying ? stopPlay() : startPlay(); }
+function startPlay(){
+  if(curStep>=steps.length-1) go(0);
+  isPlaying=true; playBtn.textContent='⏸ 暂停'; playBtn.classList.add('playing');
+  interval=setInterval(()=>{if(curStep>=steps.length-1)stopPlay();else nextStep();},1600);
+}
+function stopPlay(){
+  isPlaying=false; playBtn.textContent='▶ 自动播放'; playBtn.classList.remove('playing');
+  if(interval){clearInterval(interval);interval=null;}
+}
+function resetViz(){stopPlay();go(0);}
+
+nextBtn.onclick=nextStep; prevBtn.onclick=prevStep;
+playBtn.onclick=togglePlay; resetBtn.onclick=resetViz;
+document.onkeydown=e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+  else if(e.key===' '){e.preventDefault();togglePlay();}
+};
+go(0);
+})();
+</script>
+</body>
+</html>

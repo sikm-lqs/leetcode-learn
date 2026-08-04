@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4. 三数之和 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--primary-light:#F4F8FC;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.cell{min-width:36px;height:32px;font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 15 · 中等</div>
+  <h1>4. 三数之和</h1>
+  <p class="subtitle">返回数组中和为 0 的不重复三元组。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：排序 + 双指针</a>
+  <a href="#walkthrough">3. 详细过程模拟</a>
+  <a href="#code">4. 代码逐段解释</a>
+  <a href="#complexity">5. 复杂度分析</a>
+  <a href="#pitfalls">6. 常见易错点</a>
+  <a href="#summary">7. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定数组 <code>nums</code>，找出所有和为 <code>0</code> 且<strong>不重复</strong>的三元组 <code>[nums[i], nums[j], nums[k]]</code>。</p>
+
+  <div class="note blue"><strong>注意：</strong>答案中不能包含重复的三元组。i、j、k 互不相同。</div>
+
+  <h3>示例</h3>
+  <pre><code>输入：nums = [-1, 0, 1, 2, -1, -4]
+输出：[[-1, -1, 2], [-1, 0, 1]]</code></pre>
+
+  <div class="array-line">
+    <span class="cell pivot">-1</span>
+    <span class="cell">0</span>
+    <span class="cell">1</span>
+    <span class="cell">2</span>
+    <span class="cell pivot">-1</span>
+    <span class="cell dim">-4</span>
+  </div>
+  <p>不重复的三元组：<code>[-1, -1, 2]</code> 和 <code>[-1, 0, 1]</code>。</p>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：排序 + 双指针</h2>
+
+  <p>将 O(n³) 暴力枚举优化到 O(n²)：</p>
+  <ol>
+    <li><strong>排序</strong>数组 —— 让双指针可以工作</li>
+    <li>固定第一个数 <code>nums[i]</code></li>
+    <li>在 <code>[i+1, n-1]</code> 区间用<strong>双指针</strong>找两数之和为 <code>-nums[i]</code></li>
+    <li>去重：跳过重复的 <code>nums[i]</code> 和重复的左右指针值</li>
+  </ol>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>排序后，两数和问题可以用双指针在 O(n) 时间解决，使整体从 O(n³) 降到 O(n²)。再加上去重逻辑，确保结果不重复。
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>3. 详细过程模拟</h2>
+  <p>以 <code>nums = [-1, 0, 1, 2, -1, -4]</code> 为例。</p>
+
+  <h3>第一步：排序</h3>
+  <div class="array-line">
+    <span class="cell pivot">-4</span>
+    <span class="cell pivot">-1</span>
+    <span class="cell">-1</span>
+    <span class="cell">0</span>
+    <span class="cell">1</span>
+    <span class="cell">2</span>
+  </div>
+  <div class="idx-row"><span class="idx">0</span><span class="idx">1</span><span class="idx">2</span><span class="idx">3</span><span class="idx">4</span><span class="idx">5</span></div>
+
+  <h3>i=0, nums[0]=-4</h3>
+  <p>目标：在 [1, 5] 中找两数和 = 4。双指针扫描：</p>
+  <table>
+    <tr><th>l</th><th>r</th><th>sum</th><th></th></tr>
+    <tr><td>1(-1)</td><td>5(2)</td><td>1</td><td>1<4 → l++</td></tr>
+    <tr><td>2(-1)</td><td>5(2)</td><td>1</td><td>1<4 → l++</td></tr>
+    <tr><td>3(0)</td><td>5(2)</td><td>2</td><td>2<4 → l++</td></tr>
+    <tr><td>4(1)</td><td>5(2)</td><td>3</td><td>3<4 → l++</td></tr>
+    <tr><td colspan="4">l 与 r 相遇，无解</td></tr>
+  </table>
+
+  <h3>i=1, nums[1]=-1</h3>
+  <p>目标：在 [2, 5] 中找两数和 = 1。</p>
+  <table>
+    <tr><th>l</th><th>r</th><th>sum</th><th></th></tr>
+    <tr><td>2(-1)</td><td>5(2)</td><td>1</td><td>等于目标 → 记录 [-1, -1, 2]，l++, r--</td></tr>
+    <tr><td>3(0)</td><td>4(1)</td><td>1</td><td>等于目标 → 记录 [-1, 0, 1]，l++, r--</td></tr>
+    <tr><td colspan="4">l≥r，结束</td></tr>
+  </table>
+
+  <h3>i=2, nums[2]=-1</h3>
+  <p>与 i=1 重复，跳过。</p>
+
+  <h3>i=3, nums[3]=0</h3>
+  <p>目标：在 [4, 5] 中找两数和 = 0 → left=1, right=2 → 无解。</p>
+
+  <h3>i=4, nums[4]=1</h3>
+  <p>目标 = -1，双指针无法找到和为负数的组合，结束。</p>
+
+  <div class="note green">最终结果：<strong>[[-1, -1, 2], [-1, 0, 1]]</strong> ✅</div>
+</section>
+
+<section class="card" id="code">
+  <h2>4. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">threeSum</span>(self, nums):
+        nums.<span style="color:#D4744C">sort</span>()
+        res = []
+        n = <span style="color:#D4744C">len</span>(nums)
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(n):
+            <span style="color:#6B7280">if</span> i > <span style="color:#CA8A04">0</span> <span style="color:#6B7280">and</span> nums[i] == nums[i-<span style="color:#CA8A04">1</span>]:
+                <span style="color:#6B7280">continue</span>  <span style="color:#6B7280"># 跳过重复的 i</span>
+            l, r = i + <span style="color:#CA8A04">1</span>, n - <span style="color:#CA8A04">1</span>
+            <span style="color:#6B7280">while</span> l < r:
+                s = nums[i] + nums[l] + nums[r]
+                <span style="color:#6B7280">if</span> s == <span style="color:#CA8A04">0</span>:
+                    res.<span style="color:#D4744C">append</span>([nums[i], nums[l], nums[r]])
+                    <span style="color:#6B7280">while</span> l < r <span style="color:#6B7280">and</span> nums[l] == nums[l+<span style="color:#CA8A04">1</span>]: l += <span style="color:#CA8A04">1</span>
+                    <span style="color:#6B7280">while</span> l < r <span style="color:#6B7280">and</span> nums[r] == nums[r-<span style="color:#CA8A04">1</span>]: r -= <span style="color:#CA8A04">1</span>
+                    l += <span style="color:#CA8A04">1</span>; r -= <span style="color:#CA8A04">1</span>
+                <span style="color:#6B7280">elif</span> s < <span style="color:#CA8A04">0</span>: l += <span style="color:#CA8A04">1</span>
+                <span style="color:#6B7280">else</span>: r -= <span style="color:#CA8A04">1</span>
+        <span style="color:#6B7280">return</span> res</code></pre>
+
+  <p><strong>去重逻辑</strong>共三处：</p>
+  <ol>
+    <li><code>if i > 0 and nums[i] == nums[i-1]: continue</code> — 防止第一个数重复</li>
+    <li><code>while l < r and nums[l] == nums[l+1]: l += 1</code> — 防止左指针值重复</li>
+    <li><code>while l < r and nums[r] == nums[r-1]: r -= 1</code> — 防止右指针值重复</li>
+  </ol>
+
+  <div class="note warm">先移动指针去重，再收缩一次，确保跳过所有重复值。</div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>5. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n²)</strong></td><td>排序 O(n log n) + 外层循环 n × 内层双指针 O(n)</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>除结果数组外，只用了常数空间</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>6. 常见易错点</h2>
+  <h3>错误：忘记去重导致重复三元组</h3>
+  <p>三个地方的去重缺一不可，否则会出现 <code>[-1, -1, 2]</code> 重复出现。</p>
+
+  <h3>错误：去重顺序搞错</h3>
+  <p>先移动指针去重，后再收缩一次。正确顺序：</p>
+  <pre><code>while l < r and nums[l] == nums[l+1]: l += 1
+while l < r and nums[r] == nums[r-1]: r -= 1
+l += 1; r -= 1  # 别忘了再缩一次</code></pre>
+</section>
+
+<section class="card" id="summary">
+  <h2>7. 总结</h2>
+  <div class="note green">
+    <p><strong>三数之和</strong> 解法精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li><strong>排序</strong> + 固定一个数</li>
+      <li>剩余区间 <strong>双指针</strong> 找两数和</li>
+      <li><strong>三处去重</strong> 保证结果不重复</li>
+    </ul>
+  </div>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：排序固定第一个，双指针找剩下俩。三处去重不能少，O(n²) 就搞定。</p>
+</section>
+</main>
+<footer>三数之和 · 算法学习页</footer>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2. 移动零 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--primary-light:#F4F8FC;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.cell.done{opacity:.45}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.viz-cell{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:42px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:15px;font-family:Consolas,Monaco,monospace;transition:all .35s;position:relative}
+.viz-cell.warm{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.06);box-shadow:0 0 0 3px rgba(212,116,76,0.12)}
+.viz-cell.extend{border-color:var(--accent-green);background:var(--accent-green-soft);transform:scale(1.06);box-shadow:0 0 0 3px rgba(22,163,74,0.12)}
+.viz-cell.skip{border-color:#D1D5DB;background:#F3F4F6;color:#9CA3AF;opacity:.55}
+.viz-cell.zero{border-color:var(--accent-red);background:var(--accent-red-soft);opacity:.7}
+.viz-cell.final{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.18)}
+.viz-pointer{display:flex;justify-content:center;gap:6px;margin:4px 0 8px;font-family:Consolas,Monaco,monospace}
+.viz-pointer .ptr{display:inline-flex;justify-content:center;min-width:48px;font-size:12px;font-weight:600;padding:2px 4px;border-radius:4px}
+.viz-pointer .ptr-slow{color:var(--warm)}
+.viz-pointer .ptr-fast{color:var(--primary)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.cell{min-width:36px;height:32px;font-size:12px}.viz-cell{min-width:40px;height:36px;font-size:13px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 283 · 简单</div>
+  <h1>2. 移动零</h1>
+  <p class="subtitle">将数组中所有 0 移动到末尾，同时保持非零元素的相对顺序。原地操作。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：快慢指针</a>
+  <a href="#viz">3. 交互可视化演示</a>
+  <a href="#walkthrough">4. 详细过程模拟</a>
+  <a href="#code">5. 代码逐段解释</a>
+  <a href="#complexity">6. 复杂度分析</a>
+  <a href="#pitfalls">7. 常见易错点</a>
+  <a href="#summary">8. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定一个数组 <code>nums</code>，将所有的 <code>0</code> 移动到数组的末尾，同时保持非零元素的<strong>相对顺序不变</strong>。要求<strong>原地</strong>修改，不能使用额外数组。</p>
+
+  <h3>示例</h3>
+  <pre><code>输入：nums = [0, 1, 0, 3, 12]
+输出：[1, 3, 12, 0, 0]</code></pre>
+
+  <div class="array-line">
+    <span class="cell pivot">0</span>
+    <span class="cell">1</span>
+    <span class="cell pivot">0</span>
+    <span class="cell">3</span>
+    <span class="cell">12</span>
+  </div>
+  <p style="color:var(--text-light);font-size:13px;">→ 移动后</p>
+  <div class="array-line">
+    <span class="cell target">1</span>
+    <span class="cell target">3</span>
+    <span class="cell target">12</span>
+    <span class="cell dim">0</span>
+    <span class="cell dim">0</span>
+  </div>
+
+  <div class="note blue">非零元素 1, 3, 12 的相对顺序保持不变，所有 0 移到了末尾。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：快慢指针</h2>
+  <p>用两个指针，一趟遍历完成：</p>
+  <ul>
+    <li><strong>快指针 fast</strong>：负责扫描数组，寻找非零元素</li>
+    <li><strong>慢指针 slow</strong>：指向下一个非零元素应放入的位置</li>
+  </ul>
+
+  <p>遇到非零元素时，与 <code>nums[slow]</code> 交换，然后 <code>slow++</code>。这样所有零会被自然地交换到数组末尾。</p>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>交换操作同时完成了两件事——将非零数往前移、将零往后移。一趟遍历，无需额外数组。
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>3. 交互可视化演示</h2>
+  <p>点击"下一步"观察快慢指针如何将零一步步移到末尾。</p>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：nums = [0, 1, 0, 3, 12]</div>
+    <div class="viz-cells" id="vizCells"></div>
+    <div class="viz-pointer" id="vizPointer"></div>
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 10</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc">点击"下一步"开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>4. 详细过程模拟</h2>
+  <p>以 <code>nums = [0, 1, 0, 3, 12]</code> 为例，跟踪每一轮交换。</p>
+
+  <h3>初始</h3>
+  <div class="array-line"><span class="cell pivot">0</span><span class="cell">1</span><span class="cell">0</span><span class="cell">3</span><span class="cell">12</span></div>
+  <p>slow = 0, fast = 0</p>
+
+  <h3>fast=0: nums[0]=0 → 跳过，slow 不动</h3>
+  <div class="array-line"><span class="cell dim">0</span><span class="cell">1</span><span class="cell">0</span><span class="cell">3</span><span class="cell">12</span></div>
+
+  <h3>fast=1: nums[1]=1 ≠ 0 → 与 nums[0] 交换</h3>
+  <div class="array-line"><span class="cell target">1</span><span class="cell pivot">0</span><span class="cell">0</span><span class="cell">3</span><span class="cell">12</span></div>
+  <p>slow → 1</p>
+
+  <h3>fast=2: nums[2]=0 → 跳过</h3>
+  <h3>fast=3: nums[3]=3 ≠ 0 → 与 nums[1] 交换</h3>
+  <div class="array-line"><span class="cell target">1</span><span class="cell target">3</span><span class="cell pivot">0</span><span class="cell pivot">0</span><span class="cell">12</span></div>
+  <p>slow → 2</p>
+
+  <h3>fast=4: nums[4]=12 ≠ 0 → 与 nums[2] 交换</h3>
+  <div class="array-line"><span class="cell target">1</span><span class="cell target">3</span><span class="cell target">12</span><span class="cell dim">0</span><span class="cell dim">0</span></div>
+  <p>slow → 3</p>
+
+  <div class="note green">最终结果：[1, 3, 12, 0, 0] ✅ 所有非零数保持原顺序在前，零全部在后。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>5. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">moveZeroes</span>(self, nums: List[int]) -> None:
+        slow = <span style="color:#CA8A04">0</span>
+        <span style="color:#6B7280">for</span> fast <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#D4744C">len</span>(nums)):
+            <span style="color:#6B7280">if</span> nums[fast] != <span style="color:#CA8A04">0</span>:
+                nums[slow], nums[fast] = nums[fast], nums[slow]
+                slow += <span style="color:#CA8A04">1</span></code></pre>
+
+  <p><strong>slow = 0</strong>：指向下一个非零元素该放的位置。</p>
+  <p><strong>for fast in range(len(nums))</strong>：快指针扫描每个元素。</p>
+  <p><strong>if nums[fast] != 0</strong>：发现非零元素，与 slow 位置的元素交换。</p>
+  <p><strong>slow += 1</strong>：慢指针移动到下一个位置。</p>
+
+  <div class="note warm">因为非零元素总是向前"挤"，交换后原来的位置自然被 0 填充，所以不用手动清零。</div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>6. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>快指针遍历一次数组。</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>只用了两个额外指针。</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>7. 常见易错点</h2>
+
+  <h3>错误一：把交换写成覆盖</h3>
+  <pre><code>nums[slow] = nums[fast]  # ❌ 会丢失非零数据！</code></pre>
+  <p>必须用交换，否则会覆盖掉 slow 位置原来的值。</p>
+
+  <h3>错误二：忘记交换后 slow++</h3>
+  <pre><code>if nums[fast] != 0:
+    nums[slow], nums[fast] = nums[fast], nums[slow]
+    # 忘记 slow += 1 → 后续交换位置会错乱</code></pre>
+
+  <div class="note red">每交换一次都要移动 slow，否则非零元素放的位置不对。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>8. 总结</h2>
+  <div class="note green">
+    <p><strong>移动零</strong> 解法精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li><strong>快慢指针</strong>，一趟遍历</li>
+      <li>非零元素与 slow 位置<strong>交换</strong></li>
+      <li>零自然"浮"到末尾</li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">moveZeroes</span>(self, nums):
+        s = <span style="color:#CA8A04">0</span>
+        <span style="color:#6B7280">for</span> f <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#D4744C">len</span>(nums)):
+            <span style="color:#6B7280">if</span> nums[f] != <span style="color:#CA8A04">0</span>:
+                nums[s], nums[f] = nums[f], nums[s]
+                s += <span style="color:#CA8A04">1</span></code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：快慢双指针，非零就交换。零自往后移，顺序不乱掉。</p>
+</section>
+</main>
+<footer>移动零 · 算法学习页</footer>
+
+<script>
+(function(){
+const data = [0, 1, 0, 3, 12];
+const steps = [
+  {types:['normal','normal','normal','normal','normal'], slow:0, fast:'—', desc:'初始状态：slow=0，fast 从 0 开始扫描。'},
+  {types:['zero','normal','normal','normal','normal'], slow:0, fast:0, desc:'fast=0：nums[0]=0 → 跳过，slow 不动。'},
+  {types:['zero','normal','normal','normal','normal'], slow:0, fast:1, desc:'fast=1：nums[1]=1 ≠ 0 → 与 nums[0] 交换！slow++。'},
+  {types:['extend','warm','normal','normal','normal'], slow:1, fast:1, desc:'交换后：1 到了前面，0 到了后面。slow=1。'},
+  {types:['extend','warm','zero','normal','normal'], slow:1, fast:2, desc:'fast=2：nums[2]=0 → 跳过。'},
+  {types:['extend','warm','zero','normal','normal'], slow:1, fast:3, desc:'fast=3：nums[3]=3 ≠ 0 → 与 nums[1] 交换！'},
+  {types:['extend','extend','zero','warm','normal'], slow:2, fast:3, desc:'交换后：3 到了索引 1，0 到了索引 2。slow=2。'},
+  {types:['extend','extend','zero','warm','normal'], slow:2, fast:4, desc:'fast=4：nums[4]=12 ≠ 0 → 与 nums[2] 交换！'},
+  {types:['extend','extend','extend','warm','warm'], slow:3, fast:4, desc:'交换后：12 到了索引 2，0 到了索引 3。slow=3。'},
+  {types:['final','final','final','skip','skip'], slow:3, fast:'✓', desc:'🎉 遍历完成！[1, 3, 12, 0, 0]'},
+];
+
+let cur=0,playing=false,intv=null;
+const $=id=>document.getElementById(id);
+const vc=$('vizCells'),vp=$('vizPointer'),vd=$('vizDesc'),si=$('stepInfo');
+const pb=$('prevBtn'),nb=$('nextBtn'),pl=$('playBtn'),rs=$('resetBtn');
+
+function r(i){
+  const s=steps[i];
+  let h='';
+  data.forEach((v,j)=>{
+    let cls='viz-cell';const t=s.types[j];
+    if(t==='warm')cls+=' warm';else if(t==='extend')cls+=' extend';else if(t==='skip')cls+=' skip';else if(t==='zero')cls+=' zero';else if(t==='final')cls+=' final';
+    h+=`<span class="${cls}">${v}</span>`;
+  });
+  vc.innerHTML=h;
+  let ph='',arr=[];
+  data.forEach((_,j)=>{
+    let p='';
+    if(s.slow===j)p+='↓slow';
+    if(s.fast===j)p+=(p?' ':'')+'↓fast';
+    arr.push(p||'');
+  });
+  // simplified pointer display
+  let slowIdx = typeof s.slow === 'number' ? s.slow : -1;
+  let fastIdx = typeof s.fast === 'number' ? s.fast : -1;
+  if(slowIdx>=0||fastIdx>=0){
+    ph = '指针：';
+    data.forEach((_,j)=>{
+      let l=[];
+      if(j===slowIdx) l.push('slow→');
+      if(j===fastIdx) l.push('fast→');
+      if(l.length) ph+=`<span style="margin:0 4px;min-width:48px;display:inline-flex;justify-content:center;font-size:12px;font-weight:600;color:${j===slowIdx?'var(--warm)':'var(--primary)'}">${l.join(' ')}</span>`;
+      else ph+=`<span style="margin:0 4px;min-width:48px;display:inline-flex;justify-content:center;font-size:12px"></span>`;
+    });
+  }
+  vp.innerHTML=ph;
+  vd.textContent=s.desc;
+  si.textContent=`步骤 ${i+1}/${steps.length}`;
+  pb.disabled=i===0;nb.disabled=i===steps.length-1;
+}
+function g(i){if(i>=0&&i<steps.length){cur=i;r(cur);}}
+function ns(){if(cur<steps.length-1)g(cur+1);else if(playing)sp();}
+function ps(){if(cur>0)g(cur-1);}
+function tp(){playing?sp():sta();}
+function sta(){if(cur>=steps.length-1)g(0);playing=true;pl.textContent='⏸ 暂停';pl.classList.add('playing');intv=setInterval(()=>{if(cur>=steps.length-1)sp();else ns();},1200);}
+function sp(){playing=false;pl.textContent='▶ 自动播放';pl.classList.remove('playing');if(intv){clearInterval(intv);intv=null;}}
+function rv(){sp();g(0);}
+nb.onclick=ns;pb.onclick=ps;pl.onclick=tp;rs.onclick=rv;
+document.onkeydown=e=>{if(e.key==='ArrowRight')ns();else if(e.key==='ArrowLeft')ps();else if(e.key===' '){e.preventDefault();tp();}};
+g(0);
+})();
+</script>
+</body>
+</html>

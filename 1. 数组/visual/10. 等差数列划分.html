@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10. 等差数列划分 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--primary-light:#F4F8FC;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.cell.range{border-color:#3B7DD8;background:#E9EFF7}
+.cell.done{opacity:.45}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.viz-cell{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:42px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:15px;font-family:Consolas,Monaco,monospace;transition:all .35s}
+.viz-cell.warm{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.06);box-shadow:0 0 0 3px rgba(212,116,76,0.12)}
+.viz-cell.extend{border-color:var(--accent-green);background:var(--accent-green-soft);transform:scale(1.06);box-shadow:0 0 0 3px rgba(22,163,74,0.12)}
+.viz-cell.skip{border-color:#D1D5DB;background:#F3F4F6;color:#9CA3AF;opacity:.55}
+.viz-cell.final{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.18)}
+.viz-diff{display:flex;justify-content:center;gap:6px;margin:4px 0;font-size:13px;font-family:Consolas,Monaco,monospace;color:var(--text-light)}
+.viz-diff strong{color:var(--primary)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+.viz-stats{display:flex;justify-content:center;gap:24px;font-size:14px;margin:8px 0 0;padding:8px 16px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.viz-stats strong{font-size:20px}
+.viz-stats .val-ans{color:var(--warm);font-weight:700}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.cell{min-width:36px;height:32px;font-size:12px}.viz-cell{min-width:40px;height:36px;font-size:13px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 413 · 中等</div>
+  <h1>10. 等差数列划分</h1>
+  <p class="subtitle">返回数组 nums 中所有等差子数组（长度 ≥ 3）的个数。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：增量法</a>
+  <a href="#viz">3. 交互可视化演示</a>
+  <a href="#walkthrough">4. 详细过程模拟</a>
+  <a href="#code">5. 代码逐段解释</a>
+  <a href="#complexity">6. 复杂度分析</a>
+  <a href="#pitfalls">7. 常见易错点</a>
+  <a href="#summary">8. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>如果一个数列<strong>至少有三个元素</strong>，且任意两个相邻元素之差相同，则称该数列为等差数列。</p>
+  <p>给定数组 <code>nums</code>，返回所有为等差数组的<strong>子数组</strong>个数（子数组即连续子序列）。</p>
+
+  <h3>示例</h3>
+  <pre><code>输入：nums = [1, 2, 3, 4]
+输出：3
+解释：[1,2,3], [2,3,4], [1,2,3,4] 三个等差子数组</code></pre>
+
+  <div class="array-line">
+    <span class="cell range">1</span><span class="cell range">2</span><span class="cell range">3</span><span class="cell dim">4</span>  → [1,2,3] ✓
+  </div>
+  <div class="array-line">
+    <span class="cell dim">1</span><span class="cell range">2</span><span class="cell range">3</span><span class="cell range">4</span>  → [2,3,4] ✓
+  </div>
+  <div class="array-line">
+    <span class="cell target">1</span><span class="cell target">2</span><span class="cell target">3</span><span class="cell target">4</span>  → [1,2,3,4] ✓
+  </div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：增量法</h2>
+
+  <p>遍历数组，检查每三个相邻元素是否等差。但难点在于：等差数列可能很长，如何统计所有子数组？</p>
+
+  <p><strong>增量法</strong>：</p>
+  <ul>
+    <li>用 <code>cur</code> 记录「以当前位置结尾的新增等差子数组个数」</li>
+    <li>如果 <code>nums[i] - nums[i-1] == nums[i-1] - nums[i-2]</code>，则 <code>cur += 1</code>，否则 <code>cur = 0</code></li>
+    <li>累加 <code>cur</code> 到答案</li>
+  </ul>
+
+  <div class="formula">等差连续 → cur += 1; ans += cur<br>等差中断 → cur = 0</div>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>每增加一个等差元素，新增的子数组数 = 之前连续等差长度 - 1。例如 [1,2,3] 新增 1 个，[1,2,3,4] 新增 2 个（[2,3,4] 和 [1,2,3,4]）。增量法无需统计段长再算组合数。
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>3. 交互可视化演示</h2>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：nums = [1, 2, 3, 4]</div>
+    <div class="viz-cells" id="vizCells"></div>
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 7</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc">点击"下一步"开始演示</div>
+    <div class="viz-stats">
+      <span>当前位置：<strong class="val-ans" id="curPos">—</strong></span>
+      <span>cur（增量）：<strong class="val-ans" id="curVal">0</strong></span>
+      <span>答案：<strong class="val-ans" id="ansVal">0</strong></span>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>4. 详细过程模拟</h2>
+  <p>以 <code>nums = [1, 2, 3, 4]</code> 为例。</p>
+
+  <table>
+    <tr><th>i</th><th>检查</th><th>等差？</th><th>cur</th><th>ans</th><th>新增子数组</th></tr>
+    <tr><td>2</td><td>nums[2]-nums[1]=1, nums[1]-nums[0]=1</td><td>✅</td><td>1</td><td>1</td><td>[1,2,3]</td></tr>
+    <tr><td>3</td><td>nums[3]-nums[2]=1, nums[2]-nums[1]=1</td><td>✅</td><td>2</td><td>3</td><td>[2,3,4], [1,2,3,4]</td></tr>
+  </table>
+
+  <p><strong>i=2 时</strong>：等差成立，cur=1，ans=1。新增 [1,2,3]。</p>
+  <p><strong>i=3 时</strong>：等差成立，cur=2，ans=3。新增 [2,3,4] 和 [1,2,3,4]。</p>
+
+  <div class="note green">最终答案：<strong>3</strong> ✅</div>
+</section>
+
+<section class="card" id="code">
+  <h2>5. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">numberOfArithmeticSlices</span>(self, nums):
+        ans = <span style="color:#CA8A04">0</span>; cur = <span style="color:#CA8A04">0</span>
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">2</span>, <span style="color:#D4744C">len</span>(nums)):
+            <span style="color:#6B7280">if</span> nums[i] - nums[i-<span style="color:#CA8A04">1</span>] == nums[i-<span style="color:#CA8A04">1</span>] - nums[i-<span style="color:#CA8A04">2</span>]:
+                cur += <span style="color:#CA8A04">1</span>
+                ans += cur
+            <span style="color:#6B7280">else</span>:
+                cur = <span style="color:#CA8A04">0</span>
+        <span style="color:#6B7280">return</span> ans</code></pre>
+
+  <p><strong>for i in range(2, len(nums))</strong>：从索引 2 开始检查，因为需要至少 3 个元素才能构成等差。</p>
+  <p><strong>nums[i] - nums[i-1] == nums[i-1] - nums[i-2]</strong>：检查三个相邻元素是否等差。</p>
+  <p><strong>cur += 1; ans += cur</strong>：核心增量逻辑。每多一个等差元素，新增的子数组个数恰好等于连续等差段落的「增量」。</p>
+
+  <div class="note warm">为什么 cur 递增？[1,2,3] 长度为 3，cur=1；[1,2,3,4] 长度为 4，cur=2。cur 实际上等于「以当前结尾的等差段长度 - 2」。</div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>6. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>一次遍历</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>只用两个变量</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>7. 常见易错点</h2>
+
+  <h3>错误：从索引 0 或 1 开始遍历</h3>
+  <p>必须从 i=2 开始，因为需要比较 nums[i]、nums[i-1]、nums[i-2] 三个元素。</p>
+
+  <h3>错误：忘记重置 cur</h3>
+  <p>等差中断后 cur 要归零，否则后续会错误累加。</p>
+
+  <h3>边界：数组长度 < 3</h3>
+  <p>直接返回 0。</p>
+</section>
+
+<section class="card" id="summary">
+  <h2>8. 总结</h2>
+  <div class="note green">
+    <p><strong>等差数列划分</strong> 解法精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>遍历检查三个相邻元素是否等差</li>
+      <li><strong>增量法</strong>：cur 记录新增子数组数</li>
+      <li>累加 cur 到答案，等差中断则重置</li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">numberOfArithmeticSlices</span>(self, nums):
+        cur = ans = <span style="color:#CA8A04">0</span>
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">2</span>, <span style="color:#D4744C">len</span>(nums)):
+            <span style="color:#6B7280">if</span> nums[i] - nums[i-<span style="color:#CA8A04">1</span>] == nums[i-<span style="color:#CA8A04">1</span>] - nums[i-<span style="color:#CA8A04">2</span>]:
+                cur += <span style="color:#CA8A04">1</span>; ans += cur
+            <span style="color:#6B7280">else</span>: cur = <span style="color:#CA8A04">0</span>
+        <span style="color:#6B7280">return</span> ans</code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：三数等差就递增，cur 累加到 ans。等差中断 cur 归零，O(n) 一次过。</p>
+</section>
+</main>
+<footer>等差数列划分 · 算法学习页</footer>
+
+<script>
+(function(){
+const data = [1,2,3,4];
+const steps = [
+  {types:['normal','normal','normal','normal'], pos:'—', cur:0, ans:0, desc:'初始状态。从 i=2 开始遍历（至少需要三个元素）。'},
+  {types:['skip','skip','warm','normal'], pos:'i=2', cur:1, ans:1, desc:'检查 nums[2]-nums[1]=1, nums[1]-nums[0]=1 → 等差！cur=1，新增 [1,2,3]。'},
+  {types:['skip','skip','extend','extend'], pos:'i=2 ✓', cur:1, ans:1, desc:'[1,2,3] 是一个等差子数组。ans=1'},
+  {types:['skip','skip','skip','warm'], pos:'i=3', cur:2, ans:3, desc:'检查 nums[3]-nums[2]=1, nums[2]-nums[1]=1 → 等差！cur++ → cur=2。'},
+  {types:['skip','skip','skip','extend'], pos:'i=3 ✓', cur:2, ans:3, desc:'新增 [2,3,4] 和 [1,2,3,4]（共2个）。ans=3。'},
+  {types:['final','final','final','final'], pos:'✓', cur:0, ans:3, desc:'🎉 遍历完成！总共有 3 个等差子数组。'},
+];
+
+let cur=0,playing=false,intv=null;
+const $=id=>document.getElementById(id);
+const vc=$('vizCells'),vd=$('vizDesc'),si=$('stepInfo');
+const cp=$('curPos'),cv=$('curVal'),av=$('ansVal');
+const pb=$('prevBtn'),nb=$('nextBtn'),pl=$('playBtn'),rs=$('resetBtn');
+
+function r(i){
+  const s=steps[i];
+  let h='';
+  data.forEach((v,j)=>{
+    let cls='viz-cell';const t=s.types[j];
+    if(t==='warm') cls+=' warm';else if(t==='extend') cls+=' extend';else if(t==='skip') cls+=' skip';else if(t==='final') cls+=' final';
+    h+=`<span class="${cls}">${v}</span>`;
+  });
+  vc.innerHTML=h;
+  vd.textContent=s.desc;
+  si.textContent=`步骤 ${i+1}/${steps.length}`;
+  cp.textContent=s.pos;
+  cv.textContent=s.cur;
+  av.textContent=s.ans;
+  pb.disabled=i===0;nb.disabled=i===steps.length-1;
+}
+function g(i){if(i>=0&&i<steps.length){cur=i;r(cur);}}
+function ns(){if(cur<steps.length-1)g(cur+1);else if(playing)sp();}
+function ps(){if(cur>0)g(cur-1);}
+function tp(){playing?sp():sta();}
+function sta(){if(cur>=steps.length-1)g(0);playing=true;pl.textContent='⏸ 暂停';pl.classList.add('playing');intv=setInterval(()=>{if(cur>=steps.length-1)sp();else ns();},1200);}
+function sp(){playing=false;pl.textContent='▶ 自动播放';pl.classList.remove('playing');if(intv){clearInterval(intv);intv=null;}}
+function rv(){sp();g(0);}
+nb.onclick=ns;pb.onclick=ps;pl.onclick=tp;rs.onclick=rv;
+document.onkeydown=e=>{if(e.key==='ArrowRight')ns();else if(e.key==='ArrowLeft')ps();else if(e.key===' '){e.preventDefault();tp();}};
+g(0);
+})();
+</script>
+</body>
+</html>

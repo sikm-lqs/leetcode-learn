@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8. 删除链表的倒数第 N 个结点 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.mini-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:#FAFBFC}
+.mini-card h3{margin:0 0 6px;font-size:15px}
+.mini-card p{margin:4px 0;font-size:13px}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+
+/* ===== 链表节点可视化工具集（所有链表题目共用） ===== */
+.ll-row{display:flex;flex-wrap:wrap;gap:0;align-items:flex-end;justify-content:center;margin:18px 0;font-family:Consolas,Monaco,monospace}
+.ll-node{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;padding-top:24px}
+.ll-val{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:44px;padding:4px 12px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:15px;font-family:Consolas,Monaco,monospace;transition:all .35s ease}
+.ll-val.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-3px);box-shadow:0 0 0 3px rgba(212,116,76,0.15)}
+.ll-val.done{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.ll-val.target{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.2)}
+.ll-val.dim{opacity:.5;color:#9CA3AF}
+.ll-val.hi{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(59,125,216,0.15)}
+.ll-label{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;font-family:Consolas,Monaco,monospace;white-space:nowrap;padding:2px 7px;border-radius:6px;background:#F1F5F9;color:#6B7280;min-height:16px}
+.ll-label.warm{background:var(--warm-soft);color:var(--warm)}
+.ll-label.cur{background:var(--primary-soft);color:var(--primary)}
+.ll-label.yellow{background:var(--accent-yellow-soft);color:var(--accent-yellow)}
+.ll-label.green{background:var(--accent-green-soft);color:var(--accent-green)}
+.ll-label.purple{background:var(--accent-purple-soft);color:var(--accent-purple)}
+.ll-arrow{display:inline-flex;align-items:center;justify-content:center;padding:0 3px;color:#94A3B8;font-size:22px;font-weight:700;line-height:44px;transition:all .35s ease;min-height:44px}
+.ll-arrow.rev{color:var(--accent-green)}
+.ll-arrow.cut{color:var(--warm);transform:scale(1.15)}
+.ll-arrow.hot{color:var(--primary)}
+.ll-null{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:4px 10px;border-radius:10px;border:2px dashed #CBD5E1;background:#F8FAFC;color:#6B7280;font-weight:600;font-size:13px;font-family:Consolas,Monaco,monospace;line-height:44px}
+
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.viz-map{margin:12px 0;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-family:Consolas,Monaco,monospace;font-size:13px;min-height:40px}
+.viz-map strong{color:var(--warm)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.ll-val{min-width:40px;height:38px;font-size:13px}.ll-null{height:38px;line-height:38px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 19 · 中等</div>
+  <h1>8. 删除链表的倒数第 N 个结点</h1>
+  <p class="subtitle">给定链表头节点 head，删除倒数第 n 个结点并返回头节点。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：双指针 + 哑节点</a>
+  <a href="#viz">3. 交互可视化演示</a>
+  <a href="#walkthrough">4. 详细过程模拟</a>
+  <a href="#code">5. 代码逐段解释</a>
+  <a href="#complexity">6. 复杂度分析</a>
+  <a href="#pitfalls">7. 常见易错点</a>
+  <a href="#summary">8. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定单链表的头节点 <code>head</code> 和一个整数 <code>n</code>，删除链表的<strong>倒数第 n 个结点</strong>，并返回删除后的链表头节点。</p>
+
+  <div class="note blue">
+    <strong>关键：</strong>要求一趟扫描完成（经典约束）。难点不在「删除」本身，而在「只走一遍就找到那个节点的前驱」。
+  </div>
+
+  <h3>示例</h3>
+  <pre><code>输入：head = [1, 2, 3, 4, 5], n = 2
+输出：[1, 2, 3, 5]   # 删除倒数第 2 个，即值 4</code></pre>
+
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val target">4</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">5</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;">绿色高亮节点即「被删除」的节点（倒数第 2 个）。</p>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：双指针 + 哑节点</h2>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <h3>🛡 哑节点 dummy</h3>
+      <p>在 head 前加一个 <code>dummy</code> 节点。<code>dummy.next = head</code>。这样删除头节点时无需特判，最终统一返回 <code>dummy.next</code>。</p>
+    </div>
+    <div class="mini-card">
+      <h3>🏃 双指针 fast / slow</h3>
+      <p>都从 <code>dummy</code> 出发。<code>fast</code> 先走 <code>n + 1</code> 步，再两者同步前进。<code>fast</code> 到 <code>null</code> 时，<code>slow</code> 恰在被删节点的<strong>前驱</strong>。</p>
+    </div>
+  </div>
+
+  <h3>算法流程</h3>
+  <ol>
+    <li>建立 <code>dummy = ListNode(0, head)</code>，<code>slow = fast = dummy</code></li>
+    <li><code>fast</code> 先前进 <code>n + 1</code> 步</li>
+    <li>当 <code>fast</code> 不为 <code>null</code> 时，<code>slow</code> 与 <code>fast</code> 同步各前进一步</li>
+    <li>循环结束时，<code>slow</code> 位于被删节点的<strong>前驱</strong></li>
+    <li>执行 <code>slow.next = slow.next.next</code> 跳过被删节点</li>
+    <li>返回 <code>dummy.next</code></li>
+  </ol>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>「fast 先走 n+1 步」是关键——这样 slow 与 fast 之间间隔 <code>n+1</code> 个位置，等 fast 走到链尾 <code>null</code> 时，slow 刚好停在倒数第 n 个节点的<strong>前一个</strong>，便于直接删除。
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>3. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 <code>fast</code> 先走 n+1 步、再与 <code>slow</code> 同步前进，最终 <code>slow</code> 停在被删节点(4)的前驱位置(3)。</p>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：head = [1, 2, 3, 4, 5]，n = 2</div>
+    <div class="viz-info" id="vizInfo">目标：删除倒数第 2 个结点（值 4）</div>
+
+    <div class="ll-row" id="vizCells"></div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 6</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+
+    <div class="viz-desc" id="vizDesc">点击「下一步」开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>4. 详细过程模拟</h2>
+  <p>以 <code>head = [1, 2, 3, 4, 5]</code>，<code>n = 2</code> 为例，复现三个关键画面。</p>
+
+  <h3>画面一：fast 先走 n + 1 = 3 步</h3>
+  <p><code>fast</code> 从 <code>dummy</code> 出发前进 3 步，到达节点 3；<code>slow</code> 仍在 <code>dummy</code>。两者间隔 3 个位置。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label cur">slow</span><span class="ll-val hi">dummy</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label warm">fast</span><span class="ll-val cur">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">4</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">5</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+
+  <h3>画面二：同步前进至 slow 在前驱位置</h3>
+  <p><code>slow</code>、<code>fast</code> 同步前进，直到 <code>fast = null</code>。此时 <code>slow</code> 恰好停在被删节点(4)的前一个节点(3)。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim">dummy</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label cur">slow</span><span class="ll-val cur">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val target">4</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">5</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">fast=null</span>
+  </div>
+
+  <h3>画面三：删除跳过节点 4</h3>
+  <p>执行 <code>slow.next = slow.next.next</code>，把节点 4 从链表中断开。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim">dummy</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val done">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val done">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label cur">slow</span><span class="ll-val done">3</span></span>
+    <span class="ll-arrow hot">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim" style="text-decoration:line-through">4</span></span>
+    <span class="ll-arrow cut">✗</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val done">5</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <div class="note green">✅ 返回 <code>dummy.next</code> = [1, 2, 3, 5]</div>
+</section>
+
+<section class="card" id="code">
+  <h2>5. 代码逐段解释</h2>
+
+  <h3>完整代码</h3>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">ListNode</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">__init__</span>(self, val=0, next=<span style="color:#6B7280">None</span>):
+        self.val = val
+        self.next = next
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">removeNthFromEnd</span>(self, head: ListNode, n: <span style="color:#D4744C">int</span>) -> ListNode:
+        dummy = <span style="color:#D4744C">ListNode</span>(0, head)
+        slow = fast = dummy
+        <span style="color:#6B7280">for</span> _ <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(n + 1):
+            fast = fast.next
+        <span style="color:#6B7280">while</span> fast:
+            slow = slow.next
+            fast = fast.next
+        slow.next = slow.next.next
+        <span style="color:#6B7280">return</span> dummy.next</code></pre>
+
+  <h3>逐段说明</h3>
+
+  <p><strong>第 1 步：建立哑节点</strong></p>
+  <pre><code>dummy = ListNode(0, head)
+slow = fast = dummy</code></pre>
+  <p><code>dummy</code> 指向 <code>head</code>，<code>slow</code>、<code>fast</code> 都从 <code>dummy</code> 出发。哑节点保证删除头节点时也能走「找前驱 → 改 next」的统一流程。</p>
+
+  <p><strong>第 2 步：fast 先走 n + 1 步</strong></p>
+  <pre><code>for _ in range(n + 1):
+    fast = fast.next</code></pre>
+  <p>让 <code>fast</code> 与 <code>slow</code> 拉开 <code>n + 1</code> 个位置的间隔。多走那 1 步是为了让 <code>slow</code> 最终停在被删节点的<strong>前驱</strong>，而不是被删节点本身。</p>
+
+  <p><strong>第 3 步：同步前进</strong></p>
+  <pre><code>while fast:
+    slow = slow.next
+    fast = fast.next</code></pre>
+  <p>两者同步前进，直到 <code>fast</code> 走到 <code>null</code>。此时 <code>slow</code> 恰好位于倒数第 n 个节点的前一个节点。</p>
+
+  <p><strong>第 4 步：删除并返回</strong></p>
+  <pre><code>slow.next = slow.next.next
+return dummy.next</code></pre>
+  <p>让 <code>slow.next</code> 跳过被删节点，完成删除。最后返回 <code>dummy.next</code>（若删的是头节点，新头也正确）。</p>
+
+  <div class="note warm">
+    返回 <code>dummy.next</code> 而不是 <code>head</code>——当头节点本身被删除时，<code>head</code> 已不在链表中。
+  </div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>6. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>fast 先走 n+1 步、再与 slow 同步走到末尾，整体每个节点最多访问一次。</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>只用 dummy / slow / fast 三个指针，原地完成。</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>7. 常见易错点</h2>
+
+  <h3>错误一：忘记加哑节点</h3>
+  <pre><code># 错误：直接 slow = fast = head
+# 当要删的就是头节点（如 head=[1], n=1）时，
+# slow 停在被删节点本身，没有前驱可改 next！</code></pre>
+  <p>必须加 <code>dummy</code>，让 <code>slow</code> 永远能停在一个「前驱」位置上（哪怕前驱是 dummy）。</p>
+
+  <h3>错误二：fast 先走的是 n 步而不是 n+1 步</h3>
+  <pre><code>for _ in range(n):      # ❌ 少走 1 步
+    fast = fast.next
+# 结果 slow 停在被删节点本身，无法执行 slow.next = slow.next.next</code></pre>
+  <p>差 1 步：<code>n+1</code> 步让 slow 落在前驱；<code>n</code> 步会让 slow 落在被删节点。</p>
+
+  <h3>错误三：返回 head 而非 dummy.next</h3>
+  <pre><code>return head         # ❌ 删头节点时 head 已不在链表中
+return dummy.next   # ✅ 统一处理，删头也正确</code></pre>
+
+  <h3>边界情况</h3>
+  <table>
+    <tr><th>输入</th><th>说明</th></tr>
+    <tr><td><code>head = [1], n = 1</code></td><td>删唯一节点。<code>dummy</code> 救场：<code>slow=dummy</code>，<code>slow.next=None</code>，返回 <code>None</code>（即 <code>[]</code>）。</td></tr>
+    <tr><td><code>head = [1,2], n = 2</code></td><td>删头节点。<code>fast</code> 先走 3 步到 <code>null</code>，循环不执行，<code>slow=dummy</code>，<code>slow.next=2</code>，返回节点 2。</td></tr>
+  </table>
+</section>
+
+<section class="card" id="summary">
+  <h2>8. 总结</h2>
+  <div class="note green">
+    <p><strong>删除倒数第 N 个结点</strong> 精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>双指针 + 哑节点，一趟扫描</li>
+      <li>口诀：<strong>建哑点 → fast 先 n+1 → 同步走 → 改 next</strong></li>
+      <li>哑节点消除「删头」特例</li>
+      <li>fast 多走 1 步，让 slow 停在前驱</li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">removeNthFromEnd</span>(self, head, n):
+        dummy = <span style="color:#D4744C">ListNode</span>(0, head)
+        slow = fast = dummy
+        <span style="color:#6B7280">for</span> _ <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(n + 1):
+            fast = fast.next
+        <span style="color:#6B7280">while</span> fast:
+            slow, fast = slow.next, fast.next
+        slow.next = slow.next.next
+        <span style="color:#6B7280">return</span> dummy.next</code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：哑点统一删头事，快走 n+1 慢同步；快到 null 时慢在前，改 next 即得新链。</p>
+</section>
+</main>
+
+<footer>删除链表的倒数第 N 个结点 · 算法学习页</footer>
+
+<script>
+(function(){
+// 节点下标（含 dummy）：0=dummy, 1..5 = 链表值
+const vals = ['dummy', 1, 2, 3, 4, 5];
+// steps: slow/fast 为节点下标（0..5），fast=null 表示指向 null
+// removed: 最后一步是否标记节点 4 被删除
+const steps = [
+  {slow:0, fast:0, removed:false, desc:'建立哑节点 dummy 指向 head。slow、fast 都从 dummy 出发。准备让 fast 先走 n+1=3 步。'},
+  {slow:0, fast:3, removed:false, desc:'fast 先走 n+1=3 步，到达节点 3。这样 slow 与 fast 之间相隔 n+1 个位置。'},
+  {slow:1, fast:4, removed:false, desc:'slow、fast 同时前进，直到 fast 到达 null。当前：slow@1，fast@4。'},
+  {slow:2, fast:5, removed:false, desc:'继续同步前进。当前：slow@2，fast@5。'},
+  {slow:3, fast:null, removed:false, desc:'fast 到达 null，停止。slow 恰好停在被删节点(4)的前一个节点(3)。'},
+  {slow:3, fast:null, removed:true,  desc:'执行 slow.next = slow.next.next，跳过节点 4。✅ 返回 dummy.next = [1,2,3,5]。'},
+];
+
+let curStep = 0, isPlaying = false, interval = null;
+const $ = id => document.getElementById(id);
+const vizCells = $('vizCells'), vizDesc = $('vizDesc'), stepInfo = $('stepInfo');
+const prevBtn = $('prevBtn'), nextBtn = $('nextBtn'), playBtn = $('playBtn'), resetBtn = $('resetBtn');
+
+function render(i){
+  const s = steps[i];
+  let h = '';
+  vals.forEach((v, idx) => {
+    // 标签
+    let lcls = '', ltxt = '';
+    if(s.slow === idx && s.fast === idx){
+      lcls = 'cur'; ltxt = 'slow/fast';
+    } else if(s.slow === idx){
+      lcls = 'cur'; ltxt = 'slow';
+    } else if(s.fast === idx){
+      lcls = 'warm'; ltxt = 'fast';
+    }
+    // 节点样式
+    let ncls = '';
+    if(idx === 0){
+      // dummy：被指针指向时高亮，否则灰显
+      if(s.slow === idx || s.fast === idx) ncls = (s.slow === idx) ? 'cur' : '';
+      else ncls = 'dim';
+    } else if(s.removed && idx === 4){
+      ncls = 'target';
+    } else if(s.slow === idx){
+      ncls = 'cur';
+    } else if(s.fast === idx){
+      ncls = 'cur';
+    }
+    const valText = (s.removed && idx === 4) ? `<span style="text-decoration:line-through">${v}</span>` : v;
+    h += `<span class="ll-node"><span class="ll-label ${lcls}">${ltxt}</span><span class="ll-val ${ncls}">${valText}</span></span>`;
+    // 节点后的箭头（最后接 null）
+    const isLast = idx === vals.length - 1;
+    if(isLast){
+      // 末节点指向 null；fast=null 时在 null 上标 fast
+      const nullLabel = (s.fast === null) ? 'fast=null' : '';
+      h += `<span class="ll-arrow">→</span><span class="ll-null">${nullLabel || 'null'}</span>`;
+    } else {
+      // 被删步骤：节点 3 → 4 的箭头改为 hot，4 → 5 改为 cut
+      let acls = '';
+      if(s.removed && idx === 3) acls = 'hot';
+      if(s.removed && idx === 4) acls = 'cut';
+      h += `<span class="ll-arrow ${acls}">→</span>`;
+    }
+  });
+  // 被删步骤把节点 4 与 5 之间的箭头改成断开样式
+  if(s.removed){
+    h = h.replace(`<span class="ll-arrow cut">→</span><span class="ll-null">`, `<span class="ll-arrow cut">✗</span><span class="ll-null">`);
+  }
+  vizCells.innerHTML = h;
+  vizDesc.textContent = s.desc;
+  stepInfo.textContent = `步骤 ${i+1} / ${steps.length}`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === steps.length - 1;
+}
+
+function go(i){ if(i>=0 && i<steps.length){curStep=i; render(curStep);} }
+function nextStep(){ if(curStep<steps.length-1) go(curStep+1); else if(isPlaying) stopPlay(); }
+function prevStep(){ if(curStep>0) go(curStep-1); }
+function togglePlay(){ isPlaying ? stopPlay() : startPlay(); }
+function startPlay(){
+  if(curStep>=steps.length-1) go(0);
+  isPlaying=true; playBtn.textContent='⏸ 暂停'; playBtn.classList.add('playing');
+  interval=setInterval(()=>{if(curStep>=steps.length-1)stopPlay();else nextStep();},1400);
+}
+function stopPlay(){
+  isPlaying=false; playBtn.textContent='▶ 自动播放'; playBtn.classList.remove('playing');
+  if(interval){clearInterval(interval);interval=null;}
+}
+function resetViz(){stopPlay();go(0);}
+
+nextBtn.onclick=nextStep; prevBtn.onclick=prevStep;
+playBtn.onclick=togglePlay; resetBtn.onclick=resetViz;
+document.onkeydown=e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+  else if(e.key===' '){e.preventDefault();togglePlay();}
+};
+go(0);
+})();
+</script>
+</body>
+</html>

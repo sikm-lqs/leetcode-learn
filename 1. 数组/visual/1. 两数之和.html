@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1. 两数之和 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.mini-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:#FAFBFC}
+.mini-card h3{margin:0 0 6px;font-size:15px}
+.mini-card p{margin:4px 0;font-size:13px}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.viz-cell{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:42px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:15px;font-family:Consolas,Monaco,monospace;transition:all .35s ease;position:relative}
+.viz-cell.warm{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.06);box-shadow:0 0 0 3px rgba(212,116,76,0.12)}
+.viz-cell.extend{border-color:var(--accent-green);background:var(--accent-green-soft);transform:scale(1.06);box-shadow:0 0 0 3px rgba(22,163,74,0.12)}
+.viz-cell.skip{border-color:#D1D5DB;background:#F3F4F6;color:#9CA3AF;opacity:.55}
+.viz-cell.final{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.18)}
+.viz-map{margin:12px 0;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-family:Consolas,Monaco,monospace;font-size:13px;min-height:40px}
+.viz-map strong{color:var(--warm)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.cell{min-width:36px;height:32px;font-size:12px}.viz-cell{min-width:40px;height:36px;font-size:13px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 1 · 简单</div>
+  <h1>1. 两数之和</h1>
+  <p class="subtitle">给定整数数组 nums 和目标值 target，找出和为目标值的两个整数，返回它们的下标。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：哈希表</a>
+  <a href="#viz">3. 交互可视化演示</a>
+  <a href="#walkthrough">4. 详细过程模拟</a>
+  <a href="#code">5. 代码逐段解释</a>
+  <a href="#complexity">6. 复杂度分析</a>
+  <a href="#pitfalls">7. 常见易错点</a>
+  <a href="#summary">8. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定一个整数数组 <code>nums</code> 和一个整数 <code>target</code>，在数组中找出<strong>和等于 target</strong> 的两个数，返回它们的<strong>下标</strong>。</p>
+
+  <div class="note blue">
+    <strong>注意：</strong>每种输入只会对应一个答案，且同一个元素不能使用两次。返回的下标顺序不限。
+  </div>
+
+  <h3>示例</h3>
+  <pre><code>输入：nums = [2, 7, 11, 15], target = 9
+输出：[0, 1]
+解释：nums[0] + nums[1] = 2 + 7 = 9</code></pre>
+
+  <div class="array-line">
+    <span class="cell target">2</span>
+    <span class="cell target">7</span>
+    <span class="cell dim">11</span>
+    <span class="cell dim">15</span>
+  </div>
+  <div class="idx-row">
+    <span class="idx">0</span>
+    <span class="idx">1</span>
+    <span class="idx">2</span>
+    <span class="idx">3</span>
+  </div>
+
+  <p>2 + 7 = 9，所以返回 <code>[0, 1]</code>（或 <code>[1, 0]</code>）。</p>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：哈希表</h2>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <h3>❌ 暴力法 O(n²)</h3>
+      <p>两层循环枚举所有数对，检查是否等于 target。简单但低效。</p>
+    </div>
+    <div class="mini-card">
+      <h3>✅ 哈希表 O(n)</h3>
+      <p>遍历一次，用哈希表记录已见过的数。对每个数检查 target - num 是否在表中。</p>
+    </div>
+  </div>
+
+  <h3>算法流程</h3>
+  <ol>
+    <li>创建一个空的哈希表 <code>num_map</code>（值 → 下标）</li>
+    <li>遍历数组，对每个 <code>num</code>：</li>
+    <li style="list-style:none;">&nbsp;&nbsp;计算 <code>complement = target - num</code></li>
+    <li style="list-style:none;">&nbsp;&nbsp;如果 <code>complement</code> 在哈希表中 → 返回 <code>[num_map[complement], idx]</code></li>
+    <li style="list-style:none;">&nbsp;&nbsp;否则将 <code>num</code> 存入哈希表</li>
+  </ol>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>用空间换时间。哈希表让我们能在 O(1) 时间内判断 complement 是否已出现，而不是再扫一遍数组。
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>3. 交互可视化演示</h2>
+  <p>点击"下一步"观察哈希表如何帮助我们在一次遍历中找到答案。</p>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：nums = [2, 7, 11, 15], target = 9</div>
+    <div class="viz-info" id="vizInfo">目标：找到两个数之和为 9</div>
+
+    <div class="viz-cells" id="vizCells"></div>
+    <div class="idx-row" id="vizIdxRow" style="justify-content:center;gap:6px;"></div>
+
+    <div class="viz-map" id="vizMap">哈希表：{ }</div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 8</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+
+    <div class="viz-desc" id="vizDesc">点击"下一步"开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>4. 详细过程模拟</h2>
+  <p>以 <code>nums = [2, 7, 11, 15], target = 9</code> 为例，模拟算法执行全过程。</p>
+
+  <h3>第 1 步：处理 nums[0] = 2</h3>
+  <div class="array-line">
+    <span class="cell pivot">2</span>
+    <span class="cell dim">7</span>
+    <span class="cell dim">11</span>
+    <span class="cell dim">15</span>
+  </div>
+  <p>计算 <code>complement = 9 - 2 = 7</code>。哈希表为空，7 不在表中。<br>
+  将 <code>{2: 0}</code> 存入哈希表。</p>
+
+  <div class="note yellow">哈希表现在是：<code>{2: 0}</code></div>
+
+  <h3>第 2 步：处理 nums[1] = 7</h3>
+  <div class="array-line">
+    <span class="cell dim">2</span>
+    <span class="cell pivot">7</span>
+    <span class="cell dim">11</span>
+    <span class="cell dim">15</span>
+  </div>
+  <p>计算 <code>complement = 9 - 7 = 2</code>。<br>
+  检查哈希表：<code>2</code> 存在！下标为 <code>0</code>。</p>
+
+  <div class="note green">返回 <code>[0, 1]</code>，因为 nums[0] + nums[1] = 2 + 7 = 9。✅</div>
+</section>
+
+<section class="card" id="code">
+  <h2>5. 代码逐段解释</h2>
+
+  <h3>完整代码</h3>
+  <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">twoSum</span>(self, nums: List[int], target: int) -> List[int]:
+        num_map = {}
+        <span style="color:#6B7280">for</span> idx, num <span style="color:#6B7280">in</span> <span style="color:#D4744C">enumerate</span>(nums):
+            complement = target - num
+            <span style="color:#6B7280">if</span> complement <span style="color:#6B7280">in</span> num_map:
+                <span style="color:#6B7280">return</span> [num_map[complement], idx]
+            num_map[num] = idx</code></pre>
+
+  <h3>逐段说明</h3>
+
+  <p><strong>第 1 步：初始化哈希表</strong></p>
+  <pre><code>num_map = {}</code></pre>
+  <p>键是数字，值是该数字的下标。</p>
+
+  <p><strong>第 2 步：遍历数组</strong></p>
+  <pre><code>for idx, num in enumerate(nums):
+    complement = target - num</code></pre>
+  <p><code>enumerate</code> 同时拿到下标和值。<code>complement</code> 是当前数需要配对的数字。</p>
+
+  <p><strong>第 3 步：检查 complement 是否出现过</strong></p>
+  <pre><code>if complement in num_map:
+    return [num_map[complement], idx]</code></pre>
+  <p>如果 complement 已经在哈希表中，说明之前遍历到过，直接返回两个下标。</p>
+
+  <p><strong>第 4 步：存入当前数</strong></p>
+  <pre><code>num_map[num] = idx</code></pre>
+  <p>还没找到答案，把当前数加入哈希表供后续使用。</p>
+
+  <div class="note warm">
+    题目保证有且仅有一个解，所以不需要处理找不到的情况。
+  </div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>6. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>只需一次遍历，哈希表查找和插入均为 O(1)。</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(n)</strong></td><td>哈希表最多存储 n 个键值对。</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>7. 常见易错点</h2>
+
+  <h3>错误一：同一个元素用两次</h3>
+  <pre><code># 错误：先存再查 → 可能用同一个元素
+num_map[num] = idx
+if complement in num_map: ...</code></pre>
+  <p>必须先查再存，否则可能 nums[i] 和自己的 complement 相同。</p>
+
+  <h3>错误二：返回下标顺序搞反</h3>
+  <pre><code>return [idx, num_map[complement]]  # ❌
+return [num_map[complement], idx]  # ✅</code></pre>
+
+  <div class="note red">
+    注意：complement 是之前遇到的数，它的下标在前；当前数的下标在后。
+  </div>
+
+  <h3>边界情况</h3>
+  <table>
+    <tr><th>输入</th><th>说明</th></tr>
+    <tr><td><code>nums=[3, 2, 4], target=6</code></td><td>返回 <code>[1, 2]</code>，3+3 不允许，是 2+4</td></tr>
+    <tr><td><code>nums=[3, 3], target=6</code></td><td>返回 <code>[0, 1]</code></td></tr>
+  </table>
+</section>
+
+<section class="card" id="summary">
+  <h2>8. 总结</h2>
+  <div class="note green">
+    <p><strong>两数之和</strong> 解法精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>用 <strong>哈希表</strong> 记录已遍历的元素</li>
+      <li>对每个数计算 <code>target - num</code></li>
+      <li>检查 complement <strong>是否在表中</strong></li>
+      <li><strong>先查后存</strong>，避免重复使用同一元素</li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">twoSum</span>(self, nums, target):
+        m = {}
+        <span style="color:#6B7280">for</span> i, v <span style="color:#6B7280">in</span> <span style="color:#D4744C">enumerate</span>(nums):
+            <span style="color:#6B7280">if</span> target - v <span style="color:#6B7280">in</span> m:
+                <span style="color:#6B7280">return</span> [m[target - v], i]
+            m[v] = i</code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：遍历查补数，先查再存入。哈希记位置，一次就找到。</p>
+</section>
+</main>
+
+<footer>两数之和 · 算法学习页</footer>
+
+<script>
+(function(){
+const data = [2, 7, 11, 15];
+const steps = [
+  {types:['normal','normal','normal','normal'], map:{}, cur:null, desc:'初始状态。哈希表为空，准备开始遍历数组。'},
+  {types:['warm','normal','normal','normal'], map:{}, cur:'idx=0, num=2', desc:'检查 2：complement = 9-2 = 7。7 不在哈希表中 → 将 2 存入哈希表。'},
+  {types:['skip','normal','normal','normal'], map:{2:0}, cur:'已存 2', desc:'哈希表：{2: 0}。继续遍历。'},
+  {types:['skip','warm','normal','normal'], map:{2:0}, cur:'idx=1, num=7', desc:'检查 7：complement = 9-7 = 2。2 在哈希表中！找到了！'},
+  {types:['skip','extend','normal','normal'], map:{2:0}, cur:'找到！', desc:'nums[0] + nums[1] = 2 + 7 = 9 ✅ 返回 [0, 1]。'},
+  {types:['final','final','normal','normal'], map:{2:0}, cur:'✓', desc:'🎉 答案：[0, 1]'},
+];
+
+let curStep = 0, isPlaying = false, interval = null;
+const $ = id => document.getElementById(id);
+const vizCells = $('vizCells'), vizIdx = $('vizIdxRow'), vizMap = $('vizMap');
+const vizDesc = $('vizDesc'), stepInfo = $('stepInfo');
+const prevBtn = $('prevBtn'), nextBtn = $('nextBtn'), playBtn = $('playBtn'), resetBtn = $('resetBtn');
+
+function render(i){
+  const s = steps[i];
+  // cells
+  let h = '';
+  data.forEach((v,idx)=>{
+    let cls = 'viz-cell';
+    const t = s.types[idx];
+    if(t==='warm') cls+=' warm';
+    else if(t==='extend') cls+=' extend';
+    else if(t==='skip') cls+=' skip';
+    else if(t==='final') cls+=' final';
+    h+=`<span class="${cls}">${v}</span>`;
+  });
+  vizCells.innerHTML = h;
+  // idx
+  let ih = '';
+  data.forEach((_,idx)=>ih+=`<span class="idx">${idx}</span>`);
+  vizIdx.innerHTML = ih;
+  // map
+  const entries = Object.entries(s.map);
+  let mh = '哈希表：{ ';
+  if(entries.length){
+    mh += entries.map(([k,v])=>`<strong>${k}</strong>: ${v}`).join(', ');
+  }
+  mh += ' }';
+  vizMap.innerHTML = mh;
+  // desc
+  vizDesc.textContent = s.desc;
+  // step
+  stepInfo.textContent = `步骤 ${i+1} / ${steps.length}`;
+  prevBtn.disabled = i===0;
+  nextBtn.disabled = i===steps.length-1;
+}
+
+function go(i){ if(i>=0&&i<steps.length){curStep=i;render(curStep);} }
+function nextStep(){ if(curStep<steps.length-1) go(curStep+1); else if(isPlaying) stopPlay(); }
+function prevStep(){ if(curStep>0) go(curStep-1); }
+function togglePlay(){ isPlaying ? stopPlay() : startPlay(); }
+function startPlay(){
+  if(curStep>=steps.length-1) go(0);
+  isPlaying=true; playBtn.textContent='⏸ 暂停'; playBtn.classList.add('playing');
+  interval=setInterval(()=>{if(curStep>=steps.length-1)stopPlay();else nextStep();},1200);
+}
+function stopPlay(){
+  isPlaying=false; playBtn.textContent='▶ 自动播放'; playBtn.classList.remove('playing');
+  if(interval){clearInterval(interval);interval=null;}
+}
+function resetViz(){stopPlay();go(0);}
+
+nextBtn.onclick=nextStep; prevBtn.onclick=prevStep;
+playBtn.onclick=togglePlay; resetBtn.onclick=resetViz;
+document.onkeydown=e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+  else if(e.key===' '){e.preventDefault();togglePlay();}
+};
+go(0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9. 两两交换链表中的节点 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.mini-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:#FAFBFC}
+.mini-card h3{margin:0 0 6px;font-size:15px}
+.mini-card p{margin:4px 0;font-size:13px}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+
+/* ===== 链表节点可视化工具集（所有链表题目共用） ===== */
+.ll-row{display:flex;flex-wrap:wrap;gap:0;align-items:flex-end;justify-content:center;margin:18px 0;font-family:Consolas,Monaco,monospace}
+.ll-node{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;padding-top:24px}
+.ll-val{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:44px;padding:4px 12px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:15px;font-family:Consolas,Monaco,monospace;transition:all .35s ease}
+.ll-val.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-3px);box-shadow:0 0 0 3px rgba(212,116,76,0.15)}
+.ll-val.done{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.ll-val.target{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.2)}
+.ll-val.dim{opacity:.5;color:#9CA3AF}
+.ll-val.hi{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(59,125,216,0.15)}
+.ll-label{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;font-family:Consolas,Monaco,monospace;white-space:nowrap;padding:2px 7px;border-radius:6px;background:#F1F5F9;color:#6B7280;min-height:16px}
+.ll-label.warm{background:var(--warm-soft);color:var(--warm)}
+.ll-label.cur{background:var(--primary-soft);color:var(--primary)}
+.ll-label.yellow{background:var(--accent-yellow-soft);color:var(--accent-yellow)}
+.ll-label.green{background:var(--accent-green-soft);color:var(--accent-green)}
+.ll-label.purple{background:var(--accent-purple-soft);color:var(--accent-purple)}
+.ll-arrow{display:inline-flex;align-items:center;justify-content:center;padding:0 3px;color:#94A3B8;font-size:22px;font-weight:700;line-height:44px;transition:all .35s ease;min-height:44px}
+.ll-arrow.rev{color:var(--accent-green)}
+.ll-arrow.cut{color:var(--warm);transform:scale(1.15)}
+.ll-arrow.hot{color:var(--primary)}
+.ll-null{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:4px 10px;border-radius:10px;border:2px dashed #CBD5E1;background:#F8FAFC;color:#6B7280;font-weight:600;font-size:13px;font-family:Consolas,Monaco,monospace;line-height:44px}
+
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.viz-map{margin:12px 0;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-family:Consolas,Monaco,monospace;font-size:13px;min-height:40px}
+.viz-map strong{color:var(--warm)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.ll-val{min-width:40px;height:38px;font-size:13px}.ll-null{height:38px;line-height:38px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 24 · 中等</div>
+  <h1>9. 两两交换链表中的节点</h1>
+  <p class="subtitle">给定链表，两两交换相邻节点，返回头节点。必须交换节点本身（不能只改值）。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：迭代 + 哑节点</a>
+  <a href="#viz">3. 交互可视化演示</a>
+  <a href="#walkthrough">4. 详细过程模拟</a>
+  <a href="#code">5. 代码逐段解释</a>
+  <a href="#complexity">6. 复杂度分析</a>
+  <a href="#pitfalls">7. 常见易错点</a>
+  <a href="#summary">8. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定一个链表的头节点 <code>head</code>，<strong>两两交换其中相邻的节点</strong>，并返回交换后链表的头节点。必须真正交换节点本身（修改 <code>next</code> 指针），不能只是修改节点里的值。</p>
+
+  <div class="note blue">
+    <strong>关键：</strong>不能偷懒只交换 <code>val</code>——题目要求修改指针关系，锻炼链表操作能力。
+  </div>
+
+  <h3>示例</h3>
+  <pre><code>输入：head = [1, 2, 3, 4]
+输出：[2, 1, 4, 3]</code></pre>
+
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">4</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;">交换后变为：2 → 1 → 4 → 3 → null</p>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：迭代 + 哑节点</h2>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <h3>📌 引入哑节点 dummy</h3>
+      <p>dummy.next = head。让第一对节点的「前驱」也有一个前驱，<strong>统一奇偶长度</strong>的处理逻辑。</p>
+    </div>
+    <div class="mini-card">
+      <h3>🔁 每轮做四件事</h3>
+      <p>取 <code>first / second / rest</code> → 重排三条指针 → <code>cur</code> 前进到 <code>first</code>。</p>
+    </div>
+  </div>
+
+  <h3>算法流程</h3>
+  <ol>
+    <li>初始化 <code>dummy.next = head</code>，<code>cur = dummy</code></li>
+    <li>当 <code>cur.next</code> 与 <code>cur.next.next</code> 都不为空时，循环：</li>
+    <li style="list-style:none;">&nbsp;&nbsp;<code>first = cur.next</code> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:var(--text-light)">// 待交换左节点</span></li>
+    <li style="list-style:none;">&nbsp;&nbsp;<code>second = cur.next.next</code> <span style="color:var(--text-light)">// 待交换右节点</span></li>
+    <li style="list-style:none;">&nbsp;&nbsp;<code>rest = second.next</code> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:var(--text-light)">// 先保存，防断链</span></li>
+    <li style="list-style:none;">&nbsp;&nbsp;<code>cur.next = second</code> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:var(--text-light)">// 前驱接 second</span></li>
+    <li style="list-style:none;">&nbsp;&nbsp;<code>second.next = first</code> &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:var(--text-light)">// second 接 first（完成两节点互换）</span></li>
+    <li style="list-style:none;">&nbsp;&nbsp;<code>first.next = rest</code> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:var(--text-light)">// first 接后半段</span></li>
+    <li style="list-style:none;">&nbsp;&nbsp;<code>cur = first</code> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:var(--text-light)">// cur 前进一对</span></li>
+    <li>循环结束返回 <code>dummy.next</code></li>
+  </ol>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>关键是「先保存 <code>rest</code>」——一旦修改 <code>second.next</code>，原 <code>second</code> 之后的链就会丢失。<code>dummy</code> 让第一对的前驱与后续完全一致，无需特判头节点。
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>3. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 <code>cur</code> 如何定位每一对的前驱、<code>first / second</code> 如何被三指针交换。<strong>下方按「交换后的实际顺序」展示链表</strong>。</p>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：head = [1, 2, 3, 4]</div>
+    <div class="viz-info" id="vizInfo">目标：dummy.next 指向交换后的新头节点</div>
+
+    <div class="ll-row" id="vizCells"></div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 5</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+
+    <div class="viz-desc" id="vizDesc">点击「下一步」开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>4. 详细过程模拟</h2>
+  <p>以 <code>head = [1, 2, 3, 4]</code> 为例，重点拆解<strong>三指针重排</strong>的过程。</p>
+
+  <h3>初始：dummy → 1 → 2 → 3 → 4</h3>
+  <p>取 <code>cur = dummy</code>，待交换第一对 <code>(1, 2)</code>。先保存 <code>rest = second.next = 3</code>。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label cur">cur</span><span class="ll-val dim">d</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label warm">first</span><span class="ll-val cur">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label">second</span><span class="ll-val hi">2</span></span>
+    <span class="ll-arrow cut">→</span>
+    <span class="ll-node"><span class="ll-label">rest</span><span class="ll-val">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">4</span></span>
+  </div>
+
+  <h3>三步重排（核心动作）</h3>
+  <p><strong>第 1 步：</strong> <code>cur.next = second</code> —— 前驱绕过 first，直接接 second。</p>
+  <pre><code>dummy.next = 2   <span style="color:#6B7280">// 原 dummy.next=1 被覆盖，需先存好 first</span></code></pre>
+
+  <p><strong>第 2 步：</strong> <code>second.next = first</code> —— second 反过来接 first，完成两节点互换。</p>
+  <pre><code>2.next = 1   <span style="color:#6B7280">// 原 2.next=3 被覆盖，故必须先存好 rest</span></code></pre>
+
+  <p><strong>第 3 步：</strong> <code>first.next = rest</code> —— first 接回后半段，链不断裂。</p>
+  <pre><code>1.next = 3   <span style="color:#6B7280">// 把保存的 rest 拼回去</span></code></pre>
+
+  <h3>交换后：dummy → 2 → 1 → 3 → 4</h3>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim">d</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val done">2</span></span>
+    <span class="ll-arrow rev">→</span>
+    <span class="ll-node"><span class="ll-label cur">cur</span><span class="ll-val done">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">4</span></span>
+  </div>
+  <p><code>cur = first = 1</code>，准备处理下一对 <code>(3, 4)</code>，逻辑完全相同。</p>
+
+  <div class="note yellow">关键：三条赋值顺序看似可调，但 <code>rest</code> 必须在任何修改之前保存好；否则 <code>second.next</code> 一旦改写，后半段就再也找不回来了。</div>
+
+  <h3>结束：cur.next = null，返回 dummy.next</h3>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim">d</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val done">2</span></span>
+    <span class="ll-arrow rev">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val done">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val done">4</span></span>
+    <span class="ll-arrow rev">→</span>
+    <span class="ll-node"><span class="ll-label green">head</span><span class="ll-val target">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <div class="note green">✅ 两对全部交换完成：2 → 1 → 4 → 3 → null</div>
+</section>
+
+<section class="card" id="code">
+  <h2>5. 代码逐段解释</h2>
+
+  <h3>完整代码</h3>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">ListNode</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">__init__</span>(self, val=0, next=<span style="color:#6B7280">None</span>):
+        self.val = val
+        self.next = next
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">swapPairs</span>(self, head: ListNode) -> ListNode:
+        dummy = ListNode(0, head)
+        cur = dummy
+        <span style="color:#6B7280">while</span> cur.next <span style="color:#6B7280">and</span> cur.next.next:
+            first = cur.next
+            second = cur.next.next
+            rest = second.next
+            cur.next = second
+            second.next = first
+            first.next = rest
+            cur = first
+        <span style="color:#6B7280">return</span> dummy.next</code></pre>
+
+  <h3>逐段说明</h3>
+
+  <p><strong>第 1 步：建立哑节点</strong></p>
+  <pre><code>dummy = ListNode(0, head)
+cur = dummy</code></pre>
+  <p><code>dummy.next = head</code>，让第一对节点也有「前驱」；<code>cur</code> 从 dummy 出发，循环不变量：<strong>cur 始终是待交换一对的前驱节点</strong>。</p>
+
+  <p><strong>第 2 步：循环条件——保证还有一对</strong></p>
+  <pre><code>while cur.next and cur.next.next:</code></pre>
+  <p>只有当 <code>cur</code> 后面<strong>至少有两个节点</strong>时才交换。<code>and</code> 短路保证不会对 <code>None.next</code> 求值。</p>
+
+  <p><strong>第 3 步：取三个引用，先存后改</strong></p>
+  <pre><code>first = cur.next
+second = cur.next.next
+rest = second.next   <span style="color:#6B7280"># 关键：保存后半段</span></code></pre>
+  <p><code>first / second</code> 是要交换的一对；<code>rest</code> 是这对之后的链头，必须在改写指针前先存好。</p>
+
+  <p><strong>第 4 步：三步重排指针</strong></p>
+  <pre><code>cur.next = second    <span style="color:#6B7280"># 前驱接 second</span>
+second.next = first  <span style="color:#6B7280"># second 接 first</span>
+first.next = rest     <span style="color:#6B7280"># first 接后半段</span></code></pre>
+  <p>三条赋值把 <code>cur→first→second→rest</code> 改写为 <code>cur→second→first→rest</code>，节点本身互换。</p>
+
+  <p><strong>第 5 步：cur 前进，循环</strong></p>
+  <pre><code>cur = first</code></pre>
+  <p>交换后 <code>first</code> 是这对中的第二个（即下一对的前驱位置），<code>cur</code> 跳过去继续处理。</p>
+
+  <div class="note warm">
+    返回 <code>dummy.next</code> 而非 <code>head</code>：交换后头节点已变为原第二个节点，<code>dummy.next</code> 始终指向真正的新头。
+  </div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>6. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>每对节点只访问一次，n 个节点共 ⌊n/2⌋ 轮。</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>只使用 dummy / cur / first / second / rest 几个指针变量，原地交换。</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>7. 常见易错点</h2>
+
+  <h3>错误一：忘记保存 rest，后半段丢失</h3>
+  <pre><code># 错误：先改 second.next，原后半段就丢了
+cur.next = second
+second.next = first    <span style="color:#6B7280"># ❌ second.next 原指向 rest，现在被覆盖</span>
+first.next = second.next  <span style="color:#6B7280"># 拿到的不是 rest，而是 first 自己！死循环</span></code></pre>
+  <p>必须在任何修改之前执行 <code>rest = second.next</code>。</p>
+
+  <h3>错误二：忘记 cur 前进，死循环</h3>
+  <pre><code>cur.next = second
+second.next = first
+first.next = rest
+<span style="color:#6B7280"># 漏掉 cur = first  → 下一轮 cur 不变，永远重复同一对</span></code></pre>
+
+  <h3>错误三：奇数长度漏判</h3>
+  <pre><code><span style="color:#6B7280"># 循环条件必须同时判断两个 next
+while cur.next and cur.next.next:</code></pre>
+  <p>奇数长度时最后一个节点 <code>cur.next.next = None</code>，循环自动停止，<strong>不交换</strong>该孤尾节点。</p>
+
+  <h3>边界情况</h3>
+  <table>
+    <tr><th>输入</th><th>说明</th></tr>
+    <tr><td><code>head = []</code></td><td><code>cur.next = None</code>，直接跳过循环，返回 <code>None</code></td></tr>
+    <tr><td><code>head = [1]</code></td><td><code>cur.next.next = None</code>，不交换，返回节点 1</td></tr>
+    <tr><td><code>head = [1,2]</code></td><td>一轮后 <code>cur = 2</code>，<code>cur.next = None</code>，返回 2→1</td></tr>
+  </table>
+</section>
+
+<section class="card" id="summary">
+  <h2>8. 总结</h2>
+  <div class="note green">
+    <p><strong>两两交换链表节点</strong> 精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>哑节点统一「第一对」与「后续对」的处理逻辑</li>
+      <li>三指针 <code>first / second / rest</code>，先存后改</li>
+      <li>口诀：<strong>取一对、存 rest、三条改、cur 走</strong></li>
+      <li>空间 O(1)，时间 O(n)</li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">swapPairs</span>(self, head):
+        dummy = cur = ListNode(0, head)
+        <span style="color:#6B7280">while</span> cur.next <span style="color:#6B7280">and</span> cur.next.next:
+            first, second = cur.next, cur.next.next
+            cur.next, second.next, first.next = second, first, second.next
+            cur = first
+        <span style="color:#6B7280">return</span> dummy.next</code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：dummy 立前哨，first second 各取好；rest 先存防断链，三指一挥节换掉。</p>
+</section>
+</main>
+
+<footer>两两交换链表中的节点 · 算法学习页</footer>
+
+<script>
+(function(){
+// 每步的「链表实际顺序」（交换后节点位置已就位）
+// order: 数组，第一个恒为 'd'(dummy)，后面是节点值；末尾按需追加 null
+// curIdx: cur 标签所在节点在 order 中的下标
+// first/second: 待交换对的节点在 order 中的下标（null 表示无）
+// done: 已交换完成的下标集合
+const steps = [
+  {
+    order: ['d', 1, 2, 3, 4],
+    curIdx: 0, first: 1, second: 2, done: [],
+    desc: '初始：dummy.next = head。cur 从 dummy 开始。待交换第一对：(1, 2)。'
+  },
+  {
+    order: ['d', 2, 1, 3, 4],
+    curIdx: 2, first: null, second: null, done: [1, 2],
+    desc: '交换 1 与 2：cur.next=2，2.next=1，1.next=3。cur 前进到 1（交换后的第二个）。'
+  },
+  {
+    order: ['d', 2, 1, 3, 4],
+    curIdx: 2, first: 3, second: 4, done: [1, 2],
+    desc: 'cur.next=3，cur.next.next=4，还有一对可交换：(3, 4)。'
+  },
+  {
+    order: ['d', 2, 1, 4, 3],
+    curIdx: 4, first: null, second: null, done: [1, 2, 3, 4],
+    desc: '交换 3 与 4：1.next=4，4.next=3，3.next=null。cur 前进到 3。'
+  },
+  {
+    order: ['d', 2, 1, 4, 3],
+    curIdx: 4, first: null, second: null, done: [1, 2, 3, 4], ended: true,
+    desc: 'cur.next 为 null，无更多对，循环结束。✅ 返回 dummy.next = [2, 1, 4, 3]。'
+  }
+];
+
+let curStep = 0, isPlaying = false, interval = null;
+const $ = id => document.getElementById(id);
+const vizCells = $('vizCells'), vizDesc = $('vizDesc'), stepInfo = $('stepInfo');
+const prevBtn = $('prevBtn'), nextBtn = $('nextBtn'), playBtn = $('playBtn'), resetBtn = $('resetBtn');
+
+function render(i){
+  const s = steps[i];
+  let h = '';
+  s.order.forEach((v, idx) => {
+    // 节点标签
+    const labs = [];
+    if(s.curIdx === idx) labs.push('cur');
+    if(s.first === idx) labs.push('first');
+    if(s.second === idx) labs.push('second');
+    // 取首个标签的样式类
+    let lcls = '';
+    if(s.first === idx) lcls = 'warm';
+    else if(s.second === idx) lcls = 'cur';
+    else if(s.curIdx === idx) lcls = 'cur';
+    const ltxt = labs.join('/');
+    // 节点状态
+    let ncls = '';
+    const isDummy = (v === 'd');
+    if(isDummy){
+      ncls = 'dim';
+    } else if(s.ended){
+      // 结束态：全部完成
+      ncls = 'target';
+    } else if(s.done.indexOf(idx) >= 0){
+      ncls = 'done';
+    } else if(s.first === idx){
+      ncls = 'cur';
+    } else if(s.second === idx){
+      ncls = 'hi';
+    }
+    const disp = isDummy ? 'd' : v;
+    h += `<span class="ll-node"><span class="ll-label ${lcls}">${ltxt}</span><span class="ll-val ${ncls}">${disp}</span></span>`;
+    // 节点后的箭头
+    const arrowCls = s.done.indexOf(idx) >= 0 ? 'rev' : 'fwd';
+    h += `<span class="ll-arrow ${arrowCls}">→</span>`;
+  });
+  // 末尾 null
+  h += `<span class="ll-null">null</span>`;
+  vizCells.innerHTML = h;
+  vizDesc.textContent = s.desc;
+  stepInfo.textContent = `步骤 ${i+1} / ${steps.length}`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === steps.length - 1;
+}
+
+function go(i){ if(i>=0 && i<steps.length){curStep=i; render(curStep);} }
+function nextStep(){ if(curStep<steps.length-1) go(curStep+1); else if(isPlaying) stopPlay(); }
+function prevStep(){ if(curStep>0) go(curStep-1); }
+function togglePlay(){ isPlaying ? stopPlay() : startPlay(); }
+function startPlay(){
+  if(curStep>=steps.length-1) go(0);
+  isPlaying=true; playBtn.textContent='⏸ 暂停'; playBtn.classList.add('playing');
+  interval=setInterval(()=>{if(curStep>=steps.length-1)stopPlay();else nextStep();},1400);
+}
+function stopPlay(){
+  isPlaying=false; playBtn.textContent='▶ 自动播放'; playBtn.classList.remove('playing');
+  if(interval){clearInterval(interval);interval=null;}
+}
+function resetViz(){stopPlay();go(0);}
+
+nextBtn.onclick=nextStep; prevBtn.onclick=prevStep;
+playBtn.onclick=togglePlay; resetBtn.onclick=resetViz;
+document.onkeydown=e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+  else if(e.key===' '){e.preventDefault();togglePlay();}
+};
+go(0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4. 环形链表 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.mini-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:#FAFBFC}
+.mini-card h3{margin:0 0 6px;font-size:15px}
+.mini-card p{margin:4px 0;font-size:13px}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+
+/* ===== 链表节点可视化工具集（所有链表题目共用） ===== */
+.ll-row{display:flex;flex-wrap:wrap;gap:0;align-items:flex-end;justify-content:center;margin:18px 0;font-family:Consolas,Monaco,monospace}
+.ll-node{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;padding-top:24px}
+.ll-val{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:44px;padding:4px 12px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:15px;font-family:Consolas,Monaco,monospace;transition:all .35s ease}
+.ll-val.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-3px);box-shadow:0 0 0 3px rgba(212,116,76,0.15)}
+.ll-val.done{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.ll-val.target{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.2)}
+.ll-val.dim{opacity:.5;color:#9CA3AF}
+.ll-val.hi{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(59,125,216,0.15)}
+.ll-label{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;font-family:Consolas,Monaco,monospace;white-space:nowrap;padding:2px 7px;border-radius:6px;background:#F1F5F9;color:#6B7280;min-height:16px}
+.ll-label.warm{background:var(--warm-soft);color:var(--warm)}
+.ll-label.cur{background:var(--primary-soft);color:var(--primary)}
+.ll-label.yellow{background:var(--accent-yellow-soft);color:var(--accent-yellow)}
+.ll-label.green{background:var(--accent-green-soft);color:var(--accent-green)}
+.ll-label.purple{background:var(--accent-purple-soft);color:var(--accent-purple)}
+.ll-arrow{display:inline-flex;align-items:center;justify-content:center;padding:0 3px;color:#94A3B8;font-size:22px;font-weight:700;line-height:44px;transition:all .35s ease;min-height:44px}
+.ll-arrow.rev{color:var(--accent-green)}
+.ll-arrow.cut{color:var(--warm);transform:scale(1.15)}
+.ll-arrow.hot{color:var(--primary)}
+.ll-null{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:4px 10px;border-radius:10px;border:2px dashed #CBD5E1;background:#F8FAFC;color:#6B7280;font-weight:600;font-size:13px;font-family:Consolas,Monaco,monospace;line-height:44px}
+
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.viz-map{margin:12px 0;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-family:Consolas,Monaco,monospace;font-size:13px;min-height:40px}
+.viz-map strong{color:var(--warm)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.ll-val{min-width:40px;height:38px;font-size:13px}.ll-null{height:38px;line-height:38px}}
+
+/* ===== 环回弧线（环形链表专用） ===== */
+.loop-wrap{position:relative;display:inline-block;margin-top:4px}
+.loop-svg{width:100%;height:60px;display:block;overflow:visible}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 141 · 简单</div>
+  <h1>4. 环形链表</h1>
+  <p class="subtitle">给定链表头节点 head，判断链表中是否有环。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：快慢指针</a>
+  <a href="#viz">3. 交互可视化演示</a>
+  <a href="#walkthrough">4. 详细过程模拟</a>
+  <a href="#code">5. 代码逐段解释</a>
+  <a href="#complexity">6. 复杂度分析</a>
+  <a href="#pitfalls">7. 常见易错点</a>
+  <a href="#summary">8. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定单链表的头节点 <code>head</code>，判断链表中是否<strong>存在环</strong>。如果有环返回 <code>true</code>，否则返回 <code>false</code>。</p>
+
+  <div class="note blue">
+    <strong>关键：</strong>「环」是指链表中某个节点的 <code>next</code> 指针再次指向链表中靠前的节点，从而形成循环。判断条件不是「值相等」，而是「指针再次回到之前走过的节点」。
+  </div>
+
+  <h3>示例 1（有环）</h3>
+  <pre><code>输入：head = [3, 2, 0, -4]，pos = 1
+输出：true</code></pre>
+  <p style="font-size:13px;color:var(--text-light);">下标 0:3, 1:2, 2:0, 3:-4。尾节点 -4 的 next 指回下标 1（节点 2），形成环。</p>
+
+  <div class="ll-row" style="flex-direction:column;gap:0;">
+    <div style="display:flex;align-items:flex-end;justify-content:center;">
+      <span class="ll-node"><span class="ll-label"></span><span class="ll-val">3</span></span>
+      <span class="ll-arrow">→</span>
+      <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+      <span class="ll-arrow">→</span>
+      <span class="ll-node"><span class="ll-label"></span><span class="ll-val">0</span></span>
+      <span class="ll-arrow">→</span>
+      <span class="ll-node"><span class="ll-label"></span><span class="ll-val">-4</span></span>
+    </div>
+    <svg class="loop-svg" viewBox="0 0 400 60" preserveAspectRatio="none">
+      <defs>
+        <marker id="arrowhead-demo" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <polygon points="0 0, 8 4, 0 8" fill="#94A3B8" />
+        </marker>
+      </defs>
+      <path d="M 340 0 Q 200 75 120 0" stroke="#94A3B8" stroke-width="2" fill="none" stroke-dasharray="5,4" marker-end="url(#arrowhead-demo)"/>
+    </svg>
+  </div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;">弧线表示 -4 的 next 指回节点 2（成环）</p>
+
+  <h3>示例 2（无环）</h3>
+  <pre><code>输入：head = [1, 2, 3]，pos = -1
+输出：false</code></pre>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：快慢指针</h2>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <h3>🐢 slow 慢指针</h3>
+      <p>每次走 <code>1</code> 步：<code>slow = slow.next</code></p>
+    </div>
+    <div class="mini-card">
+      <h3>🐇 fast 快指针</h3>
+      <p>每次走 <code>2</code> 步：<code>fast = fast.next.next</code></p>
+    </div>
+  </div>
+
+  <h3>算法流程</h3>
+  <ol>
+    <li>初始化 <code>slow = fast = head</code>，两指针同时从头出发</li>
+    <li>当 <code>fast</code> 和 <code>fast.next</code> 都不为空时，循环：</li>
+    <li style="list-style:none;">&nbsp;&nbsp;<code>slow = slow.next</code> &nbsp;&nbsp;&nbsp; <span style="color:var(--text-light)">// 慢指针走 1 步</span></li>
+    <li style="list-style:none;">&nbsp;&nbsp;<code>fast = fast.next.next</code> <span style="color:var(--text-light)">// 快指针走 2 步</span></li>
+    <li style="list-style:none;">&nbsp;&nbsp;<code>if slow is fast: return True</code> <span style="color:var(--text-light)">// 相遇 → 有环</span></li>
+    <li>循环正常结束（<code>fast</code> 先到 <code>null</code>）→ 返回 <code>False</code></li>
+  </ol>
+
+  <div class="note purple">
+    <strong>核心洞察（龟兔赛跑）：</strong>fast 比 slow 每轮多走 1 步，即<strong>相对速度为 1</strong>。若有环，两指针都进入环后，距离每轮缩小 1，迟早追上；若无环，fast 一定先到达 <code>null</code>。空间只用两个指针，O(1)。
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>3. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 <code>slow</code>（🐢 慢）和 <code>fast</code>（🐇 快）如何在环内追上。蓝色标签为 slow，暖色标签为 fast。</p>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：head = [3, 2, 0, -4]，pos = 1（尾节点 -4 指回下标 1）</div>
+    <div class="viz-info" id="vizInfo">目标：判断 fast 是否追上 slow</div>
+
+    <div id="vizCells" style="display:flex;flex-direction:column;align-items:center;">
+      <div class="ll-row" id="vizRow" style="margin:0;"></div>
+      <svg class="loop-svg" viewBox="0 0 400 60" preserveAspectRatio="none" style="max-width:420px;">
+        <defs>
+          <marker id="arrowhead-loop" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <polygon points="0 0, 8 4, 0 8" fill="#94A3B8" />
+          </marker>
+        </defs>
+        <path d="M 340 0 Q 200 75 120 0" stroke="#94A3B8" stroke-width="2" fill="none" stroke-dasharray="5,4" marker-end="url(#arrowhead-loop)"/>
+      </svg>
+    </div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 4</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+
+    <div class="viz-desc" id="vizDesc">点击「下一步」开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>4. 详细过程模拟</h2>
+  <p>以 <code>head = [3, 2, 0, -4]</code>，<code>pos = 1</code> 为例。next 关系：<code>0→1→2→3→1→…</code>（成环）。</p>
+
+  <h3>初始：slow = fast = 头节点 3</h3>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label cur">slow/fast</span><span class="ll-val cur">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">0</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">-4</span></span>
+  </div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;">两指针同在起点；弧线表示环回（-4 → 2）</p>
+
+  <h3>第 1 轮：slow 走 1 步，fast 走 2 步</h3>
+  <p><code>slow = 2</code>（节点下标 1），<code>fast = 0</code>（节点下标 2，已超前）</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label cur">slow</span><span class="ll-val cur">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label warm">fast</span><span class="ll-val target">0</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">-4</span></span>
+  </div>
+
+  <h3>第 2 轮：slow 到 0，fast 跳到 2（绕环）</h3>
+  <p><code>slow = 0</code>（下标 2），<code>fast = 2</code>（下标 1，fast 从下标 2 走两步：3→1，已在环里绕了一圈）</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label warm">fast</span><span class="ll-val target">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label cur">slow</span><span class="ll-val cur">0</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">-4</span></span>
+  </div>
+
+  <h3>第 3 轮：两指针在 -4 相遇！✅</h3>
+  <p><code>slow = -4</code>（下标 3），<code>fast = -4</code>（下标 3，从下标 1 走两步：2→3）→ <code>slow is fast</code> → 返回 <code>true</code></p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">0</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label green">slow/fast</span><span class="ll-val target">-4</span></span>
+  </div>
+  <div class="note green">✅ 相遇即有环，返回 true。</div>
+
+  <h3>对比：无环示例 <code>[1, 2, 3]</code>（pos = -1）</h3>
+  <p>fast 先到达 <code>null</code>：<code>slow=1→2→3</code>，<code>fast=1→3→null</code>。循环条件 <code>fast and fast.next</code> 不满足，跳出循环，返回 <code>false</code>。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label cur">slow</span><span class="ll-val cur">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label warm">fast</span><span class="ll-val target">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <div class="note red">fast.next 为 null → 退出循环 → 返回 false。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>5. 代码逐段解释</h2>
+
+  <h3>完整代码</h3>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">ListNode</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">__init__</span>(self, val=0, next=<span style="color:#6B7280">None</span>):
+        self.val = val
+        self.next = next
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">hasCycle</span>(self, head: ListNode) -> bool:
+        slow = fast = head
+        <span style="color:#6B7280">while</span> fast <span style="color:#6B7280">and</span> fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            <span style="color:#6B7280">if</span> slow <span style="color:#6B7280">is</span> fast:
+                <span style="color:#6B7280">return</span> <span style="color:#D4744C">True</span>
+        <span style="color:#6B7280">return</span> <span style="color:#D4744C">False</span></code></pre>
+
+  <h3>逐段说明</h3>
+
+  <p><strong>第 1 步：初始化快慢指针</strong></p>
+  <pre><code>slow = fast = head</code></pre>
+  <p>两个指针同时指向头节点，准备同时出发。</p>
+
+  <p><strong>第 2 步：循环条件</strong></p>
+  <pre><code>while fast and fast.next:</code></pre>
+  <p>fast 每次走 2 步，所以要同时检查 <code>fast</code> 和 <code>fast.next</code> 都不为空，否则会越界（<code>None.next</code> 报错）。一旦任一为空，说明 fast 先到链表末尾，无环。</p>
+
+  <p><strong>第 3 步：两指针前进</strong></p>
+  <pre><code>slow = slow.next
+fast = fast.next.next</code></pre>
+  <p>slow 走 1 步，fast 走 2 步。每轮两者距离变化 1 步。</p>
+
+  <p><strong>第 4 步：判断相遇</strong></p>
+  <pre><code>if slow is fast:
+    return True</code></pre>
+  <p>若两指针指向<strong>同一个节点对象</strong>（用 <code>is</code> 判同一引用，而非值相等），说明 fast 追上了 slow，有环。</p>
+
+  <p><strong>第 5 步：循环退出</strong></p>
+  <pre><code>return False</code></pre>
+  <p>fast 到达 <code>null</code>（无环），返回 False。</p>
+
+  <div class="note warm">
+    <strong>用 <code>is</code> 不用 <code>==</code>：</code>环的判定标准是「指针指向同一节点」，而非「节点值相等」。链表中可能有多个值相同的节点，用 <code>==</code> 会误判。
+  </div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>6. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>无环时 fast 走 n/2 步到末尾；有环时 slow 进环最多 n 步，fast 最多再绕一圈追上。总体 O(n)。</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>只用 slow、fast 两个指针变量，常数空间。</td></tr>
+  </table>
+
+  <div class="note blue">
+    <strong>追上步数的直观理解：</strong>两指针都进入环后，fast 与 slow 的距离每轮缩小 1（fast 多走 1 步），环长最多 n，所以最多再走 n 步必然相遇。
+  </div>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>7. 常见易错点</h2>
+
+  <h3>错误一：循环条件写错</h3>
+  <pre><code><span style="color:#6B7280">while</span> fast.next:        # ❌ fast 为 None 时会报错
+<span style="color:#6B7280">while</span> fast:              # ❌ fast.next 为 None 时仍进循环，fast.next.next 越界
+<span style="color:#6B7280">while</span> fast <span style="color:#6B7280">and</span> fast.next:  # ✅ 同时检查，安全</code></pre>
+  <p>因为 fast 一次走两步，必须保证 <code>fast</code> 和 <code>fast.next</code> 都存在。</p>
+
+  <h3>错误二：用 == 判断相遇</h3>
+  <pre><code><span style="color:#6B7280">if</span> slow.val == fast.val:  # ❌ 值相等不代表同一节点
+<span style="color:#6B7280">if</span> slow <span style="color:#6B7280">is</span> fast:           # ✅ 同一对象引用</code></pre>
+  <p>判定环要看「指针重新指向之前走过的节点」，即引用相同。</p>
+
+  <h3>错误三：忘记 slow/fast 同时从头出发</h3>
+  <pre><code>slow, fast = head, head.next  # ❌ 起点不同，可能错过相遇
+slow = fast = head             # ✅ 同起点</code></pre>
+
+  <h3>边界情况</h3>
+  <table>
+    <tr><th>输入</th><th>说明</th></tr>
+    <tr><td><code>head = []</code></td><td><code>fast = None</code> 直接跳过循环，返回 <code>False</code></td></tr>
+    <tr><td><code>head = [1]</code> 无环</td><td><code>fast.next = None</code>，不进循环，返回 <code>False</code></td></tr>
+    <tr><td><code>head = [1]</code> 自环（pos=0）</td><td>第 1 轮 slow=1、fast=1，<code>slow is fast</code> → 返回 <code>True</code></td></tr>
+  </table>
+</section>
+
+<section class="card" id="summary">
+  <h2>8. 总结</h2>
+  <div class="note green">
+    <p><strong>环形链表</strong> 精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>快慢双指针（龟兔赛跑）：slow 1 步、fast 2 步</li>
+      <li><strong>相对速度为 1</strong>，有环必相遇</li>
+      <li>无环时 fast 先到 <code>null</code>，循环退出</li>
+      <li>时间 O(n)，空间 O(1)</li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">hasCycle</span>(self, head):
+        slow = fast = head
+        <span style="color:#6B7280">while</span> fast <span style="color:#6B7280">and</span> fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            <span style="color:#6B7280">if</span> slow <span style="color:#6B7280">is</span> fast:
+                <span style="color:#6B7280">return</span> <span style="color:#D4744C">True</span>
+        <span style="color:#6B7280">return</span> <span style="color:#D4744C">False</span></code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：快慢同起步，每轮差一步；相遇即有环，fast 空则无。</p>
+</section>
+</main>
+
+<footer>环形链表 · 算法学习页</footer>
+
+<script>
+(function(){
+const nodes = [3, 2, 0, -4];
+const N = nodes.length;
+// steps: slow/fast 为节点下标，依据 next[0]=1, next[1]=2, next[2]=3, next[3]=1
+const steps = [
+  {slow:0, fast:0, desc:'slow、fast 同时从头节点 3 出发。'},
+  {slow:1, fast:2, desc:'slow 走 1 步到 2，fast 走 2 步到 0（下标 2）。'},
+  {slow:2, fast:1, desc:'slow 到 0（下标 2），fast 跳两步到 2（下标 1）—— fast 在环里绕，已超前。'},
+  {slow:3, fast:3, desc:'slow 到 -4，fast 也到 -4 —— 两指针在环内相遇！✅ 返回 true。', meet:true},
+];
+
+let curStep = 0, isPlaying = false, interval = null;
+const $ = id => document.getElementById(id);
+const vizRow = $('vizRow'), vizDesc = $('vizDesc'), stepInfo = $('stepInfo');
+const prevBtn = $('prevBtn'), nextBtn = $('nextBtn'), playBtn = $('playBtn'), resetBtn = $('resetBtn');
+
+function render(i){
+  const s = steps[i];
+  let h = '';
+  nodes.forEach((v, idx) => {
+    // 收集标签
+    const lab = [];
+    if(s.slow === idx) lab.push('slow');
+    if(s.fast === idx) lab.push('fast');
+    let lcls = '';
+    // 同节点合并显示时优先用绿色（相遇）或主色
+    const sameNode = (s.slow === idx && s.fast === idx);
+    if(sameNode){
+      lcls = s.meet ? 'green' : 'cur';
+    } else if(s.slow === idx){
+      lcls = 'cur';
+    } else if(s.fast === idx){
+      lcls = 'warm';
+    }
+    const ltxt = lab.join('/');
+    // 节点状态
+    let ncls = '';
+    if(s.meet && sameNode){
+      ncls = 'target';
+    } else if(sameNode){
+      ncls = 'cur';
+    } else if(s.slow === idx){
+      ncls = 'cur';
+    } else if(s.fast === idx){
+      ncls = 'target';
+    }
+    h += `<span class="ll-node"><span class="ll-label ${lcls}">${ltxt}</span><span class="ll-val ${ncls}">${v}</span></span>`;
+    if(idx < N - 1){
+      h += `<span class="ll-arrow">→</span>`;
+    }
+  });
+  vizRow.innerHTML = h;
+  vizDesc.textContent = s.desc;
+  stepInfo.textContent = `步骤 ${i+1} / ${steps.length}`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === steps.length - 1;
+}
+
+function go(i){ if(i>=0 && i<steps.length){curStep=i; render(curStep);} }
+function nextStep(){ if(curStep<steps.length-1) go(curStep+1); else if(isPlaying) stopPlay(); }
+function prevStep(){ if(curStep>0) go(curStep-1); }
+function togglePlay(){ isPlaying ? stopPlay() : startPlay(); }
+function startPlay(){
+  if(curStep>=steps.length-1) go(0);
+  isPlaying=true; playBtn.textContent='⏸ 暂停'; playBtn.classList.add('playing');
+  interval=setInterval(()=>{if(curStep>=steps.length-1)stopPlay();else nextStep();},1400);
+}
+function stopPlay(){
+  isPlaying=false; playBtn.textContent='▶ 自动播放'; playBtn.classList.remove('playing');
+  if(interval){clearInterval(interval);interval=null;}
+}
+function resetViz(){stopPlay();go(0);}
+
+nextBtn.onclick=nextStep; prevBtn.onclick=prevStep;
+playBtn.onclick=togglePlay; resetBtn.onclick=resetViz;
+document.onkeydown=e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+  else if(e.key===' '){e.preventDefault();togglePlay();}
+};
+go(0);
+})();
+</script>
+</body>
+</html>

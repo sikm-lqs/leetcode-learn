@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6. 合并两个有序链表 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.mini-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:#FAFBFC}
+.mini-card h3{margin:0 0 6px;font-size:15px}
+.mini-card p{margin:4px 0;font-size:13px}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+
+/* ===== 链表节点可视化工具集（所有链表题目共用） ===== */
+.ll-row{display:flex;flex-wrap:wrap;gap:0;align-items:flex-end;justify-content:center;margin:18px 0;font-family:Consolas,Monaco,monospace}
+.ll-node{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;padding-top:24px}
+.ll-val{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:44px;padding:4px 12px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:15px;font-family:Consolas,Monaco,monospace;transition:all .35s ease}
+.ll-val.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-3px);box-shadow:0 0 0 3px rgba(212,116,76,0.15)}
+.ll-val.done{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.ll-val.target{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.2)}
+.ll-val.dim{opacity:.5;color:#9CA3AF}
+.ll-val.hi{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(59,125,216,0.15)}
+.ll-label{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;font-family:Consolas,Monaco,monospace;white-space:nowrap;padding:2px 7px;border-radius:6px;background:#F1F5F9;color:#6B7280;min-height:16px}
+.ll-label.warm{background:var(--warm-soft);color:var(--warm)}
+.ll-label.cur{background:var(--primary-soft);color:var(--primary)}
+.ll-label.yellow{background:var(--accent-yellow-soft);color:var(--accent-yellow)}
+.ll-label.green{background:var(--accent-green-soft);color:var(--accent-green)}
+.ll-label.purple{background:var(--accent-purple-soft);color:var(--accent-purple)}
+.ll-arrow{display:inline-flex;align-items:center;justify-content:center;padding:0 3px;color:#94A3B8;font-size:22px;font-weight:700;line-height:44px;transition:all .35s ease;min-height:44px}
+.ll-arrow.rev{color:var(--accent-green)}
+.ll-arrow.cut{color:var(--warm);transform:scale(1.15)}
+.ll-arrow.hot{color:var(--primary)}
+.ll-null{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:4px 10px;border-radius:10px;border:2px dashed #CBD5E1;background:#F8FAFC;color:#6B7280;font-weight:600;font-size:13px;font-family:Consolas,Monaco,monospace;line-height:44px}
+
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.viz-map{margin:12px 0;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-family:Consolas,Monaco,monospace;font-size:13px;min-height:40px}
+.viz-map strong{color:var(--warm)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.ll-val{min-width:40px;height:38px;font-size:13px}.ll-null{height:38px;line-height:38px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 21 · 简单</div>
+  <h1>6. 合并两个有序链表</h1>
+  <p class="subtitle">将两个升序链表合并为一个新的升序链表并返回。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：迭代 + 哑节点</a>
+  <a href="#viz">3. 交互可视化演示</a>
+  <a href="#walkthrough">4. 详细过程模拟</a>
+  <a href="#code">5. 代码逐段解释</a>
+  <a href="#complexity">6. 复杂度分析</a>
+  <a href="#pitfalls">7. 常见易错点</a>
+  <a href="#summary">8. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定两个<strong>升序</strong>链表 <code>list1</code> 和 <code>list2</code>，将它们合并为一个<strong>新的升序链表</strong>并返回头节点。新链表由拼接原链表的节点组成（不新建节点）。</p>
+
+  <div class="note blue">
+    <strong>关键：</strong>两个输入都已排好序，只需每次挑两者头部中较小的接到结果末尾。
+  </div>
+
+  <h3>示例</h3>
+  <pre><code>输入：list1 = [1, 2, 4], list2 = [1, 3, 4]
+输出：[1, 1, 2, 3, 4, 4]</code></pre>
+
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">4</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;margin-top:-10px">list1</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">4</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;margin-top:-10px">list2</p>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：迭代 + 哑节点</h2>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <h3>📌 关键变量</h3>
+      <p><code>dummy</code>（哑节点，结果头部哨兵）、<code>cur</code>（结果链表当前尾）、<code>list1/list2</code>（两个扫描指针）。</p>
+    </div>
+    <div class="mini-card">
+      <h3>🔁 每轮做一件事</h3>
+      <p>比较 <code>list1.val</code> 与 <code>list2.val</code>，<strong>较小者</strong>接到 <code>cur.next</code>，对应指针后移，<code>cur</code> 也后移。</p>
+    </div>
+  </div>
+
+  <h3>算法流程</h3>
+  <ol>
+    <li>新建 <code>dummy = ListNode(0)</code>，令 <code>cur = dummy</code></li>
+    <li>当 <code>list1</code> 与 <code>list2</code> 都<strong>不为空</strong>时，循环：</li>
+    <li style="list-style:none;">&nbsp;&nbsp;若 <code>list1.val ≤ list2.val</code>：<code>cur.next = list1</code>，<code>list1 = list1.next</code></li>
+    <li style="list-style:none;">&nbsp;&nbsp;否则：<code>cur.next = list2</code>，<code>list2 = list2.next</code></li>
+    <li style="list-style:none;">&nbsp;&nbsp;<code>cur = cur.next</code> &nbsp; <span style="color:var(--text-light)">// 结果尾指针前进</span></li>
+    <li>循环结束后：<code>cur.next = list1 if list1 else list2</code> &nbsp; <span style="color:var(--text-light)">// 接上剩余部分</span></li>
+    <li>返回 <code>dummy.next</code>（跳过哑节点）</li>
+  </ol>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>哑节点 <code>dummy</code> 让「头节点」不再特殊——所有节点都通过 <code>cur.next = ...</code> 统一接入，循环里无需判断是否为结果头。遍历一次同时完成比较与接入。
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>3. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 <code>list1</code> / <code>list2</code> 两个扫描指针如何逐个比较，并把较小者接到结果链表末尾。暖色 = 当前待比较节点；绿色 = 已接入结果。</p>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：list1 = [1, 2, 4]，list2 = [1, 3, 4]</div>
+    <div class="viz-info" id="vizInfo">目标：合并为升序链表 [1, 1, 2, 3, 4, 4]</div>
+
+    <div style="text-align:left;margin:8px 0 4px;font-size:13px;color:var(--text-light);font-family:Consolas,Monaco,monospace;padding-left:8px">list1：</div>
+    <div class="ll-row" id="vizL1"></div>
+    <div style="text-align:left;margin:8px 0 4px;font-size:13px;color:var(--text-light);font-family:Consolas,Monaco,monospace;padding-left:8px">list2：</div>
+    <div class="ll-row" id="vizL2"></div>
+
+    <div class="viz-map" id="vizMap">准备开始：哑节点 dummy 作为结果头部</div>
+
+    <div style="text-align:left;margin:14px 0 4px;font-size:13px;color:var(--text-light);font-family:Consolas,Monaco,monospace;padding-left:8px">结果链表（cur 始终指向末尾）：</div>
+    <div class="ll-row" id="vizOut"></div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 7</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+
+    <div class="viz-desc" id="vizDesc">点击「下一步」开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>4. 详细过程模拟</h2>
+  <p>以 <code>list1 = [1, 2, 4]</code>、<code>list2 = [1, 3, 4]</code> 为例，重点展示「比较并接入」的典型两步。</p>
+
+  <h3>初始：dummy 为头，cur 指向 dummy</h3>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label cur">cur</span><span class="ll-val dim">dummy</span></span>
+  </div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;margin-top:-6px">结果链表此时只有哨兵节点 dummy（val=0）。</p>
+
+  <h3>第 1 步：比较 list1=1 与 list2=1</h3>
+  <p><code>1 ≤ 1</code> 成立，取 <strong>list1 的 1</strong>：<code>cur.next = list1</code>，<code>list1</code> 后移到 2。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim">dummy</span></span>
+    <span class="ll-arrow hot">→</span>
+    <span class="ll-node"><span class="ll-label cur">cur</span><span class="ll-val target">1</span></span>
+  </div>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label warm">list1</span><span class="ll-val cur">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val done">4</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label warm">list2</span><span class="ll-val cur">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">4</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <div class="note yellow">相等时取 <code>list1</code>（条件写成 <code>≤</code>），结果稳定。</div>
+
+  <h3>第 2 步：比较 list1=2 与 list2=1</h3>
+  <p><code>2 &gt; 1</code>，取 <strong>list2 的 1</strong>：<code>cur.next = list2</code>，<code>list2</code> 后移到 3。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim">dummy</span></span>
+    <span class="ll-arrow hot">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val target">1</span></span>
+    <span class="ll-arrow hot">→</span>
+    <span class="ll-node"><span class="ll-label cur">cur</span><span class="ll-val target">1</span></span>
+  </div>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label warm">list1</span><span class="ll-val cur">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">4</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label warm">list2</span><span class="ll-val cur">3</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val done">4</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+
+  <div class="note blue">以此类推，每次把两个头部中较小者摘下来接上，直到某条链表被取空。</div>
+
+  <h3>结束：list1 先空，接上 list2 剩余节点</h3>
+  <p>当某条链表为空时，另一条剩余部分整体拼到 <code>cur.next</code>。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val dim">dummy</span></span>
+    <span class="ll-arrow rev">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val target">1</span></span>
+    <span class="ll-arrow rev">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val target">1</span></span>
+    <span class="ll-arrow rev">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val target">2</span></span>
+    <span class="ll-arrow rev">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val target">3</span></span>
+    <span class="ll-arrow rev">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val target">4</span></span>
+    <span class="ll-arrow rev">→</span>
+    <span class="ll-node"><span class="ll-label green">head</span><span class="ll-val target">4</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <div class="note green">✅ 合并完成：1 → 1 → 2 → 3 → 4 → 4 → null，返回 <code>dummy.next</code>。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>5. 代码逐段解释</h2>
+
+  <h3>完整代码</h3>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">ListNode</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">__init__</span>(self, val=0, next=<span style="color:#6B7280">None</span>):
+        self.val = val
+        self.next = next
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">mergeTwoLists</span>(self, list1: ListNode, list2: ListNode) -> ListNode:
+        dummy = ListNode(0)
+        cur = dummy
+        <span style="color:#6B7280">while</span> list1 <span style="color:#6B7280">and</span> list2:
+            <span style="color:#6B7280">if</span> list1.val &lt;= list2.val:
+                cur.next = list1
+                list1 = list1.next
+            <span style="color:#6B7280">else</span>:
+                cur.next = list2
+                list2 = list2.next
+            cur = cur.next
+        cur.next = list1 <span style="color:#6B7280">if</span> list1 <span style="color:#6B7280">else</span> list2
+        <span style="color:#6B7280">return</span> dummy.next</code></pre>
+
+  <h3>逐段说明</h3>
+
+  <p><strong>第 1 步：建立哑节点</strong></p>
+  <pre><code>dummy = ListNode(0)
+cur = dummy</code></pre>
+  <p><code>dummy</code> 是结果链表的哨兵，<code>cur</code> 始终指向结果链表的「当前最后一个节点」。这样头节点的接入和后续节点完全统一。</p>
+
+  <p><strong>第 2 步：双指针比较循环</strong></p>
+  <pre><code>while list1 and list2:
+    if list1.val &lt;= list2.val:
+        cur.next = list1
+        list1 = list1.next
+    else:
+        cur.next = list2
+        list2 = list2.next
+    cur = cur.next</code></pre>
+  <p>只要两条链表都还有节点，就比较它们当前头节点：较小者接到 <code>cur.next</code>，对应链表指针前进一步；最后 <code>cur</code> 也要前进一步，保持指向尾端。</p>
+
+  <p><strong>第 3 步：接上剩余部分</strong></p>
+  <pre><code>cur.next = list1 if list1 else list2</code></pre>
+  <p>循环结束时必有一条链表已空，另一条剩余的节点本身已是有序，直接整段接到 <code>cur.next</code> 即可。</p>
+
+  <p><strong>第 4 步：返回真实头节点</strong></p>
+  <pre><code>return dummy.next</code></pre>
+
+  <div class="note warm">
+    <code>dummy</code> 只是辅助节点，真正的头是 <code>dummy.next</code>。
+  </div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>6. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(m + n)</strong></td><td>每个节点至多被访问一次（m、n 为两链表长度）。</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>只新增 dummy 与 cur 两个指针变量，原地拼接节点。</td></tr>
+  </table>
+  <div class="note blue">若采用递归写法，空间为 O(m + n)（递归栈），故迭代法在空间上更优。</div>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>7. 常见易错点</h2>
+
+  <h3>错误一：忘记处理剩余链表</h3>
+  <pre><code># 错误：循环结束后直接 return，剩余节点全丢
+while list1 and list2:
+    ...
+    cur = cur.next
+return dummy.next   # ❌ 某条链表可能还有节点未接上！</code></pre>
+  <p>必须补一句 <code>cur.next = list1 if list1 else list2</code>，否则会丢失较长链表的尾部。</p>
+
+  <h3>错误二：返回 dummy 而非 dummy.next</h3>
+  <pre><code>return dummy      # ❌ 把哨兵节点 val=0 也算进结果
+return dummy.next  # ✅ 跳过哨兵，返回真正的头</code></pre>
+
+  <h3>错误三：循环里漏掉 <code>cur = cur.next</code></h3>
+  <pre><code>while list1 and list2:
+    if list1.val &lt;= list2.val:
+        cur.next = list1
+        list1 = list1.next
+    else:
+        cur.next = list2
+        list2 = list2.next
+    # ❌ 忘记 cur = cur.next → 后续会覆盖 cur.next，链表只剩一个节点</code></pre>
+
+  <h3>边界情况</h3>
+  <table>
+    <tr><th>输入</th><th>说明</th></tr>
+    <tr><td><code>[]</code> 与 <code>[]</code></td><td>循环跳过，<code>cur.next = None</code>，返回 <code>None</code></td></tr>
+    <tr><td><code>[]</code> 与 <code>[0]</code></td><td>循环跳过，<code>cur.next = list2</code>，返回 list2</td></tr>
+    <tr><td>两条等长链表</td><td>循环结束两条同时为空，剩余语句接 <code>None</code></td></tr>
+  </table>
+</section>
+
+<section class="card" id="summary">
+  <h2>8. 总结</h2>
+  <div class="note green">
+    <p><strong>合并两个有序链表</strong> 精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>哑节点 <code>dummy</code> 统一了头节点的接入逻辑</li>
+      <li>口诀：<strong>比两值 → 接较小 → 移双针</strong></li>
+      <li>循环结束后必须接上「未空的那条」剩余部分</li>
+      <li>时间 O(m+n)，空间 O(1)</li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">mergeTwoLists</span>(self, list1, list2):
+        dummy = cur = ListNode(0)
+        <span style="color:#6B7280">while</span> list1 <span style="color:#6B7280">and</span> list2:
+            <span style="color:#6B7280">if</span> list1.val &lt;= list2.val:
+                cur.next, list1 = list1, list1.next
+            <span style="color:#6B7280">else</span>:
+                cur.next, list2 = list2, list2.next
+            cur = cur.next
+        cur.next = list1 <span style="color:#6B7280">or</span> list2
+        <span style="color:#6B7280">return</span> dummy.next</code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：哑节点先占位，两两比较接较小；任一为空补剩余，回头跳过 dummy。</p>
+</section>
+</main>
+
+<footer>合并两个有序链表 · 算法学习页</footer>
+
+<script>
+(function(){
+const L1 = [1, 2, 4];
+const L2 = [1, 3, 4];
+
+// steps: l1 = list1 当前下标(null=已空), l2 = list2 当前下标(null=已空),
+// out = 已接入结果的取值序列(按顺序), desc = 步骤描述, cmp = 当前比较信息
+const steps = [
+  {l1:0, l2:0, out:[], cmp:'比较：list1=1  vs  list2=1 → 取 list1 的 1',
+   desc:'初始化：哑节点 dummy 作为结果链表头部，cur 指向 dummy。比较 list1[0]=1 与 list2[0]=1。'},
+  {l1:1, l2:0, out:[1], cmp:'比较：list1=2  vs  list2=1 → 取 list2 的 1',
+   desc:'第 1 步：1 ≤ 1，取 list1 的 1 接入。list1 后移到 2。结果：dummy → 1。'},
+  {l1:1, l2:1, out:[1,1], cmp:'比较：list1=2  vs  list2=3 → 取 list1 的 2',
+   desc:'第 2 步：2 > 1，取 list2 的 1 接入。list2 后移到 3。结果：dummy → 1 → 1。'},
+  {l1:2, l2:1, out:[1,1,2], cmp:'比较：list1=4  vs  list2=3 → 取 list2 的 3',
+   desc:'第 3 步：2 ≤ 3，取 list1 的 2 接入。list1 后移到 4。结果：… → 1 → 1 → 2。'},
+  {l1:2, l2:2, out:[1,1,2,3], cmp:'比较：list1=4  vs  list2=4 → 取 list1 的 4',
+   desc:'第 4 步：4 > 3，取 list2 的 3 接入。list2 后移到 4。结果：… → 2 → 3。'},
+  {l1:null, l2:2, out:[1,1,2,3,4], cmp:'list1 已空 → 把 list2 剩余 [4] 整体接上',
+   desc:'第 5 步：4 ≤ 4，取 list1 的 4 接入。list1 后移到 null。结果：… → 3 → 4。'},
+  {l1:null, l2:null, out:[1,1,2,3,4,4], cmp:'完成 ✅ 返回 dummy.next',
+   desc:'第 6 步：list1 已空，把 list2 剩余节点 (4) 整体接到 cur.next。合并完成 ✅ 返回 dummy.next。'},
+];
+
+let curStep = 0, isPlaying = false, interval = null;
+const $ = id => document.getElementById(id);
+const vizL1 = $('vizL1'), vizL2 = $('vizL2'), vizOut = $('vizOut');
+const vizMap = $('vizMap'), vizDesc = $('vizDesc'), stepInfo = $('stepInfo');
+const prevBtn = $('prevBtn'), nextBtn = $('nextBtn'), playBtn = $('playBtn'), resetBtn = $('resetBtn');
+
+// 渲染一条输入链表：arr=取值数组, curIdx=当前待比较下标(null=已空)
+function renderInput(arr, curIdx){
+  let h = '';
+  arr.forEach((v, idx) => {
+    let ncls = '';
+    if(curIdx === null){
+      ncls = 'done';           // 整条已被处理完或剩余
+    } else if(idx === curIdx){
+      ncls = 'cur';
+    } else if(idx < curIdx){
+      ncls = 'done';
+    }
+    const lab = (curIdx !== null && idx === curIdx) ? '<span class="ll-label warm">list</span>' : '<span class="ll-label"></span>';
+    h += `<span class="ll-node">${lab}<span class="ll-val ${ncls}">${v}</span></span>`;
+    if(idx < arr.length - 1){
+      h += `<span class="ll-arrow">→</span>`;
+    } else {
+      h += `<span class="ll-arrow">→</span><span class="ll-null">null</span>`;
+    }
+  });
+  return h;
+}
+
+// 渲染结果链表：dummy + 已接入节点序列(最后一个标 cur)
+function renderOutput(out){
+  let h = '';
+  // dummy 节点
+  h += `<span class="ll-node"><span class="ll-label"></span><span class="ll-val dim">dummy</span></span>`;
+  out.forEach((v, i) => {
+    const isLast = (i === out.length - 1);
+    const lab = isLast ? '<span class="ll-label cur">cur</span>' : '<span class="ll-label"></span>';
+    const cls = isLast ? 'target' : 'target';
+    h += `<span class="ll-arrow rev">→</span><span class="ll-node">${lab}<span class="ll-val ${cls}">${v}</span></span>`;
+  });
+  if(out.length === 0){
+    // cur 还停在 dummy 上
+    h = `<span class="ll-node"><span class="ll-label cur">cur</span><span class="ll-val dim">dummy</span></span>`;
+  }
+  return h;
+}
+
+function render(i){
+  const s = steps[i];
+  vizL1.innerHTML = renderInput(L1, s.l1);
+  vizL2.innerHTML = renderInput(L2, s.l2);
+  vizOut.innerHTML = renderOutput(s.out);
+  vizMap.innerHTML = s.cmp.replace(/list1=(\d+)?/g, (m, d) => `<strong>list1=${d===undefined?'null':d}</strong>`).replace(/list2=(\d+)?/g, (m, d) => `<strong>list2=${d===undefined?'null':d}</strong>`);
+  vizDesc.textContent = s.desc;
+  stepInfo.textContent = `步骤 ${i+1} / ${steps.length}`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === steps.length - 1;
+}
+
+function go(i){ if(i>=0 && i<steps.length){curStep=i; render(curStep);} }
+function nextStep(){ if(curStep<steps.length-1) go(curStep+1); else if(isPlaying) stopPlay(); }
+function prevStep(){ if(curStep>0) go(curStep-1); }
+function togglePlay(){ isPlaying ? stopPlay() : startPlay(); }
+function startPlay(){
+  if(curStep>=steps.length-1) go(0);
+  isPlaying=true; playBtn.textContent='⏸ 暂停'; playBtn.classList.add('playing');
+  interval=setInterval(()=>{if(curStep>=steps.length-1)stopPlay();else nextStep();},1600);
+}
+function stopPlay(){
+  isPlaying=false; playBtn.textContent='▶ 自动播放'; playBtn.classList.remove('playing');
+  if(interval){clearInterval(interval);interval=null;}
+}
+function resetViz(){stopPlay();go(0);}
+
+nextBtn.onclick=nextStep; prevBtn.onclick=prevStep;
+playBtn.onclick=togglePlay; resetBtn.onclick=resetViz;
+document.onkeydown=e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+  else if(e.key===' '){e.preventDefault();togglePlay();}
+};
+go(0);
+})();
+</script>
+</body>
+</html>

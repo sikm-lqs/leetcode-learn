@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2. 统计角矩形数量 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.mini-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:#FAFBFC}
+.mini-card h3{margin:0 0 6px;font-size:15px}
+.mini-card p{margin:4px 0;font-size:13px}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+
+/* ===== 矩阵网格可视化工具集（所有矩阵题目共用） ===== */
+.mx-wrap{display:flex;flex-direction:column;align-items:center;margin:18px 0}
+.mx-grid{display:inline-grid;gap:5px;padding:14px;background:#FAFBFC;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+.mx-cell{display:flex;align-items:center;justify-content:center;width:50px;height:46px;border-radius:9px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:16px;font-family:Consolas,Monaco,monospace;transition:all .3s ease;position:relative;color:var(--text)}
+.mx-cell.zero{border-color:var(--accent-red);background:var(--accent-red-soft);color:var(--accent-red)}
+.mx-cell.mark{border-color:var(--warm);background:var(--warm-soft);color:var(--warm)}
+.mx-cell.clear{border-color:var(--accent-green);background:var(--accent-green-soft);color:#0F7A3D}
+.mx-cell.hl{border-color:var(--primary);background:var(--primary-soft);color:#1E40AF;box-shadow:0 0 0 3px rgba(59,125,216,0.15)}
+.mx-cell.cur{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.1);box-shadow:0 0 0 3px rgba(212,116,76,0.18);z-index:2}
+.mx-cell.swap{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.08);box-shadow:0 0 0 3px rgba(212,116,76,0.15)}
+.mx-cell.path{border-color:var(--accent-green);background:var(--accent-green-soft);color:#0F7A3D}
+.mx-cell.head{border-color:var(--primary);background:var(--primary-soft);color:#1E40AF}
+.mx-cell.dim{opacity:.4;color:#9CA3AF}
+.mx-cell.one{border-color:#A78BFA;background:#F3EFFE;color:#6D28D9}
+.mx-cell.rect{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.2)}
+.mx-tag{position:absolute;top:-9px;right:-6px;background:var(--warm);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;font-family:inherit}
+.mx-row-label{display:flex;gap:5px;margin-top:6px}
+.mx-row-label span{width:50px;text-align:center;font-size:11px;color:var(--text-light);font-family:Consolas,Monaco,monospace}
+
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.viz-map{margin:12px 0;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-family:Consolas,Monaco,monospace;font-size:13px;min-height:40px}
+.viz-map strong{color:var(--warm)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.mx-cell{width:42px;height:40px;font-size:14px}.mx-row-label span{width:42px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 750 · 中等</div>
+  <h1>2. 统计角矩形数量</h1>
+  <p class="subtitle">给定只含 0/1 的矩阵，统计四个顶点都为 1 的轴对齐矩形个数。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：行对 + 组合计数</a>
+  <a href="#viz">3. 交互可视化演示</a>
+  <a href="#walkthrough">4. 详细过程模拟</a>
+  <a href="#code">5. 代码逐段解释</a>
+  <a href="#complexity">6. 复杂度分析</a>
+  <a href="#pitfalls">7. 常见易错点</a>
+  <a href="#summary">8. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定一个 <code>m × n</code> 的 0/1 矩阵 <code>grid</code>，要求统计其中<strong>四个顶点都为 1 的轴对齐子矩形</strong>的个数。即找出所有满足 <code>grid[r1][c1] == grid[r1][c2] == grid[r2][c1] == grid[r2][c2] == 1</code>（其中 <code>r1 &lt; r2</code>, <code>c1 &lt; c2</code>）的四元组个数。</p>
+
+  <div class="note blue">
+    <strong>关键观察：</strong>一个矩形由<strong>两条不同行</strong>和<strong>两条不同列</strong>唯一确定。如果某两行在若干列上「同为 1」，那么任选其中两列就构成一个合法矩形。
+  </div>
+
+  <h3>主示例</h3>
+  <pre><code>输入：grid = [[1,0,1],
+             [1,0,1],
+             [1,0,1]]
+输出：3
+解释：1 仅出现在列 0 和列 2。
+      3 个行对 (0,1)(0,2)(1,2) 各自有 2 列同为 1，
+      每对贡献 C(2,2)=1，合计 3 个矩形。</code></pre>
+
+  <div class="mx-wrap">
+    <div class="mx-grid" style="grid-template-columns:repeat(3,50px)">
+      <div class="mx-cell one">1</div><div class="mx-cell dim">0</div><div class="mx-cell one">1</div>
+      <div class="mx-cell one">1</div><div class="mx-cell dim">0</div><div class="mx-cell one">1</div>
+      <div class="mx-cell one">1</div><div class="mx-cell dim">0</div><div class="mx-cell one">1</div>
+    </div>
+    <div class="mx-row-label"><span>行0</span><span>行1</span><span>行2</span></div>
+  </div>
+
+  <div class="note yellow">
+    <strong>⚠️ Notebook 标注纠错：</strong>notebook 中此 grid 标注的输出 <code>9</code> 是<strong>错误</strong>的。该 grid 的正确输出是 <code>3</code>（列 1 全为 0，不参与任何矩形）。<code>9</code> 实际对应的是<strong>全 1</strong> 的 3×3 矩阵 <code>[[1,1,1],[1,1,1],[1,1,1]]</code>——此时每个行对有 3 列同为 1，贡献 C(3,2)=3，3 个行对合计 3×3=9。详见第 7 节。
+  </div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：行对 + 组合计数</h2>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <h3>📦 朴素法 O(行对 × 列对 × 4)</h3>
+      <p>枚举任意两行两列（C(m,2)×C(n,2) 个组合），检查四个顶点是否都为 1。直观但大量重复扫描。</p>
+    </div>
+    <div class="mini-card">
+      <h3>✅ 行对计数法 O(m²·n)</h3>
+      <p>枚举每对行 (r1,r2)，一次扫描统计两行同为 1 的列数 count，贡献 C(count,2)。把「四顶点判定」压成「两行按位与」。</p>
+    </div>
+  </div>
+
+  <h3>算法流程</h3>
+  <ol>
+    <li>枚举行对 <code>(r1, r2)</code>，其中 <code>r1 &lt; r2</code>（组合，非排列）</li>
+    <li>对每个行对，遍历所有列 <code>c</code>，统计 <code>grid[r1][c] == 1 且 grid[r2][c] == 1</code> 的列数 <code>count</code></li>
+    <li>从这 <code>count</code> 列中任选两列即得到一个矩形，贡献 <code>C(count,2) = count*(count-1)/2</code></li>
+    <li>累加到 <code>ans</code></li>
+  </ol>
+
+  <div class="formula">ans += count × (count − 1) ÷ 2</div>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>把矩形计数转化为<strong>组合问题</strong>——每对行共同为 1 的列中任选两列即一个矩形。一次列扫描即可得出该行对贡献的全部矩形数，无需逐个四元组判定。
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>3. 交互可视化演示</h2>
+  <p>点击「下一步」，观察如何枚举行对、统计共同为 1 的列、累加角矩形数。</p>
+  <p style="font-size:13px;color:var(--text-light);">图例：<span style="color:#6D28D9;font-weight:700">紫</span>=1 ／ <span style="color:#9CA3AF;font-weight:700">灰</span>=0 ／ <span style="color:#1E40AF;font-weight:700">蓝框</span>=当前行对 ／ <span style="color:#0F7A3D;font-weight:700">绿描边</span>=两行同为 1 的列</p>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：grid = [[1,0,1],[1,0,1],[1,0,1]]</div>
+    <div class="viz-info" id="vizInfo">策略：枚举行对 (r1,r2)，统计共同为 1 的列数 count，累加 C(count,2)</div>
+
+    <div class="mx-wrap"><div class="mx-grid" id="vizGrid" style="grid-template-columns:repeat(3,50px)"></div></div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 5</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+
+    <div class="viz-desc" id="vizDesc">点击「下一步」开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>4. 详细过程模拟</h2>
+  <p>以 <code>grid = [[1,0,1],[1,0,1],[1,0,1]]</code> 为例，重点看<strong>行对 (0,1)</strong> 的计数过程。</p>
+
+  <h3>第 0 步：初始化</h3>
+  <p><code>ans = 0</code>。外层枚举行对，本例共 C(3,2)=3 对：<code>(0,1)(0,2)(1,2)</code>。</p>
+
+  <h3>第 1 步：处理行对 (0,1)</h3>
+  <div class="mx-wrap">
+    <div class="mx-grid" style="grid-template-columns:repeat(3,50px)">
+      <div class="mx-cell hl one">1</div><div class="mx-cell hl dim">0</div><div class="mx-cell hl one">1</div>
+      <div class="mx-cell hl one">1</div><div class="mx-cell hl dim">0</div><div class="mx-cell hl one">1</div>
+      <div class="mx-cell one">1</div><div class="mx-cell dim">0</div><div class="mx-cell one">1</div>
+    </div>
+    <div class="mx-row-label"><span>行0 ✓</span><span>行1 ✓</span><span>行2</span></div>
+  </div>
+  <p>逐列比较：列 0 两行均为 1 → 计入；列 1 两行均为 0 → 不计；列 2 两行均为 1 → 计入。<code>count = 2</code>。</p>
+  <div class="formula">C(2, 2) = 2 × 1 ÷ 2 = 1 → ans = 0 + 1 = 1</div>
+  <p>这一对行贡献的矩形顶点是 <code>(0,0)(0,2)(1,0)(1,2)</code>——列 0 与列 2 构成。</p>
+
+  <h3>第 2 步：处理行对 (0,2)</h3>
+  <p>同理，行 0 与行 2 在列 0、列 2 同为 1，<code>count = 2</code>，贡献 C(2,2)=1。<code>ans = 1 + 1 = 2</code>。</p>
+
+  <h3>第 3 步：处理行对 (1,2)</h3>
+  <p>行 1 与行 2 在列 0、列 2 同为 1，<code>count = 2</code>，贡献 C(2,2)=1。<code>ans = 2 + 1 = 3</code>。</p>
+
+  <h3>第 4 步：汇总</h3>
+  <table>
+    <tr><th>行对 (r1,r2)</th><th>同为 1 的列</th><th>count</th><th>C(count,2)</th><th>ans 累计</th></tr>
+    <tr><td>(0,1)</td><td>列 0、列 2</td><td>2</td><td>1</td><td>1</td></tr>
+    <tr><td>(0,2)</td><td>列 0、列 2</td><td>2</td><td>1</td><td>2</td></tr>
+    <tr><td>(1,2)</td><td>列 0、列 2</td><td>2</td><td>1</td><td>3</td></tr>
+  </table>
+  <div class="note green">✅ 最终结果：<strong>ans = 3</strong>。其中一个示例矩形的四个顶点为 (0,0)(0,2)(2,0)(2,2)。</div>
+
+  <div class="note yellow">
+    <strong>对比全 1 矩阵：</strong>若 <code>grid = [[1,1,1],[1,1,1],[1,1,1]]</code>，每个行对在 3 列上同为 1，<code>C(3,2)=3</code>，3 个行对合计 <strong>3×3=9</strong>。这就是 notebook 误标 9 的真实出处——但与本例 grid 不同。
+  </div>
+</section>
+
+<section class="card" id="code">
+  <h2>5. 代码逐段解释</h2>
+
+  <h3>完整代码</h3>
+  <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">countCornerRectangles</span>(self, grid: List[List[int]]) -> int:
+        m, n = <span style="color:#D4744C">len</span>(grid), <span style="color:#D4744C">len</span>(grid[0])
+        ans = 0
+        <span style="color:#6B7280">for</span> r1 <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(m):
+            <span style="color:#6B7280">for</span> r2 <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(r1 + 1, m):
+                count = 0
+                <span style="color:#6B7280">for</span> c <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(n):
+                    <span style="color:#6B7280">if</span> grid[r1][c] == 1 <span style="color:#6B7280">and</span> grid[r2][c] == 1:
+                        count += 1
+                ans += count * (count - 1) // 2
+        <span style="color:#6B7280">return</span> ans</code></pre>
+
+  <p><strong>逐段说明</strong></p>
+  <p><strong>第 1 段（初始化）：</strong><code>m, n</code> 分别为行数和列数；<code>ans</code> 累计矩形总数。</p>
+  <p><strong>第 2 段（双重循环枚举行对）：</strong><code>r2</code> 从 <code>r1+1</code> 开始，保证 <code>r1 &lt; r2</code>——这是<strong>组合</strong>而非排列，避免重复计数和自配对。</p>
+  <p><strong>第 3 段（统计共同为 1 的列）：</strong>对当前行对遍历所有列，条件 <code>grid[r1][c]==1 and grid[r2][c]==1</code> 即「按列与运算」，累加 <code>count</code>。</p>
+  <p><strong>第 4 段（组合贡献）：</strong><code>count*(count-1)//2</code> 就是 C(count,2)——从 count 列中选 2 列的方案数。整除 <code>//</code> 保证结果是整数。<code>count&lt;2</code> 时该式自然为 0，无需特判。</p>
+</section>
+
+<section class="card" id="complexity">
+  <h2>6. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(m²·n)</strong></td><td>枚举 C(m,2) 个行对，每对扫描 n 列。</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>只用常数个变量 ans、count。</td></tr>
+  </table>
+  <div class="note blue">
+    <strong>对比：</strong>朴素四重循环 O(m²·n²) 需对每个四元组判 4 个顶点；行对计数法把内部两重列循环压成一次列扫描 + 一次组合运算，常数和渐进都更优。
+  </div>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>7. 常见易错点</h2>
+
+  <h3>错误一：notebook 标注的「9」实为全 1 矩阵的答案</h3>
+  <div class="note red">
+    <strong>典型混淆：</strong>notebook 对 <code>[[1,0,1],[1,0,1],[1,0,1]]</code> 标注输出 9，但运行代码实际只得 <strong>3</strong>。
+  </div>
+  <p>原因：列 1 三行全为 0，<strong>不参与任何矩形</strong>。3 个行对在列 0、列 2 同为 1（count=2），各贡献 C(2,2)=1，合计 3。</p>
+  <p><code>9</code> 实际是全 1 矩阵 <code>[[1,1,1],[1,1,1],[1,1,1]]</code> 的答案：每个行对 count=3，C(3,2)=3，3 个行对 × 3 = <strong>9</strong>。两者 grid 不同，结果不能套用。</p>
+  <pre><code><span style="color:#6B7280"># 验证（可在 notebook 中运行）</span>
+<span style="color:#D4744C">print</span>(Solution().countCornerRectangles([[1,0,1],[1,0,1],[1,0,1]]))  <span style="color:#6B7280"># → 3</span>
+<span style="color:#D4744C">print</span>(Solution().countCornerRectangles([[1,1,1],[1,1,1],[1,1,1]]))  <span style="color:#6B7280"># → 9</span></code></pre>
+
+  <h3>错误二：count &lt; 2 时未正确处理</h3>
+  <p><code>C(count,2) = count*(count-1)/2</code> 在 <code>count=0</code> 或 <code>1</code> 时结果为 0，<strong>天然不贡献</strong>，无需 if 特判。但若误写成 <code>count*(count-1)</code> 漏除 2，或把 <code>//</code> 写成 <code>/</code>（返回 float），都会出错。</p>
+
+  <h3>错误三：行对枚举当成排列</h3>
+  <pre><code><span style="color:#6B7280"># 错误：r2 从 0 开始会重复计算 (1,0)(2,0)(2,1) 等已统计的行对</span>
+<span style="color:#6B7280">for</span> r2 <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(m):        <span style="color:#6B7280"># ❌ 与 r1 不区分大小</span>
+    <span style="color:#6B7280">if</span> r2 != r1:
+        ...</code></pre>
+  <p>正确写法是 <code>r2 ∈ range(r1+1, m)</code>，保证 <code>r1 &lt; r2</code>，每个无序行对只算一次。</p>
+
+  <h3>错误四：忘记整除</h3>
+  <p><code>count*(count-1)</code> 必为偶数，但 Python 中 <code>/</code> 返回 float，建议用 <code>//</code> 保持 int 类型，避免类型问题。</p>
+</section>
+
+<section class="card" id="summary">
+  <h2>8. 总结</h2>
+  <div class="note green">
+    <p><strong>统计角矩形数量</strong> 精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>矩形 = 两行 + 两列，四顶点同为 1</li>
+      <li>枚举<strong>行对</strong>，统计共同为 1 的列数 count</li>
+      <li>组合贡献 C(count,2) = count*(count-1)/2</li>
+      <li>时间 O(m²n)，空间 O(1)</li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">countCornerRectangles</span>(self, grid):
+        m, n = <span style="color:#D4744C">len</span>(grid), <span style="color:#D4744C">len</span>(grid[0])
+        ans = 0
+        <span style="color:#6B7280">for</span> r1 <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(m):
+            <span style="color:#6B7280">for</span> r2 <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(r1+1, m):
+                count = <span style="color:#D4744C">sum</span>(1 <span style="color:#6B7280">for</span> c <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(n) <span style="color:#6B7280">if</span> grid[r1][c]==grid[r2][c]==1)
+                ans += count*(count-1)//2
+        <span style="color:#6B7280">return</span> ans</code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：行对扫列数 count，组合 C 值即矩形数。</p>
+</section>
+</main>
+
+<footer>统计角矩形数量 · 算法学习页</footer>
+
+<script>
+(function(){
+const rows = 3, cols = 3;
+const grid = [[1,0,1],[1,0,1],[1,0,1]];
+// 每步：
+//   hlRows: 当前高亮的行对（数组，元素为行号），为 null 表示不高亮任何行
+//   rectCells: 标 .rect 的格子坐标列表 [r,c]（行对内共同为 1 的列在该两行内的格子）
+//   sampleRect: 最后一步示例矩形四个顶点 [r,c] 列表，用 .rect 标出
+//   count, ans: 当前 count 与累计 ans
+//   desc: 步骤说明
+const steps = [
+  {hlRows:null,  rectCells:[], sampleRect:null, count:null, ans:0,
+   desc:'初始：1（紫色）位于列 0、列 2；列 1 全为 0。ans=0。枚举所有行对 (r1,r2)，统计两行同为 1 的列数 count，累加 C(count,2)。'},
+  {hlRows:[0,1], rectCells:[[0,0],[0,2],[1,0],[1,2]], sampleRect:null, count:2, ans:1,
+   desc:'行对 (0,1)：同为 1 的列是 0、2（绿描边），count=2。贡献 C(2,2)=1，ans=0+1=1。'},
+  {hlRows:[0,2], rectCells:[[0,0],[0,2],[2,0],[2,2]], sampleRect:null, count:2, ans:2,
+   desc:'行对 (0,2)：同为 1 的列是 0、2，count=2。ans=1+1=2。'},
+  {hlRows:[1,2], rectCells:[[1,0],[1,2],[2,0],[2,2]], sampleRect:null, count:2, ans:3,
+   desc:'行对 (1,2)：同为 1 的列是 0、2，count=2。ans=2+1=3。'},
+  {hlRows:null,  rectCells:[], sampleRect:[[0,0],[0,2],[2,0],[2,2]], count:null, ans:3,
+   desc:'✅ 共 3 个角矩形。示例矩形顶点：(0,0)(0,2)(2,0)(2,2)。注：若矩阵为全 1 的 3×3，则为 C(3,2)×C(3,2)=9。'},
+];
+
+let curStep = 0, isPlaying = false, interval = null;
+const $ = id => document.getElementById(id);
+const vizGrid = $('vizGrid'), vizDesc = $('vizDesc'), stepInfo = $('stepInfo'), vizInfo = $('vizInfo');
+const prevBtn = $('prevBtn'), nextBtn = $('nextBtn'), playBtn = $('playBtn'), resetBtn = $('resetBtn');
+
+function render(i){
+  const s = steps[i];
+  // 预处理 rect 集合：行对高亮期间用 rect；最后一步用 sampleRect 替换
+  const rectSet = new Set();
+  if(s.sampleRect){
+    s.sampleRect.forEach(([r,c]) => rectSet.add(r+','+c));
+  } else {
+    s.rectCells.forEach(([r,c]) => rectSet.add(r+','+c));
+  }
+  let h = '';
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const val = grid[r][c];
+      const classes = [];
+      if(val === 1) classes.push('one');
+      else classes.push('dim');
+      // 行高亮（仅在未到结果步、且当前行属于行对时加 hl）
+      if(s.hlRows && s.hlRows.indexOf(r) !== -1) classes.push('hl');
+      // 共同列为 1 的格子（或示例矩形顶点）加 rect
+      if(rectSet.has(r+','+c)) classes.push('rect');
+      h += `<div class="mx-cell ${classes.join(' ')}">${val}</div>`;
+    }
+  }
+  vizGrid.innerHTML = h;
+
+  // 信息栏：显示 count 与 ans
+  if(s.count !== null){
+    vizInfo.textContent = `当前行对 (r${Math.min(...s.hlRows)},r${Math.max(...s.hlRows)})：count = ${s.count}，C(${s.count},2) = ${s.count*(s.count-1)/2} → 累计 ans = ${s.ans}`;
+  } else {
+    vizInfo.textContent = `最终结果：ans = ${s.ans}（共 ${s.ans} 个角矩形）`;
+  }
+
+  vizDesc.textContent = s.desc;
+  stepInfo.textContent = `步骤 ${i+1} / ${steps.length}`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === steps.length - 1;
+}
+
+function go(i){ if(i>=0 && i<steps.length){curStep=i; render(curStep);} }
+function nextStep(){ if(curStep<steps.length-1) go(curStep+1); else if(isPlaying) stopPlay(); }
+function prevStep(){ if(curStep>0) go(curStep-1); }
+function togglePlay(){ isPlaying ? stopPlay() : startPlay(); }
+function startPlay(){
+  if(curStep>=steps.length-1) go(0);
+  isPlaying=true; playBtn.textContent='⏸ 暂停'; playBtn.classList.add('playing');
+  interval=setInterval(()=>{if(curStep>=steps.length-1)stopPlay();else nextStep();},1800);
+}
+function stopPlay(){
+  isPlaying=false; playBtn.textContent='▶ 自动播放'; playBtn.classList.remove('playing');
+  if(interval){clearInterval(interval);interval=null;}
+}
+function resetViz(){stopPlay();go(0);}
+
+nextBtn.onclick=nextStep; prevBtn.onclick=prevStep;
+playBtn.onclick=togglePlay; resetBtn.onclick=resetViz;
+document.onkeydown=e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+  else if(e.key===' '){e.preventDefault();togglePlay();}
+};
+go(0);
+})();
+</script>
+</body>
+</html>

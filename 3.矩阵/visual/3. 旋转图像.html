@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3. 旋转图像 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.mini-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:#FAFBFC}
+.mini-card h3{margin:0 0 6px;font-size:15px}
+.mini-card p{margin:4px 0;font-size:13px}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+
+/* ===== 矩阵网格可视化工具集（所有矩阵题目共用） ===== */
+.mx-wrap{display:flex;flex-direction:column;align-items:center;margin:18px 0}
+.mx-grid{display:inline-grid;gap:5px;padding:14px;background:#FAFBFC;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+.mx-cell{display:flex;align-items:center;justify-content:center;width:50px;height:46px;border-radius:9px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:16px;font-family:Consolas,Monaco,monospace;transition:all .3s ease;position:relative;color:var(--text)}
+.mx-cell.zero{border-color:var(--accent-red);background:var(--accent-red-soft);color:var(--accent-red)}
+.mx-cell.mark{border-color:var(--warm);background:var(--warm-soft);color:var(--warm)}
+.mx-cell.clear{border-color:var(--accent-green);background:var(--accent-green-soft);color:#0F7A3D}
+.mx-cell.hl{border-color:var(--primary);background:var(--primary-soft);color:#1E40AF;box-shadow:0 0 0 3px rgba(59,125,216,0.15)}
+.mx-cell.cur{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.1);box-shadow:0 0 0 3px rgba(212,116,76,0.18);z-index:2}
+.mx-cell.swap{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.08);box-shadow:0 0 0 3px rgba(212,116,76,0.15)}
+.mx-cell.path{border-color:var(--accent-green);background:var(--accent-green-soft);color:#0F7A3D}
+.mx-cell.head{border-color:var(--primary);background:var(--primary-soft);color:#1E40AF}
+.mx-cell.dim{opacity:.4;color:#9CA3AF}
+.mx-cell.one{border-color:#A78BFA;background:#F3EFFE;color:#6D28D9}
+.mx-cell.rect{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.2)}
+.mx-tag{position:absolute;top:-9px;right:-6px;background:var(--warm);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;font-family:inherit}
+.mx-row-label{display:flex;gap:5px;margin-top:6px}
+.mx-row-label span{width:50px;text-align:center;font-size:11px;color:var(--text-light);font-family:Consolas,Monaco,monospace}
+
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.viz-map{margin:12px 0;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-family:Consolas,Monaco,monospace;font-size:13px;min-height:40px}
+.viz-map strong{color:var(--warm)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.mx-cell{width:42px;height:40px;font-size:14px}.mx-row-label span{width:42px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 48 · 中等</div>
+  <h1>3. 旋转图像</h1>
+  <p class="subtitle">将 n×n 矩阵原地顺时针旋转 90 度。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：上下反转 + 主对角线转置</a>
+  <a href="#viz">3. 交互可视化演示</a>
+  <a href="#walkthrough">4. 详细过程模拟</a>
+  <a href="#code">5. 代码逐段解释</a>
+  <a href="#complexity">6. 复杂度分析</a>
+  <a href="#pitfalls">7. 常见易错点</a>
+  <a href="#summary">8. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定一个 <code>n × n</code> 的二维矩阵 <code>matrix</code>，将其<strong>原地</strong>顺时针旋转 90 度。即不能开辟新矩阵，必须直接在原矩阵上修改。</p>
+
+  <div class="note blue">
+    <strong>关键：</strong>「原地」意味着空间 O(1)。直接模拟四个位置的循环旋转虽然可行，但坐标推导容易出错；下面用一个更优雅的「两步分解法」。
+  </div>
+
+  <h3>示例</h3>
+  <pre><code>输入：[[1,2,3],
+      [4,5,6],
+      [7,8,9]]
+输出：[[7,4,1],
+      [8,5,2],
+      [9,6,3]]
+解释：整个矩阵顺时针转 90°，行变成列</code></pre>
+
+  <div class="mx-wrap">
+    <div class="mx-grid" style="grid-template-columns:repeat(3,50px)">
+      <div class="mx-cell">1</div><div class="mx-cell">2</div><div class="mx-cell">3</div>
+      <div class="mx-cell">4</div><div class="mx-cell">5</div><div class="mx-cell">6</div>
+      <div class="mx-cell">7</div><div class="mx-cell">8</div><div class="mx-cell">9</div>
+    </div>
+    <div class="mx-row-label"><span>行0</span><span>行1</span><span>行2</span></div>
+  </div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：上下反转 + 主对角线转置</h2>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <h3>🔄 朴素法 O(n²) 空间</h3>
+      <p>开一个 n×n 辅助矩阵，按 <code>new[j][n-1-i] = old[i][j]</code> 逐格填入。逻辑直观但多用了一整块内存。</p>
+    </div>
+    <div class="mini-card">
+      <h3>✅ 分解法 O(1) 空间</h3>
+      <p>把「旋转 90°」拆成两个简单操作的复合：<strong>上下反转</strong> + <strong>沿主对角线转置</strong>，全部原地完成。</p>
+    </div>
+  </div>
+
+  <h3>两步操作</h3>
+  <ol>
+    <li><strong>上下反转</strong>：把第 <code>i</code> 行与第 <code>n-1-i</code> 行整体交换，<code>i</code> 取 <code>0 ~ n//2-1</code>。</li>
+    <li><strong>主对角线转置</strong>：只处理<strong>右上三角</strong>（<code>j &gt; i</code>），交换 <code>matrix[i][j]</code> 与 <code>matrix[j][i]</code>。</li>
+  </ol>
+
+  <div class="formula">
+    顺时针 90° = reverse(上下) ◦ transpose(主对角线)
+  </div>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>把旋转拆成两个简单操作，避免复杂的四角坐标推导。改变两步的顺序还能得到逆时针：<strong>先转置后左右翻转 = 逆时针 90°</strong>。
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>3. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 <code>[[1,2,3],[4,5,6],[7,8,9]]</code> 如何通过两步操作旋转 90°。</p>
+  <p style="font-size:13px;color:var(--text-light);">图例：<span style="color:var(--warm);font-weight:700">暖</span>=正在交换 ／ <span style="color:#0F7A3D;font-weight:700">绿</span>=最终结果</p>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]，n = 3</div>
+    <div class="viz-info" id="vizInfo">目标：原地顺时针旋转 90°，空间 O(1)</div>
+
+    <div class="mx-wrap"><div class="mx-grid" id="vizGrid" style="grid-template-columns:repeat(3,50px)"></div></div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 6</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+
+    <div class="viz-desc" id="vizDesc">点击「下一步」开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>4. 详细过程模拟</h2>
+  <p>以 <code>[[1,2,3],[4,5,6],[7,8,9]]</code> 为例（n = 3），分两个阶段完成旋转。</p>
+
+  <h3>阶段一：上下反转</h3>
+  <p>把第 <code>0</code> 行与第 <code>n-1-0 = 2</code> 行整体交换。中行 <code>i=1</code> 因 <code>i &lt; n//2 = 1</code> 不成立而不动。</p>
+  <div class="mx-wrap">
+    <div class="mx-grid" style="grid-template-columns:repeat(3,50px)">
+      <div class="mx-cell swap">1</div><div class="mx-cell swap">2</div><div class="mx-cell swap">3</div>
+      <div class="mx-cell">4</div><div class="mx-cell">5</div><div class="mx-cell">6</div>
+      <div class="mx-cell swap">7</div><div class="mx-cell swap">8</div><div class="mx-cell swap">9</div>
+    </div>
+  </div>
+  <p>反转后：<code>[[7,8,9],[4,5,6],[1,2,3]]</code>。此时行序已与目标方向一致，但每行内部顺序还没调好。</p>
+
+  <h3>阶段二：主对角线转置</h3>
+  <p>沿主对角线（左上 → 右下）对称交换<strong>右上三角</strong>的格子，共三对：</p>
+  <div class="mx-wrap">
+    <div class="mx-grid" style="grid-template-columns:repeat(3,50px)">
+      <div class="mx-cell">7</div><div class="mx-cell swap">4</div><div class="mx-cell swap">1</div>
+      <div class="mx-cell swap">8</div><div class="mx-cell">5</div><div class="mx-cell swap">2</div>
+      <div class="mx-cell swap">9</div><div class="mx-cell swap">6</div><div class="mx-cell">3</div>
+    </div>
+  </div>
+  <ul>
+    <li><code>(0,1)=8 ↔ (1,0)=4</code></li>
+    <li><code>(0,2)=9 ↔ (2,0)=1</code></li>
+    <li><code>(1,2)=6 ↔ (2,1)=2</code></li>
+  </ul>
+  <p>转置后得到 <code>[[7,4,1],[8,5,2],[9,6,3]]</code>，即最终答案。</p>
+
+  <div class="note green">✅ 最终结果：[[7,4,1],[8,5,2],[9,6,3]]，整个矩阵顺时针旋转 90°。</div>
+
+  <div class="formula">
+    顺时针 90° = reverse(上下) + transpose<br>
+    逆时针 90° = transpose + reverse(左右)
+  </div>
+
+  <div class="note yellow">
+    <strong>记忆口诀：</strong>顺时针——「上下翻 + 转置」；逆时针——「转置 + 左右翻」。先转后翻 = 逆，先翻后转 = 顺，两步顺序不可随意调换。
+  </div>
+</section>
+
+<section class="card" id="code">
+  <h2>5. 代码逐段解释</h2>
+
+  <h3>完整代码</h3>
+  <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">rotate</span>(self, matrix: List[List[int]]) -> <span style="color:#6B7280">None</span>:
+        n = <span style="color:#D4744C">len</span>(matrix)
+
+        <span style="color:#6B7280"># 1. 上下反转：第 i 行与第 n-1-i 行交换</span>
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(n // 2):
+            matrix[i], matrix[n - 1 - i] = matrix[n - 1 - i], matrix[i]
+
+        <span style="color:#6B7280"># 2. 主对角线转置：交换右上三角 (j > i)</span>
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(n):
+            <span style="color:#6B7280">for</span> j <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(i + 1, n):
+                matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]</code></pre>
+
+  <p><strong>逐段说明</strong></p>
+  <p><strong>第 1 段（上下反转）：</strong>循环变量 <code>i</code> 只走前一半 <code>0 ~ n//2-1</code>，让第 <code>i</code> 行与倒数第 <code>i</code> 行（<code>n-1-i</code>）整体对调。Python 的 <code>a, b = b, a</code> 可直接交换两行引用，无需临时变量。</p>
+  <p><strong>第 2 段（转置）：</strong>外层 <code>i</code> 走全部行，内层 <code>j</code> 从 <code>i+1</code> 开始——即<strong>只遍历右上三角</strong>。对每个 <code>(i, j)</code> 与关于主对角线的对称点 <code>(j, i)</code> 交换，等价于矩阵转置。</p>
+  <p><strong>两步合起来</strong>：上下反转把行的方向倒过来，转置再把行列互换，整体就是顺时针 90°。每一步都在原矩阵上完成，无需额外空间。</p>
+</section>
+
+<section class="card" id="complexity">
+  <h2>6. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n²)</strong></td><td>上下反转 O(n·n)（行交换）+ 转置遍历右上三角约 n²/2，合计 O(n²)。</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>仅用常数个下标变量，全部在原矩阵上修改。</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>7. 常见易错点</h2>
+
+  <h3>错误一：转置遍历整个矩阵</h3>
+  <pre><code># 错误：i, j 都从 0 到 n，会把每对交换两次 → 还原成原样
+for i in range(n):
+    for j in range(n):          # ❌ j 应该从 i+1 开始
+        matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]</code></pre>
+  <p>必须只处理<strong>右上三角</strong>（<code>j &gt; i</code>），否则一对元素会被交换两次又变回去。</p>
+
+  <h3>错误二：上下反转循环越界</h3>
+  <pre><code># 错误：i 走到 n，会把每行交换两次还原
+for i in range(n):              # ❌ 应该是 range(n // 2)
+    matrix[i], matrix[n-1-i] = matrix[n-1-i], matrix[i]</code></pre>
+  <p>循环上限必须是 <code>n // 2</code>，让前一半行与后一半行各交换一次即可。</p>
+
+  <h3>错误三：返回新矩阵</h3>
+  <p>题目要求<strong>原地</strong>修改 <code>matrix</code>，不能 <code>return</code> 一个新构造的二维列表。两步操作都直接作用于入参本身。</p>
+
+  <h3>错误四：搞混两种旋转的顺序</h3>
+  <p>顺时针是「<strong>先</strong>上下反转<strong>后</strong>转置」；若写成「先转置后左右翻转」得到的则是<strong>逆时针</strong> 90°，方向相反，不能混用。</p>
+</section>
+
+<section class="card" id="summary">
+  <h2>8. 总结</h2>
+  <div class="note green">
+    <p><strong>旋转图像</strong> 精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>把旋转 90° 拆成两个简单操作：<strong>上下反转 + 主对角线转置</strong></li>
+      <li>反转循环 <code>i &lt; n // 2</code>；转置只遍历右上三角 <code>j &gt; i</code></li>
+      <li>全程原地修改，时间 O(n²)，空间 O(1)</li>
+      <li>换序可得逆时针：<strong>转置 + 左右翻转</strong></li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">rotate</span>(self, matrix):
+        n = <span style="color:#D4744C">len</span>(matrix)
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(n//2):
+            matrix[i], matrix[n-1-i] = matrix[n-1-i], matrix[i]
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(n):
+            <span style="color:#6B7280">for</span> j <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(i+1, n):
+                matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]</code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：上下翻一次，右上三角转一次，顺时针九十度。</p>
+</section>
+</main>
+
+<footer>旋转图像 · 算法学习页</footer>
+
+<script>
+(function(){
+const rows = 3, cols = 3;
+// 每步：vals 为当前 3×3 数值矩阵；swaps 为本步正在交换的坐标列表（用于 .swap 高亮）
+// 末步额外标记 final=true，所有格子用 .path(绿)
+const steps = [
+  {vals:[[1,2,3],[4,5,6],[7,8,9]], swaps:[],
+   desc:'初始矩阵。顺时针旋转 90° = 上下反转 + 主对角线转置。'},
+  {vals:[[7,8,9],[4,5,6],[1,2,3]], swaps:[[0,0],[0,1],[0,2],[2,0],[2,1],[2,2]],
+   desc:'步骤 1 上下反转：第 0 行与第 2 行互换。'},
+  {vals:[[7,4,9],[8,5,6],[1,2,3]], swaps:[[0,1],[1,0]],
+   desc:'步骤 2 转置：交换 (0,1) 与 (1,0)，即 8 与 4 互换。'},
+  {vals:[[7,4,1],[8,5,6],[9,2,3]], swaps:[[0,2],[2,0]],
+   desc:'交换 (0,2) 与 (2,0)，即 9 与 1 互换。'},
+  {vals:[[7,4,1],[8,5,2],[9,6,3]], swaps:[[1,2],[2,1]],
+   desc:'交换 (1,2) 与 (2,1)，即 6 与 2 互换。转置完成。'},
+  {vals:[[7,4,1],[8,5,2],[9,6,3]], swaps:[], final:true,
+   desc:'✅ 结果：[[7,4,1],[8,5,2],[9,6,3]]，顺时针旋转 90° 完成。'},
+];
+
+let curStep = 0, isPlaying = false, interval = null;
+const $ = id => document.getElementById(id);
+const vizGrid = $('vizGrid'), vizDesc = $('vizDesc'), stepInfo = $('stepInfo');
+const prevBtn = $('prevBtn'), nextBtn = $('nextBtn'), playBtn = $('playBtn'), resetBtn = $('resetBtn');
+
+function inSwaps(swaps, r, c){
+  for(const [sr, sc] of swaps){ if(sr === r && sc === c) return true; }
+  return false;
+}
+
+function render(i){
+  const s = steps[i];
+  let h = '';
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      let cls = '';
+      if(s.final){ cls = 'path'; }
+      else if(inSwaps(s.swaps, r, c)){ cls = 'swap'; }
+      h += `<div class="mx-cell ${cls}">${s.vals[r][c]}</div>`;
+    }
+  }
+  vizGrid.innerHTML = h;
+  vizDesc.textContent = s.desc;
+  stepInfo.textContent = `步骤 ${i+1} / ${steps.length}`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === steps.length - 1;
+}
+
+function go(i){ if(i>=0 && i<steps.length){curStep=i; render(curStep);} }
+function nextStep(){ if(curStep<steps.length-1) go(curStep+1); else if(isPlaying) stopPlay(); }
+function prevStep(){ if(curStep>0) go(curStep-1); }
+function togglePlay(){ isPlaying ? stopPlay() : startPlay(); }
+function startPlay(){
+  if(curStep>=steps.length-1) go(0);
+  isPlaying=true; playBtn.textContent='⏸ 暂停'; playBtn.classList.add('playing');
+  interval=setInterval(()=>{if(curStep>=steps.length-1)stopPlay();else nextStep();},1500);
+}
+function stopPlay(){
+  isPlaying=false; playBtn.textContent='▶ 自动播放'; playBtn.classList.remove('playing');
+  if(interval){clearInterval(interval);interval=null;}
+}
+function resetViz(){stopPlay();go(0);}
+
+nextBtn.onclick=nextStep; prevBtn.onclick=prevStep;
+playBtn.onclick=togglePlay; resetBtn.onclick=resetViz;
+document.onkeydown=e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+  else if(e.key===' '){e.preventDefault();togglePlay();}
+};
+go(0);
+})();
+</script>
+</body>
+</html>

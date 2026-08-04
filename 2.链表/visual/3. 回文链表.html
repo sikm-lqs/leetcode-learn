@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3. 回文链表 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
+.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
+.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.mini-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:#FAFBFC}
+.mini-card h3{margin:0 0 6px;font-size:15px}
+.mini-card p{margin:4px 0;font-size:13px}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+
+/* ===== 链表节点可视化工具集（所有链表题目共用） ===== */
+.ll-row{display:flex;flex-wrap:wrap;gap:0;align-items:flex-end;justify-content:center;margin:18px 0;font-family:Consolas,Monaco,monospace}
+.ll-node{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;padding-top:24px}
+.ll-val{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:44px;padding:4px 12px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:15px;font-family:Consolas,Monaco,monospace;transition:all .35s ease}
+.ll-val.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-3px);box-shadow:0 0 0 3px rgba(212,116,76,0.15)}
+.ll-val.done{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.ll-val.target{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.2)}
+.ll-val.dim{opacity:.5;color:#9CA3AF}
+.ll-val.hi{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(59,125,216,0.15)}
+.ll-label{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;font-family:Consolas,Monaco,monospace;white-space:nowrap;padding:2px 7px;border-radius:6px;background:#F1F5F9;color:#6B7280;min-height:16px}
+.ll-label.warm{background:var(--warm-soft);color:var(--warm)}
+.ll-label.cur{background:var(--primary-soft);color:var(--primary)}
+.ll-label.yellow{background:var(--accent-yellow-soft);color:var(--accent-yellow)}
+.ll-label.green{background:var(--accent-green-soft);color:var(--accent-green)}
+.ll-label.purple{background:var(--accent-purple-soft);color:var(--accent-purple)}
+.ll-arrow{display:inline-flex;align-items:center;justify-content:center;padding:0 3px;color:#94A3B8;font-size:22px;font-weight:700;line-height:44px;transition:all .35s ease;min-height:44px}
+.ll-arrow.rev{color:var(--accent-green)}
+.ll-arrow.cut{color:var(--warm);transform:scale(1.15)}
+.ll-arrow.hot{color:var(--primary)}
+.ll-null{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:4px 10px;border-radius:10px;border:2px dashed #CBD5E1;background:#F8FAFC;color:#6B7280;font-weight:600;font-size:13px;font-family:Consolas,Monaco,monospace;line-height:44px}
+
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.viz-map{margin:12px 0;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-family:Consolas,Monaco,monospace;font-size:13px;min-height:40px}
+.viz-map strong{color:var(--warm)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.ll-val{min-width:40px;height:38px;font-size:13px}.ll-null{height:38px;line-height:38px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 234 · 简单</div>
+  <h1>3. 回文链表</h1>
+  <p class="subtitle">给定单链表头节点 head，判断是否为回文链表。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：找中点 → 反转后半 → 对撞比较</a>
+  <a href="#viz">3. 交互可视化演示</a>
+  <a href="#walkthrough">4. 详细过程模拟</a>
+  <a href="#code">5. 代码逐段解释</a>
+  <a href="#complexity">6. 复杂度分析</a>
+  <a href="#pitfalls">7. 常见易错点</a>
+  <a href="#summary">8. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定一个单链表的<code>head</code>，判断该链表是否为<strong>回文</strong>（正读反读都一样）。</p>
+
+  <div class="note blue">
+    <strong>约束：</strong>要求时间 <code>O(n)</code>、空间 <code>O(1)</code>。回文即「前半段」与「反转后的后半段」完全相同。
+  </div>
+
+  <h3>示例</h3>
+  <pre><code>输入：head = [1, 2, 2, 1]
+输出：true
+
+输入：head = [1, 2, 3, 2, 1]
+输出：true
+
+输入：head = [1, 2, 3, 4]
+输出：false</code></pre>
+
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-null">null</span>
+  </div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;">从左读：1→2→2→1，从右读：1→2→2→1，相同 → 回文。</p>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：找中点 → 反转后半 → 对撞比较</h2>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <h3>🐢 快慢指针找中点</h3>
+      <p><code>slow</code> 走一步、<code>fast</code> 走两步。当 <code>fast</code> 到达末尾时，<code>slow</code> 正好停在中点。</p>
+    </div>
+    <div class="mini-card">
+      <h3>🔁 原地反转后半段</h3>
+      <p>从 <code>slow</code> 开始，用三指针法把后半段反转，得到右指针 <code>right</code>（原尾节点）。</p>
+    </div>
+    <div class="mini-card">
+      <h3>⚖️ 左右对撞比较</h3>
+      <p><code>left</code> 从头出发向右，<code>right</code> 从尾出发向左，逐个比较 <code>val</code>，全部相等即回文。</p>
+    </div>
+    <div class="mini-card">
+      <h3>💡 空间优化</h3>
+      <p>不借助数组，所有操作在原链表上完成，空间 <code>O(1)</code>。</p>
+    </div>
+  </div>
+
+  <h3>算法流程</h3>
+  <ol>
+    <li>初始化 <code>slow = fast = head</code></li>
+    <li>当 <code>fast</code> 与 <code>fast.next</code> 都不为空时循环：<code>slow = slow.next</code>，<code>fast = fast.next.next</code></li>
+    <li>循环结束时 <code>slow</code> 停在后半段起点</li>
+    <li>从 <code>slow</code> 开始反转后半段，得到新头 <code>prev</code></li>
+    <li>令 <code>left = head</code>，<code>right = prev</code>，同时前进比较：<code>left.val</code> 与 <code>right.val</code></li>
+    <li>若出现不等，返回 <code>false</code>；若 <code>right</code> 走到 <code>null</code>，返回 <code>true</code></li>
+  </ol>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong><code>slow</code> 走一步、<code>fast</code> 走两步定位中点；反转后半段后，<code>right</code> 从尾向中间走、<code>left</code> 从头向中间走，一次遍历完成比较。
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>3. 交互可视化演示</h2>
+  <p>点击「下一步」，观察快慢指针定位中点、原地反转后半段、左右对撞比较的完整过程。绿色箭头表示已反转的指针。</p>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：head = [1, 2, 2, 1] → true</div>
+    <div class="viz-info" id="vizInfo">目标：判断是否为回文链表</div>
+
+    <div class="ll-row" id="vizCells"></div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 8</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+
+    <div class="viz-desc" id="vizDesc">点击「下一步」开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>4. 详细过程模拟</h2>
+  <p>以 <code>head = [1, 2, 2, 1]</code> 为例，展示两个关键画面。</p>
+
+  <h3>关键画面一：快慢指针定位中点</h3>
+  <p><code>slow</code> 每次走一步，<code>fast</code> 每次走两步。当 <code>fast</code> 无法再前进时，<code>slow</code> 恰好停在后半段的起点。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label cur">slow</span><span class="ll-val hi">2</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label">fast</span><span class="ll-val">1</span></span>
+  </div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;">fast 走到末尾（下标 3），slow 停在中点（下标 2）。</p>
+
+  <h3>关键画面二：反转后半段后左右对撞比较</h3>
+  <p>把后半段 <code>[2(下标2), 1]</code> 反转为 <code>1 → 2</code>，<code>right</code> 指向新头（原尾节点 1）。然后 <code>left</code> 从左向右、<code>right</code> 从右向左，逐位比较。</p>
+  <div class="ll-row">
+    <span class="ll-node"><span class="ll-label cur">left</span><span class="ll-val cur">1</span></span>
+    <span class="ll-arrow">→</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val">2</span></span>
+    <span class="ll-arrow rev">←</span>
+    <span class="ll-node"><span class="ll-label"></span><span class="ll-val done">2</span></span>
+    <span class="ll-arrow rev">←</span>
+    <span class="ll-node"><span class="ll-label green">right</span><span class="ll-val target">1</span></span>
+  </div>
+  <p style="text-align:center;color:var(--text-light);font-size:13px;">绿色 ← 表示后半段已反转。left=1, right=1，相等；继续推进。</p>
+
+  <div class="note yellow">比较过程中，<code>left</code> 与 <code>right</code> 在中间相遇，全部相等即回文。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>5. 代码逐段解释</h2>
+
+  <h3>完整代码</h3>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">ListNode</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">__init__</span>(self, val=0, next=<span style="color:#6B7280">None</span>):
+        self.val = val
+        self.next = next
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">isPalindrome</span>(self, head: ListNode) -> <span style="color:#D4744C">bool</span>:
+        slow = fast = head
+        <span style="color:#6B7280">while</span> fast <span style="color:#6B7280">and</span> fast.next:
+            slow = slow.next
+            fast = fast.next.next
+        prev = <span style="color:#6B7280">None</span>
+        cur = slow
+        <span style="color:#6B7280">while</span> cur:
+            nxt = cur.next
+            cur.next = prev
+            prev = cur
+            cur = nxt
+        left, right = head, prev
+        <span style="color:#6B7280">while</span> right:
+            <span style="color:#6B7280">if</span> left.val != right.val:
+                <span style="color:#6B7280">return</span> <span style="color:#D4744C">False</span>
+            left = left.next
+            right = right.next
+        <span style="color:#6B7280">return</span> <span style="color:#D4744C">True</span></code></pre>
+
+  <h3>逐段说明</h3>
+
+  <p><strong>第 1 步：快慢指针找中点</strong></p>
+  <pre><code>slow = fast = head
+while fast and fast.next:
+    slow = slow.next
+    fast = fast.next.next</code></pre>
+  <p><code>slow</code> 走一步、<code>fast</code> 走两步。循环条件 <code>fast and fast.next</code> 保证 <code>fast</code> 不会越界。循环结束时 <code>slow</code> 恰好停在后半段起点。</p>
+
+  <p><strong>第 2 步：原地反转后半段</strong></p>
+  <pre><code>prev = None
+cur = slow
+while cur:
+    nxt = cur.next
+    cur.next = prev
+    prev = cur
+    cur = nxt</code></pre>
+  <p>从 <code>slow</code> 开始，用经典三指针法反转。<code>prev</code> 最终指向反转后的新头（原尾节点）。</p>
+
+  <p><strong>第 3 步：左右对撞比较</strong></p>
+  <pre><code>left, right = head, prev
+while right:
+    if left.val != right.val:
+        return False
+    left = left.next
+    right = right.next
+return True</code></pre>
+  <p><code>left</code> 从原头出发向右，<code>right</code> 从反转后的头（原尾）出发向左（链表方向上即向中间走）。任一对不等立即返回 <code>False</code>；<code>right</code> 走到 <code>null</code> 说明全部匹配。</p>
+
+  <div class="note warm">
+    循环以 <code>right</code> 为准：后半段长度 ≤ 前半段，<code>right</code> 先到 <code>null</code>，正好覆盖所有需要比较的节点。
+  </div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>6. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>找中点 O(n) + 反转后半 O(n/2) + 比较 O(n/2)，整体 O(n)。</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>只用若干指针变量，原地完成。</td></tr>
+  </table>
+  <div class="note green">相比「复制到数组再用双指针」的 <code>O(n)</code> 空间解法，本方案把空间压到 <code>O(1)</code>。</div>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>7. 常见易错点</h2>
+
+  <h3>错误一：快慢指针循环条件写错</h3>
+  <pre><code>while fast.next:        # ❌ 偶数长度时会越界
+while fast:             # ❌ fast.next 可能是 None
+while fast and fast.next:  # ✅ 同时判 fast 与 fast.next</code></pre>
+
+  <h3>错误二：反转后半段后比较循环条件错</h3>
+  <pre><code>while left:             # ❌ left 比 right 多一个，会读到后半段
+while right:            # ✅ right 长度 ≤ left，先到 null</code></pre>
+
+  <h3>对照：数组法（空间 O(n)）</h3>
+  <pre><code><span style="color:#6B7280"># 思路更直观，但空间 O(n)
+vals = []
+cur = head
+<span style="color:#6B7280">while</span> cur:
+    vals.append(cur.val)
+    cur = cur.next
+<span style="color:#6B7280">return</span> vals == vals[::-1]  <span style="color:#6B7280"># 判断正反是否相同</span></code></pre>
+  <p>复制到数组后双指针对撞，<strong>思路简单但空间 <code>O(n)</code></strong>，不满足进阶要求。</p>
+
+  <h3>边界情况</h3>
+  <table>
+    <tr><th>输入</th><th>说明</th></tr>
+    <tr><td><code>head = []</code></td><td>空链表视为回文，返回 <code>True</code></td></tr>
+    <tr><td><code>head = [1]</code></td><td>单节点，<code>fast</code> 不动，后半段反转后即自身，返回 <code>True</code></td></tr>
+    <tr><td><code>head = [1,2]</code></td><td><code>slow</code> 停在 2，反转后比较 1 与 2，不等返回 <code>False</code></td></tr>
+    <tr><td>奇数长度 <code>[1,2,3,2,1]</code></td><td><code>slow</code> 停在中间 3，反转 <code>[3,2,1]</code> 后 <code>right</code> 从 1 走到 null，正好忽略中间节点</td></tr>
+  </table>
+</section>
+
+<section class="card" id="summary">
+  <h2>8. 总结</h2>
+  <div class="note green">
+    <p><strong>回文链表</strong> 精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>快慢指针 <code>slow / fast</code> 定位中点</li>
+      <li>三指针法反转后半段，得到右指针</li>
+      <li>左右对撞逐位比较 <code>val</code></li>
+      <li>时间 O(n)，空间 O(1)</li>
+    </ul>
+  </div>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">isPalindrome</span>(self, head):
+        slow = fast = head
+        <span style="color:#6B7280">while</span> fast <span style="color:#6B7280">and</span> fast.next:
+            slow, fast = slow.next, fast.next.next
+        prev, cur = <span style="color:#6B7280">None</span>, slow
+        <span style="color:#6B7280">while</span> cur:
+            cur.next, prev, cur = prev, cur, cur.next
+        left, right = head, prev
+        <span style="color:#6B7280">while</span> right:
+            <span style="color:#6B7280">if</span> left.val != right.val:
+                <span style="color:#6B7280">return</span> <span style="color:#D4744C">False</span>
+            left, right = left.next, right.next
+        <span style="color:#6B7280">return</span> <span style="color:#D4744C">True</span></code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：快慢找中点，反转后半段，左右齐对撞，全等即回文。</p>
+</section>
+</main>
+
+<footer>回文链表 · 算法学习页</footer>
+
+<script>
+(function(){
+const nodes = [1, 2, 2, 1];
+// 每步的状态：arrows(4 个箭头) + 标签下标 + 阶段
+// phase: 'find' 找中点 / 'reverse' 反转后半段 / 'compare' 比较 / 'done'
+//   slow: 找中点阶段的慢指针位置(null 表示不显示)
+//   fast: 快指针位置(null 表示不显示，'end' 表示到达末尾/越界)
+//   prev: 反转阶段的 prev 位置(null 表示不显示)
+//   left: 比较阶段左指针下标(null 表示不显示)
+//   right: 比较阶段右指针下标(null 表示不显示)
+const steps = [
+  {phase:'find',   arrows:['fwd','fwd','fwd'], slow:0, fast:0, prev:null, left:null, right:null, matched:[], highlight:null,
+   desc:'初始：slow、fast 同从头节点（下标 0）出发。链表：1→2→2→1→null。'},
+  {phase:'find',   arrows:['fwd','fwd','fwd'], slow:1, fast:2, prev:null, left:null, right:null, matched:[], highlight:null,
+   desc:'slow 走一步到 2（下标 1），fast 走两步到第二个 2（下标 2）。'},
+  {phase:'find',   arrows:['fwd','fwd','fwd'], slow:2, fast:'end', prev:null, left:null, right:null, matched:[], highlight:2,
+   desc:'fast.next.next 越界，fast 到达末尾。slow 停在中点（下标 2）。'},
+  {phase:'reverse',arrows:['fwd','fwd','rev'], slow:null, fast:null, prev:3, left:null, right:null, matched:[], highlight:null,
+   desc:'原地反转后半段 [2(下标2), 1] → 1→2。prev 推进到原尾节点（下标 3），即反转后的新头 right。'},
+  {phase:'compare',arrows:['fwd','fwd','rev'], slow:null, fast:null, prev:null, left:0, right:3, matched:[], highlight:null,
+   desc:'比较第 1 对：left=1（下标 0），right=1（下标 3），相等。'},
+  {phase:'compare',arrows:['fwd','fwd','rev'], slow:null, fast:null, prev:null, left:1, right:2, matched:[0,3], highlight:null,
+   desc:'比较第 2 对：left=2（下标 1），right=2（下标 2），相等。'},
+  {phase:'compare',arrows:['fwd','fwd','rev'], slow:null, fast:null, prev:null, left:2, right:null, matched:[0,3,1,2], highlight:null,
+   desc:'right 走到 null（下标 2 的 next 已是反转前的起点），全部匹配完成。'},
+  {phase:'done',   arrows:['fwd','fwd','rev'], slow:null, fast:null, prev:null, left:null, right:null, matched:[0,1,2,3], highlight:null,
+   desc:'所有对应位相等，是回文链表。返回 true ✅。'},
+];
+
+let curStep = 0, isPlaying = false, interval = null;
+const $ = id => document.getElementById(id);
+const vizCells = $('vizCells'), vizDesc = $('vizDesc'), stepInfo = $('stepInfo');
+const prevBtn = $('prevBtn'), nextBtn = $('nextBtn'), playBtn = $('playBtn'), resetBtn = $('resetBtn');
+
+function render(i){
+  const s = steps[i];
+  let h = '';
+  nodes.forEach((v, idx) => {
+    // 收集该节点上的标签
+    const lab = [];
+    let lcls = '';
+    if(s.phase === 'find'){
+      if(s.slow === idx){ lab.push('slow'); lcls = 'cur'; }
+      if(s.fast === idx){ lab.push('fast'); lcls = lcls || 'cur'; }
+    } else if(s.phase === 'reverse'){
+      if(s.prev === idx){ lab.push('prev'); lcls = 'warm'; }
+    } else if(s.phase === 'compare'){
+      if(s.left === idx){ lab.push('left'); lcls = 'cur'; }
+      if(s.right === idx){ lab.push('right'); lcls = lcls === 'cur' ? 'green' : 'green'; }
+    }
+    // done 阶段：尾部加 head 标签
+    if(s.phase === 'done' && idx === 0){ lab.push('left'); lcls = 'cur'; }
+    const ltxt = lab.join('/');
+
+    // 节点状态
+    let ncls = '';
+    if(s.matched.includes(idx)){
+      ncls = 'done';
+    }
+    if(s.phase === 'find'){
+      if(s.highlight === idx){ ncls = 'hi'; }
+      else if(s.slow === idx){ ncls = 'hi'; }
+      else if(s.fast === idx){ ncls = 'cur'; }
+    } else if(s.phase === 'reverse'){
+      if(s.prev === idx){ ncls = 'target'; }
+      // 下标 >= 反转起点(2) 的节点标记为已反转
+      else if(idx >= 2){ ncls = 'done'; }
+    } else if(s.phase === 'compare'){
+      if(s.left === idx){ ncls = 'cur'; }
+      if(s.right === idx){ ncls = 'target'; }
+    } else if(s.phase === 'done'){
+      ncls = 'done';
+    }
+
+    h += `<span class="ll-node"><span class="ll-label ${lcls}">${ltxt}</span><span class="ll-val ${ncls}">${v}</span></span>`;
+    // 节点后的箭头
+    if(idx < nodes.length - 1){
+      const a = s.arrows[idx];
+      const glyph = a === 'rev' ? '←' : '→';
+      h += `<span class="ll-arrow ${a}">${glyph}</span>`;
+    }
+  });
+  // 末尾的 null（仅 find 阶段且 fast=end 时强调越界）
+  if(s.phase === 'find' && s.fast === 'end'){
+    h += `<span class="ll-arrow">→</span><span class="ll-null">null</span>`;
+  }
+  vizCells.innerHTML = h;
+  vizDesc.textContent = s.desc;
+  stepInfo.textContent = `步骤 ${i+1} / ${steps.length}`;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === steps.length - 1;
+}
+
+function go(i){ if(i>=0 && i<steps.length){curStep=i; render(curStep);} }
+function nextStep(){ if(curStep<steps.length-1) go(curStep+1); else if(isPlaying) stopPlay(); }
+function prevStep(){ if(curStep>0) go(curStep-1); }
+function togglePlay(){ isPlaying ? stopPlay() : startPlay(); }
+function startPlay(){
+  if(curStep>=steps.length-1) go(0);
+  isPlaying=true; playBtn.textContent='⏸ 暂停'; playBtn.classList.add('playing');
+  interval=setInterval(()=>{if(curStep>=steps.length-1)stopPlay();else nextStep();},1400);
+}
+function stopPlay(){
+  isPlaying=false; playBtn.textContent='▶ 自动播放'; playBtn.classList.remove('playing');
+  if(interval){clearInterval(interval);interval=null;}
+}
+function resetViz(){stopPlay();go(0);}
+
+nextBtn.onclick=nextStep; prevBtn.onclick=prevStep;
+playBtn.onclick=togglePlay; resetBtn.onclick=resetViz;
+document.onkeydown=e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+  else if(e.key===' '){e.preventDefault();togglePlay();}
+};
+go(0);
+})();
+</script>
+</body>
+</html>
