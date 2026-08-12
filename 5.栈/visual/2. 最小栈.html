@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2. 最小栈 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.stack-container{display:flex;gap:40px;justify-content:center;margin:20px 0}
+.stack-box{background:#fff;border:2px solid #CBD5E1;border-radius:12px;padding:12px 16px;min-width:160px;min-height:200px;display:flex;flex-direction:column-reverse;align-items:center;gap:6px}
+.stack-label{font-size:13px;color:var(--text-light);margin-bottom:6px;text-align:center;font-weight:600}
+.stack-item{min-width:64px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:2px solid #CBD5E1;background:#F8FAFC;font-family:Consolas,Monaco,monospace;font-weight:700;font-size:16px;transition:all .3s}
+.stack-item.pushing{border-color:var(--accent-green);background:var(--accent-green-soft);transform:scale(1.05)}
+.stack-item.popping{border-color:var(--accent-red);background:var(--accent-red-soft);opacity:.6}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 155 · 中等</div>
+  <h1>2. 最小栈</h1>
+  <p class="subtitle">设计一个支持常数时间 getMin 的栈</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：双栈设计</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>设计一个栈，支持 <code>push</code>、<code>pop</code>、<code>top</code>，并能在 <strong>O(1)</strong> 时间内检索到最小元素。</p>
+  <div class="note blue">
+    <strong>关键要求：</strong> getMin() 必须是 O(1) 时间复杂度。
+  </div>
+  <h3>示例</h3>
+  <pre><code>输入：
+["MinStack","push","push","push","getMin","pop","top","getMin"]
+[[],[-2],[0],[-3],[],[],[],[]]
+输出：[null,null,null,null,-3,null,0,-2]</code></pre>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：双栈设计</h2>
+  <p>维护两个栈：</p>
+  <ul>
+    <li><strong>data_stack</strong>：正常存储所有元素</li>
+    <li><strong>min_stack</strong>：存储当前的最小值</li>
+  </ul>
+  <h3>关键逻辑</h3>
+  <ul>
+    <li><strong>push(value)</strong>：data_stack 正常压入。<strong>只有当 value &lt;= min_stack 栈顶（或 min_stack 为空）</strong> 时，才把 value 压入 min_stack。</li>
+    <li><strong>pop()</strong>：弹出 data_stack 栈顶。如果弹出的值等于 min_stack 栈顶，则 min_stack 也同步弹出。</li>
+    <li><strong>getMin()</strong>：直接返回 min_stack 栈顶。</li>
+  </ul>
+  <div class="note purple">
+    <strong>核心洞察：</strong>使用辅助栈记录“当前最小值”的历史状态，用空间换时间，保证每次 getMin 都是 O(1)。
+  </div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <pre class="pseudo"><code><span class="kw">def</span> <span class="var">push</span>(<span class="var">value</span>):
+    <span class="var">data_stack</span>.append(<span class="var">value</span>)
+    <span class="kw">if</span> <span class="kw">not</span> <span class="var">min_stack</span> <span class="kw">or</span> <span class="var">value</span> &lt;= <span class="var">min_stack</span>[-1]:
+        <span class="var">min_stack</span>.append(<span class="var">value</span>)
+
+<span class="kw">def</span> <span class="var">pop</span>():
+    <span class="var">top</span> = <span class="var">data_stack</span>.pop()
+    <span class="kw">if</span> <span class="var">top</span> == <span class="var">min_stack</span>[-1]:
+        <span class="var">min_stack</span>.pop()
+
+<span class="kw">def</span> <span class="var">getMin</span>():
+    <span class="kw">return</span> <span class="var">min_stack</span>[-1]</code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>演示序列：push(-2) → push(0) → push(-3) → getMin → pop → top → getMin</p>
+
+  <div class="viz-container">
+    <div class="viz-title">双栈状态演示</div>
+    
+    <div style="display:flex;gap:40px;justify-content:center;margin:20px 0;">
+      <div>
+        <div class="stack-label">数据栈 (data_stack)</div>
+        <div class="stack-box" id="data-stack"></div>
+      </div>
+      <div>
+        <div class="stack-label">最小值栈 (min_stack)</div>
+        <div class="stack-box" id="min-stack"></div>
+      </div>
+    </div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" onclick="prevStep()" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 7</span>
+      <button id="nextBtn" onclick="nextStep()">下一步 →</button>
+      <button id="playBtn" class="btn-play" onclick="togglePlay()">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary" onclick="reset()">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc">点击“下一步”开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="background:#F1F5F9"><th style="padding:6px;border:1px solid #CBD5E1">操作</th><th style="padding:6px;border:1px solid #CBD5E1">data_stack</th><th style="padding:6px;border:1px solid #CBD5E1">min_stack</th><th style="padding:6px;border:1px solid #CBD5E1">getMin</th></tr>
+    <tr><td style="padding:6px;border:1px solid #CBD5E1">push(-2)</td><td style="padding:6px;border:1px solid #CBD5E1">[-2]</td><td style="padding:6px;border:1px solid #CBD5E1">[-2]</td><td style="padding:6px;border:1px solid #CBD5E1">-2</td></tr>
+    <tr><td style="padding:6px;border:1px solid #CBD5E1">push(0)</td><td style="padding:6px;border:1px solid #CBD5E1">[-2, 0]</td><td style="padding:6px;border:1px solid #CBD5E1">[-2, -2]</td><td style="padding:6px;border:1px solid #CBD5E1">-2</td></tr>
+    <tr><td style="padding:6px;border:1px solid #CBD5E1">push(-3)</td><td style="padding:6px;border:1px solid #CBD5E1">[-2, 0, -3]</td><td style="padding:6px;border:1px solid #CBD5E1">[-2, -2, -3]</td><td style="padding:6px;border:1px solid #CBD5E1">-3</td></tr>
+    <tr><td style="padding:6px;border:1px solid #CBD5E1">getMin</td><td style="padding:6px;border:1px solid #CBD5E1">[-2, 0, -3]</td><td style="padding:6px;border:1px solid #CBD5E1">[-2, -2, -3]</td><td style="padding:6px;border:1px solid #CBD5E1"><strong>-3</strong></td></tr>
+    <tr><td style="padding:6px;border:1px solid #CBD5E1">pop()</td><td style="padding:6px;border:1px solid #CBD5E1">[-2, 0]</td><td style="padding:6px;border:1px solid #CBD5E1">[-2, -2]</td><td style="padding:6px;border:1px solid #CBD5E1">-2</td></tr>
+    <tr><td style="padding:6px;border:1px solid #CBD5E1">top()</td><td style="padding:6px;border:1px solid #CBD5E1">[-2, 0]</td><td style="padding:6px;border:1px solid #CBD5E1">[-2, -2]</td><td style="padding:6px;border:1px solid #CBD5E1">0</td></tr>
+  </table>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code>class MinStack:
+    def __init__(self):
+        self.data_stack = []
+        self.min_stack = []
+
+    def push(self, value: int) -> None:
+        self.data_stack.append(value)
+        # 只有当 value &lt;= 当前最小值时才压入 min_stack
+        if not self.min_stack or value &lt;= self.min_stack[-1]:
+            self.min_stack.append(value)
+
+    def pop(self) -> None:
+        top_element = self.data_stack.pop()
+        # 只有当弹出的值是当前最小值时，才同步弹出 min_stack
+        if top_element == self.min_stack[-1]:
+            self.min_stack.pop()
+
+    def top(self) -> int:
+        return self.data_stack[-1]
+
+    def getMin(self) -> int:
+        return self.min_stack[-1]</code></pre>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <ul>
+    <li><strong>时间复杂度</strong>：O(1) —— push / pop / top / getMin 均为常数时间</li>
+    <li><strong>空间复杂度</strong>：O(n) —— 最坏情况下两个栈都存 n 个元素</li>
+  </ul>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <ul>
+    <li>push 时忘记判断 <code>value &lt;= min_stack[-1]</code>（必须包含等于）</li>
+    <li>pop 时没有判断弹出值是否等于 min_stack 栈顶就直接弹出</li>
+    <li>只维护一个栈，导致 pop 后无法恢复之前的最小值</li>
+  </ul>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <p>用辅助栈记录“历史最小值”，每次 push 都把当前最小值压进去，pop 时同步维护，完美实现 O(1) getMin。</p>
+</section>
+</main>
+
+<footer>
+  <p>算法详解 · 栈设计经典题 · 时间复杂度 O(1)</p>
+</footer>
+
+<script>
+const operations = [
+  {op: 'push', val: -2, data: [-2], min: [-2], desc: 'push(-2) → min_stack 压入 -2'},
+  {op: 'push', val: 0,  data: [-2, 0], min: [-2, -2], desc: 'push(0) → 0 > -2，不压入 min_stack'},
+  {op: 'push', val: -3, data: [-2, 0, -3], min: [-2, -2, -3], desc: 'push(-3) → -3 &lt; -2，压入 min_stack'},
+  {op: 'getMin', val: null, data: [-2, 0, -3], min: [-2, -2, -3], desc: 'getMin() = -3'},
+  {op: 'pop', val: null, data: [-2, 0], min: [-2, -2], desc: 'pop() → 弹出 -3，同时 min_stack 也弹出 -3'},
+  {op: 'top', val: 0, data: [-2, 0], min: [-2, -2], desc: 'top() = 0'},
+  {op: 'getMin', val: -2, data: [-2, 0], min: [-2, -2], desc: 'getMin() = -2'}
+];
+
+let currentStep = 0;
+let isPlaying = false;
+let playInterval = null;
+
+function updateDisplay() {
+  const op = operations[currentStep];
+  
+  // 数据栈
+  const ds = document.getElementById('data-stack');
+  ds.innerHTML = '';
+  op.data.forEach(v => {
+    const div = document.createElement('div');
+    div.className = 'stack-item';
+    div.textContent = v;
+    ds.appendChild(div);
+  });
+  
+  // 最小栈
+  const ms = document.getElementById('min-stack');
+  ms.innerHTML = '';
+  op.min.forEach(v => {
+    const div = document.createElement('div');
+    div.className = 'stack-item min';
+    div.textContent = v;
+    ms.appendChild(div);
+  });
+
+  document.getElementById('stepInfo').textContent = `步骤 ${currentStep + 1} / ${operations.length}`;
+  document.getElementById('vizDesc').textContent = op.desc;
+
+  document.getElementById('prevBtn').disabled = currentStep === 0;
+  document.getElementById('nextBtn').disabled = currentStep === operations.length - 1;
+}
+
+function nextStep() {
+  if (currentStep < operations.length - 1) {
+    currentStep++;
+    updateDisplay();
+  } else if (isPlaying) {
+    togglePlay();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    currentStep--;
+    updateDisplay();
+  }
+}
+
+function reset() {
+  currentStep = 0;
+  if (isPlaying) togglePlay();
+  updateDisplay();
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  const btn = document.getElementById('playBtn');
+  if (isPlaying) {
+    btn.textContent = '⏸ 暂停';
+    btn.classList.add('playing');
+    playInterval = setInterval(() => {
+      if (currentStep < operations.length - 1) {
+        nextStep();
+      } else {
+        togglePlay();
+      }
+    }, 1300);
+  } else {
+    btn.textContent = '▶ 自动播放';
+    btn.classList.remove('playing');
+    if (playInterval) clearInterval(playInterval);
+  }
+}
+
+// 初始化按钮
+document.getElementById('prevBtn').onclick = prevStep;
+document.getElementById('nextBtn').onclick = nextStep;
+document.getElementById('playBtn').onclick = togglePlay;
+document.getElementById('resetBtn').onclick = reset;
+
+updateDisplay();
+</script>
+</body>
+</html>

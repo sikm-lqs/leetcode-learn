@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1. 有效的括号 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.stack-container{display:flex;gap:20px;justify-content:center;align-items:flex-start;margin:20px 0;padding:20px;background:#FAFBFC;border:1px solid var(--border);border-radius:14px;min-height:180px}
+.stack-box{background:#fff;border:2px solid #CBD5E1;border-radius:12px;padding:12px 16px;min-width:120px;min-height:160px;display:flex;flex-direction:column-reverse;align-items:center;gap:6px}
+.stack-label{font-size:12px;color:var(--text-light);margin-bottom:6px}
+.stack-item{min-width:48px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:2px solid #CBD5E1;background:#F8FAFC;font-family:Consolas,Monaco,monospace;font-weight:700;font-size:18px;transition:all .3s}
+.stack-item.push{background:var(--accent-green-soft);border-color:var(--accent-green);transform:scale(1.05)}
+.stack-item.pop{opacity:.5;transform:scale(0.9)}
+.stack-item.match{background:var(--accent-green-soft);border-color:var(--accent-green)}
+.stack-item.mismatch{background:var(--accent-red-soft);border-color:var(--accent-red)}
+.input-string{display:flex;gap:4px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.char{display:inline-flex;align-items:center;justify-content:center;width:28px;height:32px;border-radius:6px;border:2px solid #CBD5E1;background:#fff;font-family:Consolas,Monaco,monospace;font-weight:700;font-size:16px;transition:all .3s}
+.char.current{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.1)}
+.char.left{border-color:var(--primary);background:var(--primary-soft)}
+.char.right{border-color:var(--accent-red);background:var(--accent-red-soft)}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 20 · 简单</div>
+  <h1>1. 有效的括号</h1>
+  <p class="subtitle">用栈判断括号是否有效匹配</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：栈匹配</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定一个只包含括号字符的字符串，判断它是否有效。</p>
+  <div class="note blue">
+    <strong>有效条件：</strong><br>
+    • 左括号必须用相同类型的右括号闭合<br>
+    • 左括号必须以正确的顺序闭合<br>
+    • 每个右括号都有对应的左括号
+  </div>
+  <h3>示例</h3>
+  <pre><code>输入：s = "()"
+输出：true
+
+输入：s = "()[]{}"
+输出：true
+
+输入：s = "(]"
+输出：false</code></pre>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：栈匹配</h2>
+  <p>栈是处理「匹配」和「嵌套」问题的天然工具。</p>
+  <ul>
+    <li>遇到左括号 → 入栈（等待被匹配）</li>
+    <li>遇到右括号 → 检查栈顶是否为对应左括号，不匹配或栈空则无效</li>
+    <li>最后栈必须为空（所有左括号都被匹配）</li>
+  </ul>
+  <div class="note purple">
+    <strong>核心洞察：</strong>左括号入栈，右括号触发出栈检查，利用 LIFO 保证顺序正确。
+  </div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <pre class="pseudo"><code><span class="var">stack</span> = []
+<span class="var">map</span> = { <span class="str">')'</span>: <span class="str">'('</span>, <span class="str">']'</span>: <span class="str">'['</span>, <span class="str">'}'</span>: <span class="str">'{'</span> }
+
+<span class="kw">for</span> <span class="var">char</span> <span class="kw">in</span> <span class="var">s</span>:
+    <span class="kw">if</span> <span class="var">char</span> <span class="kw">is</span> 左括号:
+        <span class="zh">入栈</span>                     <span class="cm"># stack.append(char)</span>
+    <span class="kw">elif</span> <span class="var">char</span> <span class="kw">is</span> 右括号:
+        <span class="kw">if</span> <span class="kw">not</span> <span class="var">stack</span> <span class="kw">or</span> <span class="var">map</span>[<span class="var">char</span>] != <span class="zh">弹出栈顶</span>:
+            <span class="kw">return</span> <span class="kw">false</span>
+<span class="kw">return</span> <span class="kw">len</span>(<span class="var">stack</span>) == <span class="num">0</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>以 s = "()[]{}" 为例，展示栈的匹配过程：</p>
+
+  <div class="viz-container">
+    <div class="viz-title">括号匹配过程</div>
+    
+    <div class="viz-info" id="input-info">当前字符串: ()[]{}</div>
+    
+    <div class="input-string" id="input-chars">
+      <!-- JS 动态生成 -->
+    </div>
+
+    <div style="display:flex;gap:40px;justify-content:center;margin:20px 0;">
+      <div>
+        <div style="text-align:center;font-size:13px;color:var(--text-light);margin-bottom:6px;">栈 (左括号)</div>
+        <div class="stack-container" id="stack-display" style="min-height:140px;"></div>
+      </div>
+    </div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 7</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc">点击“下一步”开始匹配</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <p>以 "()[]{}" 为例：</p>
+  <table>
+    <tr><th>步骤</th><th>当前字符</th><th>栈</th><th>操作</th></tr>
+    <tr><td>1</td><td>(</td><td>[(</td><td>左括号入栈</td></tr>
+    <tr><td>2</td><td>)</td><td>[]</td><td>右括号匹配，弹出 (</td></tr>
+    <tr><td>3</td><td>[</td><td>[[</td><td>左括号入栈</td></tr>
+    <tr><td>4</td><td>]</td><td>[]</td><td>右括号匹配，弹出 [</td></tr>
+    <tr><td>5</td><td>{</td><td>[[{</td><td>左括号入栈</td></tr>
+    <tr><td>6</td><td>}</td><td>[]</td><td>右括号匹配，弹出 {</td></tr>
+    <tr><td>7</td><td>结束</td><td>[]</td><td>栈空 → 有效</td></tr>
+  </table>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code>class Solution:
+    def isValid(self, s: str) -> bool:
+        stack = []
+        map = {')':'(', ']':'[', '}':'{'}
+
+        for char in s:
+            if char in '([{' :          # 左括号
+                stack.append(char)
+            elif char in ')]}':         # 右括号
+                if not stack or map[char] != stack.pop():
+                    return False
+        return len(stack) == 0</code></pre>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <ul>
+    <li><strong>时间复杂度</strong>：O(n) —— 每个字符最多入栈/出栈一次</li>
+    <li><strong>空间复杂度</strong>：O(n) —— 最坏情况所有左括号入栈</li>
+  </ul>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <ul>
+    <li>右括号出现时栈为空（多余右括号）</li>
+    <li>最后栈不为空（多余左括号）</li>
+    <li>类型不匹配（如 (] ）</li>
+    <li>顺序错误（如 ([)] ）</li>
+  </ul>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <p>栈 + 哈希表是处理括号匹配的最优雅方案。左入右出，顺序天然保证。</p>
+</section>
+</main>
+
+<footer>
+  <p>算法详解 · 栈经典应用 · 时间复杂度 O(n)</p>
+</footer>
+
+<script>
+const s = "()[]{}";
+const chars = s.split('');
+let currentStep = 0;
+let isPlaying = false;
+let playInterval = null;
+
+const steps = [
+  { i: -1, stack: [], desc: '初始状态，栈为空' },
+  { i: 0, stack: ['('], desc: '遇到左括号 ( ，入栈' },
+  { i: 1, stack: [], desc: '遇到右括号 ) ，栈顶 ( 匹配，弹出' },
+  { i: 2, stack: ['['], desc: '遇到左括号 [ ，入栈' },
+  { i: 3, stack: [], desc: '遇到右括号 ] ，栈顶 [ 匹配，弹出' },
+  { i: 4, stack: ['{'], desc: '遇到左括号 { ，入栈' },
+  { i: 5, stack: [], desc: '遇到右括号 } ，栈顶 { 匹配，弹出' },
+  { i: 6, stack: [], desc: '遍历结束，栈为空 → 有效括号' }
+];
+
+function updateDisplay() {
+  const step = steps[currentStep];
+  
+  // 更新输入字符高亮
+  const container = document.getElementById('input-chars');
+  container.innerHTML = '';
+  chars.forEach((ch, idx) => {
+    const span = document.createElement('span');
+    span.className = 'char';
+    span.textContent = ch;
+    if (idx === step.i) span.classList.add('current');
+    if (idx <= step.i && step.stack.length > 0) {
+      // 简单高亮已处理左括号
+    }
+    container.appendChild(span);
+  });
+
+  // 更新栈显示
+  const stackBox = document.getElementById('stack-display');
+  stackBox.innerHTML = '';
+  if (step.stack.length === 0) {
+    const empty = document.createElement('div');
+    empty.style.color = '#9CA3AF';
+    empty.style.fontSize = '13px';
+    empty.textContent = '(空)';
+    stackBox.appendChild(empty);
+  } else {
+    step.stack.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'stack-item';
+      div.textContent = item;
+      stackBox.appendChild(div);
+    });
+  }
+
+  document.getElementById('stepInfo').textContent = `步骤 ${currentStep + 1} / ${steps.length}`;
+  document.getElementById('vizDesc').textContent = step.desc;
+
+  document.getElementById('prevBtn').disabled = currentStep === 0;
+  document.getElementById('nextBtn').disabled = currentStep === steps.length - 1;
+}
+
+function nextStep() {
+  if (currentStep < steps.length - 1) {
+    currentStep++;
+    updateDisplay();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    currentStep--;
+    updateDisplay();
+  }
+}
+
+function reset() {
+  currentStep = 0;
+  if (isPlaying) togglePlay();
+  updateDisplay();
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  const btn = document.getElementById('playBtn');
+  if (isPlaying) {
+    btn.textContent = '⏸ 暂停';
+    btn.classList.add('playing');
+    playInterval = setInterval(() => {
+      if (currentStep < steps.length - 1) {
+        nextStep();
+      } else {
+        togglePlay();
+      }
+    }, 1200);
+  } else {
+    btn.textContent = '▶ 自动播放';
+    btn.classList.remove('playing');
+    clearInterval(playInterval);
+    playInterval = null;
+  }
+}
+
+// 初始化
+function init() {
+  const container = document.getElementById('input-chars');
+  chars.forEach(ch => {
+    const span = document.createElement('span');
+    span.className = 'char';
+    span.textContent = ch;
+    container.appendChild(span);
+  });
+
+  document.getElementById('prevBtn').onclick = prevStep;
+  document.getElementById('nextBtn').onclick = nextStep;
+  document.getElementById('playBtn').onclick = togglePlay;
+  document.getElementById('resetBtn').onclick = reset;
+
+  updateDisplay();
+}
+init();
+</script>
+</body>
+</html>
