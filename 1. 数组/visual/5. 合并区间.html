@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>5. 合并区间 · 算法详解</title>
 <style>
-:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--primary-light:#F4F8FC;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
 header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
@@ -14,7 +14,7 @@ header>*{position:relative;z-index:1}
 header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
 header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
 header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
-main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
 .card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
 .card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
@@ -29,22 +29,56 @@ main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
 .note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
 .note.warm{background:var(--warm-soft);border-color:#EAD5CC}
 code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
-pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
 pre code{background:transparent;color:inherit;padding:0}
-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
-th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
 th{background:#F1F5F9;font-weight:600}
 .formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
-.interval-line{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:8px 0;font-family:Consolas,Monaco,monospace}
-.interval{display:inline-flex;align-items:center;padding:6px 10px;border-radius:20px;font-size:13px;font-weight:600;border:2px solid;position:relative}
-.interval.i1{border-color:#3B7DD8;background:#E9EFF7;color:#1E40AF}
-.interval.i2{border-color:#D4744C;background:#F5E6DE;color:#A05A3A}
-.interval.i3{border-color:#16A34A;background:#DCFCE7;color:#15803D}
-.interval.i4{border-color:#7C3AED;background:#EDE9FE;color:#6D28D9}
-.interval.merged{border-color:#16A34A;background:#DCFCE7;color:#15803D;box-shadow:0 0 0 3px rgba(22,163,74,0.15)}
-.arrow{color:var(--text-light);font-weight:bold;margin:0 4px}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.viz-ruler{position:relative;height:34px;margin:26px 6px 8px;border-bottom:2px solid #94A3B8}
+.ruler-tick{position:absolute;bottom:0;width:1px;height:8px;background:#94A3B8}
+.ruler-num{position:absolute;bottom:-16px;transform:translateX(-50%);font-size:10px;color:var(--text-light);font-family:Consolas,Monaco,monospace}
+.viz-lanes{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.lane{display:flex;align-items:center;gap:10px}
+.lane .lname{width:52px;font-size:12px;color:var(--text-light);font-weight:600;text-align:right;flex-shrink:0}
+.lane .ltrack{flex:1;position:relative;height:26px;background:#F1F5F9;border-radius:6px;overflow:hidden}
+.seg{position:absolute;top:3px;height:20px;border-radius:5px;background:linear-gradient(#94A3B8,#64748B);color:#fff;font-size:10px;font-family:Consolas,Monaco,monospace;display:flex;align-items:center;justify-content:center;transition:all .35s}
+.seg.cur{background:linear-gradient(#E08C5E,#C0653F);box-shadow:0 0 0 2px rgba(212,116,76,.25)}
+.seg.merged{background:linear-gradient(#5B9CF5,#2E6AC0)}
+.seg.out{opacity:.35}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-res{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:12px 0}
+.res-chip{background:var(--accent-green-soft);color:#0F7A3D;border:1px solid #BBF7D0;border-radius:20px;padding:4px 14px;font-family:Consolas,Monaco,monospace;font-size:13px;font-weight:700}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+.viz-stats{display:flex;justify-content:center;flex-wrap:wrap;gap:28px;font-size:14px;margin:8px 0 0;padding:10px 16px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.viz-stats strong{font-size:18px;font-family:Consolas,Monaco,monospace}
+.viz-stats .vl{color:var(--warm);font-weight:700}
+.viz-stats .vr{color:var(--primary);font-weight:700}
+.viz-stats .va{color:var(--accent-green);font-weight:800}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
-@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}}
 </style>
 </head>
 <body>
@@ -52,149 +86,285 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 <header>
   <div class="badge">LeetCode 56 · 中等</div>
   <h1>5. 合并区间</h1>
-  <p class="subtitle">给定若干区间，合并所有重叠的区间。</p>
+  <p class="subtitle">排序 + 一次遍历：重叠判断只需比较右端点。</p>
 </header>
 
 <main>
 <section class="card toc">
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
-  <a href="#idea">2. 核心思路：排序 + 合并</a>
-  <a href="#walkthrough">3. 详细过程模拟</a>
-  <a href="#code">4. 代码逐段解释</a>
-  <a href="#complexity">5. 复杂度分析</a>
-  <a href="#pitfalls">6. 常见易错点</a>
-  <a href="#summary">7. 总结</a>
+  <a href="#idea">2. 核心思路：排序 + 一次遍历</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
   <h2>1. 题目理解</h2>
-  <p>给定一组区间 <code>intervals = [[start, end]]</code>，合并所有重叠的区间，返回恰好覆盖输入中所有区间的不重叠区间数组。</p>
-
+  <p>以数组 <code>intervals</code> 表示若干个区间的集合，其中单个区间为 <code>intervals[i] = [start_i, end_i]</code>。请合并所有重叠的区间，并返回一个<strong>不重叠</strong>的区间数组。</p>
   <h3>示例</h3>
   <pre><code>输入：intervals = [[1,3],[2,6],[8,10],[15,18]]
-输出：[[1,6],[8,10],[15,18]]</code></pre>
+输出：[[1,6],[8,10],[15,18]]
+解释：[1,3] 与 [2,6] 重叠，合并成 [1,6]。
 
-  <div class="interval-line">
-    <span class="interval i1">[1, 3]</span>
-    <span class="interval i2">[2, 6]</span>
-    <span class="arrow">→</span>
-    <span class="interval merged">[1, 6]</span>
-  </div>
-  <div class="interval-line">
-    <span class="interval i3">[8, 10]</span>
-    <span class="arrow">→</span>
-    <span class="interval merged">[8, 10]</span>
-  </div>
-  <div class="interval-line">
-    <span class="interval i4">[15, 18]</span>
-    <span class="arrow">→</span>
-    <span class="interval merged">[15, 18]</span>
-  </div>
-
-  <div class="note blue">[1,3] 和 [2,6] 有重叠（3 ≥ 2），合并为 [1,6]。[8,10] 与 [15,18] 无重叠，保持不变。</div>
+输入：intervals = [[1,4],[4,5]]
+输出：[[1,5]]
+解释：[1,4] 与 [4,5] 端点相接也算重叠。</code></pre>
+  <div class="note yellow">注意第二个示例：<code>[1,4]</code> 与 <code>[4,5]</code> 端点重合（start ≤ 上一个 end）也要合并。</div>
 </section>
 
 <section class="card" id="idea">
-  <h2>2. 核心思路：排序 + 合并</h2>
+  <h2>2. 核心思路：排序 + 一次遍历</h2>
   <ol>
-    <li>按区间<strong>起点</strong>排序</li>
-    <li>遍历区间，维护结果数组 <code>res</code></li>
-    <li>如果当前区间起点 > res 最后区间的终点 → 无重叠，直接加入</li>
-    <li>否则 → 有重叠，更新最后区间的终点为两者较大值</li>
+    <li><strong>按起点排序</strong>：排序后，能合并的区间必然相邻</li>
+    <li><strong>遍历</strong>：维护结果数组 <code>res</code>，判断当前区间 <code>cur</code> 是否与 <code>res</code> 最后一个区间重叠</li>
+    <li><strong>重叠判断</strong>：<code>cur[0] &gt; res[-1][1]</code> 表示不重叠（当前起点大于上一个终点）→ 直接加入；否则重叠 → 更新最后一个区间的终点为两者较大值</li>
   </ol>
+  <div class="note blue">排序是核心洞察：未排序时区间交错，合并需要复杂的交叉判断；排序后每个区间只需与「结果中最后一个」比较一次。</div>
+</section>
 
-  <div class="formula">重叠判断：cur[0] > last[1] → 不重叠，否则重叠</div>
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="var">intervals</span>.<span class="zh">按起点排序</span>()
+<span class="var">res</span> = []
 
-  <div class="note purple">
-    <strong>核心洞察：</strong>排序后只需 O(n) 一次遍历。重叠的判断只需比较当前区间的左端点和已合并区间的右端点，无需复杂数据结构。
+<span class="kw">for</span> <span class="var">cur</span> <span class="kw">in</span> <span class="zh">遍历 intervals</span>:
+    <span class="kw">if</span> <span class="zh">res 为空或与最后区间不重叠</span>:   <span class="cm"># not res or cur[0] > res[-1][1]</span>
+        <span class="zh">直接加入</span>                        <span class="cm"># res.append(cur)</span>
+    <span class="kw">else</span>:
+        <span class="zh">更新最后区间终点</span>              <span class="cm"># res[-1][1] = max(res[-1][1], cur[1])</span>
+<span class="kw">return</span> <span class="var">res</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">关键只有一行判断：起点是否大于「结果中最后一个区间」的终点。大于→新增，否则→吞并（取最大终点）。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 intervals = [[1,3],[2,6],[8,10],[15,18]] 的合并过程。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 排序后：[[1,3],[2,6],[8,10],[15,18]]</div>
+    <div class="viz-ruler" id="ruler"></div>
+    <div class="viz-lanes" id="lanes"></div>
+    <div class="viz-legend">
+      <span><i style="background:linear-gradient(#E08C5E,#C0653F)"></i>当前区间</span>
+      <span><i style="background:linear-gradient(#5B9CF5,#2E6AC0)"></i>已合并结果</span>
+      <span><i style="opacity:.35;background:linear-gradient(#94A3B8,#64748B)"></i>尚未处理</span>
+    </div>
+    <div class="viz-res" id="resBox"></div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+    <div class="viz-stats">
+      <span>当前区间：<strong class="vr" id="statCur">—</strong></span>
+      <span>结果末区间：<strong class="vl" id="statLast">—</strong></span>
+      <span>结果数：<strong class="va" id="statCnt">0</strong></span>
+    </div>
   </div>
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>3. 详细过程模拟</h2>
-  <p>以 <code>intervals = [[1,3],[2,6],[8,10],[15,18]]</code> 为例。</p>
-
-  <h3>排序后</h3>
-  <p>已经是按起点排好序的。</p>
-
-  <h3>遍历</h3>
+  <h2>5. 详细过程模拟</h2>
   <table>
-    <tr><th>cur</th><th>res 最后</th><th>cur[0] > last[1]?</th><th>操作</th><th>res</th></tr>
-    <tr><td>[1,3]</td><td>—</td><td>—</td><td>直接加入</td><td>[[1,3]]</td></tr>
-    <tr><td>[2,6]</td><td>[1,3]</td><td>2 > 3? ❌</td><td>合并：max(3,6)=6</td><td>[[1,6]]</td></tr>
-    <tr><td>[8,10]</td><td>[1,6]</td><td>8 > 6? ✅</td><td>无重叠，加入</td><td>[[1,6],[8,10]]</td></tr>
-    <tr><td>[15,18]</td><td>[8,10]</td><td>15 > 10? ✅</td><td>无重叠，加入</td><td>[[1,6],[8,10],[15,18]]</td></tr>
+    <tr><th>步骤</th><th>当前区间</th><th>res 最后一个</th><th>判断</th><th>操作</th></tr>
+    <tr><td>1</td><td>[1,3]</td><td>—（空）</td><td>res 为空</td><td>直接加入 → res = [[1,3]]</td></tr>
+    <tr><td>2</td><td>[2,6]</td><td>[1,3]</td><td>2 ≤ 3 → 重叠</td><td>更新终点：max(3,6)=6 → res = [[1,6]]</td></tr>
+    <tr><td>3</td><td>[8,10]</td><td>[1,6]</td><td>8 &gt; 6 → 不重叠</td><td>直接加入 → res = [[1,6],[8,10]]</td></tr>
+    <tr><td>4</td><td>[15,18]</td><td>[8,10]</td><td>15 &gt; 10 → 不重叠</td><td>直接加入 → res = [[1,6],[8,10],[15,18]]</td></tr>
   </table>
-
-  <div class="note green">最终结果：<strong>[[1,6],[8,10],[15,18]]</strong> ✅</div>
+  <div class="note purple">「排序」把复杂问题变简单：只要当前起点大于结果末区间终点，就不可能与任何更早的区间重叠（它们终点都更小）。</div>
 </section>
 
 <section class="card" id="code">
-  <h2>4. 代码逐段解释</h2>
-  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
-    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">merge</span>(self, intervals: List[List[int]]) -> List[List[int]]:
-        intervals.<span style="color:#D4744C">sort</span>()                     <span style="color:#6B7280"># 按起点排序</span>
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">merge</span>(self, intervals: List[List[<span style="color:#CA8A04">int</span>]]) -&gt; List[List[<span style="color:#CA8A04">int</span>]]:
+        intervals.sort()                      <span style="color:#6B7280"># 按起点排序（列表默认按第一元素）</span>
         res = []
         <span style="color:#6B7280">for</span> cur <span style="color:#6B7280">in</span> intervals:
-            <span style="color:#6B7280">if</span> <span style="color:#6B7280">not</span> res <span style="color:#6B7280">or</span> cur[<span style="color:#CA8A04">0</span>] > res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>]:
-                res.<span style="color:#D4744C">append</span>(cur)                <span style="color:#6B7280"># 无重叠，直接加入</span>
+            <span style="color:#6B7280">if</span> <span style="color:#6B7280">not</span> res <span style="color:#6B7280">or</span> cur[<span style="color:#CA8A04">0</span>] &gt; res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>]:
+                res.append(cur)               <span style="color:#6B7280"># 不重叠：直接加入</span>
             <span style="color:#6B7280">else</span>:
-                res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>] = <span style="color:#D4744C">max</span>(res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>], cur[<span style="color:#CA8A04">1</span>])  <span style="color:#6B7280"># 合并终点</span>
+                res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>] = <span style="color:#D4744C">max</span>(res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>], cur[<span style="color:#CA8A04">1</span>])  <span style="color:#6B7280"># 重叠：终点取较大值</span>
         <span style="color:#6B7280">return</span> res</code></pre>
-
-  <p><strong>intervals.sort()</strong>：按起点升序排序。Python 默认对列表按第一个元素排序。</p>
-  <p><strong>if not res or cur[0] > res[-1][1]</strong>：如果结果为空，或者当前区间起点超过已合并区间的终点 → 无重叠。</p>
-  <p><strong>res[-1][1] = max(res[-1][1], cur[1])</strong>：有重叠，取较大的终点作为合并后的终点。</p>
-
-  <div class="note warm">按起点排序后，重叠的判断变得异常简单：只关心已合并区间的终点。</div>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>排序</strong>：Python 列表排序默认按第一个元素升序，起点相同再按终点，恰好符合需求</li>
+    <li><strong>重叠判断</strong>：<code>cur[0] &gt; res[-1][1]</code> —— 当前起点大于结果末区间终点才不重叠</li>
+    <li><strong>原地修改</strong>：直接更新 <code>res[-1][1]</code>，因为已排序保证新终点不会影响与后续区间的判断</li>
+  </ul>
 </section>
 
 <section class="card" id="complexity">
-  <h2>5. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
-    <tr><th>维度</th><th>值</th><th>说明</th></tr>
-    <tr><td>时间复杂度</td><td><strong>O(n log n)</strong></td><td>排序 O(n log n)，合并遍历 O(n)</td></tr>
-    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>除结果数组外，只用常数空间</td></tr>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n log n)</td><td>排序 O(n log n)，遍历合并 O(n)</td></tr>
+    <tr><td>空间</td><td>O(n)</td><td>结果数组 res 最坏存 n 个区间；排序 O(log n) 栈空间（可忽略）</td></tr>
   </table>
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>6. 常见易错点</h2>
-  <h3>错误：忘记排序</h3>
-  <p>如果不排序，无法保证当前区间之前的区间已被处理完，合并逻辑会错乱。</p>
-
-  <h3>错误：合并时取小值</h3>
-  <pre><code>res[-1][1] = cur[1]  # ❌ 应该取较大值</code></pre>
-  <pre><code>res[-1][1] = max(res[-1][1], cur[1])  # ✅</code></pre>
-
-  <h3>边界：单区间、空数组</h3>
-  <p>空数组返回 []，单个区间返回自身。</p>
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>忘记排序</strong>：不排序时区间可能交错（如 [[2,6],[1,3]]），与结果末区间比较会得出错误结论。</div>
+  <div class="note yellow"><strong>端点相接的区间</strong>：<code>cur[0] == res[-1][1]</code> 也应合并（条件用 <code>&gt;</code> 而非 <code>&gt;=</code>）。</div>
+  <div class="note yellow"><strong>只更新终点、不动起点</strong>：合并结果起点用上一个区间的起点，因为已排序保证它是最小的。</div>
+  <div class="note red"><strong>直接引用 vs 拷贝</strong>：<code>res.append(cur)</code> 存的是引用，若后续修改 cur 会污染结果（本题原地改 res[-1] 不涉及，但要意识到）。</div>
 </section>
 
 <section class="card" id="summary">
-  <h2>7. 总结</h2>
-  <div class="note green">
-    <p><strong>合并区间</strong> 解法精髓：</p>
-    <ul style="margin:6px 0 0;padding-left:20px;">
-      <li>按起点<strong>排序</strong></li>
-      <li>一次遍历，比较当前起点与已合并终点</li>
-      <li>重叠则取较大终点，不重叠则直接加入</li>
-    </ul>
-  </div>
-  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
-    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">merge</span>(self, intervals):
-        intervals.<span style="color:#D4744C">sort</span>()
-        res = []
-        <span style="color:#6B7280">for</span> cur <span style="color:#6B7280">in</span> intervals:
-            <span style="color:#6B7280">if</span> <span style="color:#6B7280">not</span> res <span style="color:#6B7280">or</span> cur[<span style="color:#CA8A04">0</span>] > res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>]:
-                res.<span style="color:#D4744C">append</span>(cur)
-            <span style="color:#6B7280">else</span>:
-                res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>] = <span style="color:#D4744C">max</span>(res[-<span style="color:#CA8A04">1</span>][<span style="color:#CA8A04">1</span>], cur[<span style="color:#CA8A04">1</span>])
-        <span style="color:#6B7280">return</span> res</code></pre>
-  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：排序一遍过，不重叠直接加，重叠取大终点。</p>
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>排序 + 一次遍历</strong>：重叠判断简化为「当前起点 vs 结果末终点」一行比较</li>
+    <li><strong>两种动作</strong>：不重叠就加入，重叠就吞并（终点取 max）</li>
+    <li><strong>复杂度</strong>：O(n log n) 时间、O(n) 空间，区间类问题的最优范式</li>
+  </ul>
+  <div class="note green">口诀：排序一遍过，不重叠直接加，重叠取大终点。</div>
 </section>
 </main>
+
 <footer>合并区间 · 算法学习页</footer>
+
+<script>
+(function(){
+const input = [[1,3],[2,6],[8,10],[15,18]];
+const MIN = 0, MAX = 19;
+
+function simulate(intervals) {
+  const arr = intervals.slice().sort((a, b) => a[0] - b[0]);
+  const steps = [];
+  const res = [];
+  const snap = (desc, idx, resSnap, curIdx) => {
+    steps.push({desc: desc, idx: idx, res: resSnap.map(x => x.slice()), curIdx: curIdx});
+  };
+  snap('初始：按起点排序 ' + JSON.stringify(arr) + '。res 为空，开始遍历', 0, res, 0);
+
+  for (let i = 0; i < arr.length; i++) {
+    const cur = arr[i];
+    if (res.length === 0 || cur[0] > res[res.length - 1][1]) {
+      res.push(cur.slice());
+      snap('当前 [' + cur[0] + ',' + cur[1] + ']：' + (res.length === 0 ? 'res 为空，直接加入' : '起点 ' + cur[0] + ' > 结果末终点 ' + res[res.length - 1][1] + '，不重叠，直接加入') + ' res', i, res, i);
+    } else {
+      const oldEnd = res[res.length - 1][1];
+      res[res.length - 1][1] = Math.max(oldEnd, cur[1]);
+      snap('当前 [' + cur[0] + ',' + cur[1] + ']：起点 ' + cur[0] + ' ≤ 结果末终点 ' + oldEnd + ' → 重叠，终点取 max(' + oldEnd + ', ' + cur[1] + ') = ' + res[res.length - 1][1], i, res, i);
+    }
+  }
+  snap('✅ 完成。合并结果：' + JSON.stringify(res), arr.length - 1, res, -1);
+  return steps;
+}
+
+const steps = simulate(input);
+let cur = 0, playing = false, timer = null;
+
+const ruler = document.getElementById('ruler');
+const lanes = document.getElementById('lanes');
+const resBox = document.getElementById('resBox');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const statCur = document.getElementById('statCur');
+const statLast = document.getElementById('statLast');
+const statCnt = document.getElementById('statCnt');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+const sorted = input.slice().sort((a, b) => a[0] - b[0]);
+const SEG_W = 50; // px per unit
+
+function render(k) {
+  const st = steps[k];
+
+  // 刻度尺
+  let rh = '';
+  for (let v = 0; v <= MAX; v++) {
+    rh += '<div class="ruler-tick" style="left:' + (v * SEG_W) + 'px"></div>';
+    rh += '<div class="ruler-num" style="left:' + (v * SEG_W) + 'px">' + v + '</div>';
+  }
+  ruler.innerHTML = rh;
+
+  // 区间泳道
+  let lh = '';
+  sorted.forEach((seg, i) => {
+    let cls = 'seg';
+    if (st.idx === i) cls += ' cur';
+    else if (st.curIdx >= 0 && i > st.curIdx) cls += ' out';
+    lh += '<div class="lane"><div class="lname">区间 ' + (i + 1) + '</div>'
+        + '<div class="ltrack">'
+        + '<div class="' + cls + '" style="left:' + (seg[0] * SEG_W) + 'px;width:' + ((seg[1] - seg[0]) * SEG_W) + 'px">[' + seg[0] + ',' + seg[1] + ']</div>'
+        + '</div></div>';
+  });
+  // res 泳道
+  let resLane = '';
+  st.res.forEach((seg, i) => {
+    resLane += '<div class="seg merged" style="left:' + (seg[0] * SEG_W) + 'px;width:' + ((seg[1] - seg[0]) * SEG_W) + 'px">[' + seg[0] + ',' + seg[1] + ']</div>';
+  });
+  lh += '<div class="lane"><div class="lname">结果 res</div><div class="ltrack">' + resLane + '</div></div>';
+  lanes.innerHTML = lh;
+
+  // res chips
+  let ch = '<span style="font-size:12px;color:var(--text-light);line-height:36px">合并结果：</span>';
+  if (st.res.length === 0) ch += '<span style="font-size:12px;color:var(--text-light);line-height:36px">（暂无）</span>';
+  st.res.forEach(t => { ch += '<span class="res-chip">[' + t[0] + ',' + t[1] + ']</span>'; });
+  resBox.innerHTML = ch;
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  statCur.textContent = st.curIdx >= 0 ? '[' + sorted[st.curIdx][0] + ',' + sorted[st.curIdx][1] + ']' : '—';
+  statLast.textContent = st.res.length ? '[' + st.res[st.res.length - 1][0] + ',' + st.res[st.res.length - 1][1] + ']' : '（空）';
+  statCnt.textContent = st.res.length;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1600);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
 </body>
 </html>

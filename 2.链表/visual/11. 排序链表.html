@@ -98,6 +98,14 @@ th{background:#F1F5F9;font-weight:600}
 .viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
 @media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.ll-val{min-width:40px;height:38px;font-size:13px}.ll-null{height:38px;line-height:38px}}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 
 /* ===== 本页专用：三段式区域 ===== */
 .viz-section{margin:14px 0;padding:12px 14px;border:1px dashed var(--border);border-radius:12px;background:var(--card)}
@@ -119,12 +127,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：链表转数组</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -182,8 +191,34 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   </div>
 </section>
 
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">nums</span> = []
+<span class="var">cur</span> = <span class="var">head</span>
+<span class="kw">while</span> <span class="zh">cur 非空</span>:
+    <span class="zh">收集值到数组</span>           <span class="cm"># nums.append(cur.val)</span>
+    <span class="var">cur</span> = <span class="var">cur</span>.next
+
+<span class="zh">对数组排序</span>                   <span class="cm"># nums.sort()</span>
+
+<span class="var">dummy</span> = <span class="zh">新建节点</span>(<span class="num">0</span>)
+<span class="var">cur</span> = <span class="var">dummy</span>
+<span class="kw">for</span> <span class="var">num</span> <span class="kw">in</span> <span class="var">nums</span>:
+    <span class="zh">创建新节点并接入</span>       <span class="cm"># cur.next = ListNode(num)</span>
+    <span class="var">cur</span> = <span class="var">cur</span>.next
+<span class="kw">return</span> <span class="var">dummy</span>.next</code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">三个关键阶段：遍历链表「拍平」到数组 → 用 Timsort 高效排序 → 用 dummy 虚拟头重建链表。dummy 节点统一了首节点处理，避免了空链表的特殊判断。</div>
+</section>
+
 <section class="card" id="viz">
-  <h2>3. 交互可视化演示</h2>
+  <h2>4. 交互可视化演示</h2>
   <p>点击「下一步」，依次观察「收集 → 排序 → 重建」三个阶段如何把无序链表变成有序链表。</p>
 
   <div class="viz-container">
@@ -218,7 +253,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>4. 详细过程模拟</h2>
+  <h2>5. 详细过程模拟</h2>
   <p>以 <code>head = [4, 2, 1, 3]</code> 为例，分三阶段展示。</p>
 
   <h3>阶段一：收集（链表 → 数组）</h3>
@@ -276,7 +311,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="code">
-  <h2>5. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
 
   <h3>完整代码</h3>
   <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">ListNode</span>:
@@ -329,7 +364,7 @@ return dummy.next</code></pre>
 </section>
 
 <section class="card" id="complexity">
-  <h2>6. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
     <tr><td>时间复杂度</td><td><strong>O(n log n)</strong></td><td>遍历 O(n) + Timsort O(n log n) + 重建 O(n)，主导项为排序。</td></tr>
@@ -342,7 +377,7 @@ return dummy.next</code></pre>
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>7. 常见易错点</h2>
+  <h2>8. 常见易错点</h2>
 
   <h3>错误一：忘了 dummy，首节点处理出错</h3>
   <pre><code># 错误：直接用 head 接，但 head 可能被改变/丢失
@@ -374,7 +409,7 @@ return dummy.next  # ✅ 真正的结果头</code></pre>
 </section>
 
 <section class="card" id="summary">
-  <h2>8. 总结</h2>
+  <h2>9. 总结</h2>
   <div class="note green">
     <p><strong>排序链表（数组法）</strong> 精髓：</p>
     <ul style="margin:6px 0 0;padding-left:20px;">

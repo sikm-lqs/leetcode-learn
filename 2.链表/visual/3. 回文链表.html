@@ -41,6 +41,14 @@ main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
 code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
 pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
 pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 .array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
 .cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
 .cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
@@ -113,12 +121,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：找中点 → 反转后半 → 对撞比较</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -190,6 +199,37 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   </div>
 </section>
 
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">slow</span> = <span class="var">fast</span> = head
+<span class="kw">while</span> <span class="zh">快指针未到末尾</span>:          <span class="cm"># fast and fast.next</span>
+    <span class="zh">慢指针走一步</span>                 <span class="cm"># slow = slow.next</span>
+    <span class="zh">快指针走两步</span>                 <span class="cm"># fast = fast.next.next</span>
+
+<span class="var">prev</span> = <span class="kw">None</span>
+<span class="var">cur</span> = <span class="var">slow</span>
+<span class="kw">while</span> <span class="zh">遍历后半段</span>:                <span class="cm"># cur</span>
+    <span class="zh">暂存下一节点</span>                 <span class="cm"># nxt = cur.next</span>
+    <span class="zh">反转指针</span>                     <span class="cm"># cur.next = prev</span>
+    <span class="zh">推进prev和cur</span>               <span class="cm"># prev, cur = cur, nxt</span>
+
+<span class="var">left</span> = head
+<span class="var">right</span> = <span class="var">prev</span>
+<span class="kw">while</span> <span class="zh">右指针未到末尾</span>:           <span class="cm"># right</span>
+    <span class="kw">if</span> <span class="zh">值不等</span>:                   <span class="cm"># left.val != right.val</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="zh">双指针同步推进</span>               <span class="cm"># left, right = left.next, right.next</span>
+<span class="kw">return</span> <span class="kw">True</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">三个连续 while：快慢找中点 → 三指针反转 → 左右对撞比较。每个 while 都只做一件事，环环相扣，O(n) 时间 O(1) 空间。</div>
+</section>
+
 <section class="card" id="viz">
   <h2>3. 交互可视化演示</h2>
   <p>点击「下一步」，观察快慢指针定位中点、原地反转后半段、左右对撞比较的完整过程。绿色箭头表示已反转的指针。</p>
@@ -213,7 +253,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>4. 详细过程模拟</h2>
+  <h2>5. 详细过程模拟</h2>
   <p>以 <code>head = [1, 2, 2, 1]</code> 为例，展示两个关键画面。</p>
 
   <h3>关键画面一：快慢指针定位中点</h3>
@@ -246,7 +286,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="code">
-  <h2>5. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
 
   <h3>完整代码</h3>
   <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">ListNode</span>:
@@ -310,7 +350,7 @@ return True</code></pre>
 </section>
 
 <section class="card" id="complexity">
-  <h2>6. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
     <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>找中点 O(n) + 反转后半 O(n/2) + 比较 O(n/2)，整体 O(n)。</td></tr>
@@ -320,7 +360,7 @@ return True</code></pre>
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>7. 常见易错点</h2>
+  <h2>8. 常见易错点</h2>
 
   <h3>错误一：快慢指针循环条件写错</h3>
   <pre><code>while fast.next:        # ❌ 偶数长度时会越界
@@ -352,7 +392,7 @@ cur = head
 </section>
 
 <section class="card" id="summary">
-  <h2>8. 总结</h2>
+  <h2>9. 总结</h2>
   <div class="note green">
     <p><strong>回文链表</strong> 精髓：</p>
     <ul style="margin:6px 0 0;padding-left:20px;">

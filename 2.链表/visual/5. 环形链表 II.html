@@ -99,6 +99,16 @@ th{background:#F1F5F9;font-weight:600}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
 @media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.ll-val{min-width:40px;height:38px;font-size:13px}.ll-null{height:38px;line-height:38px}}
 
+/* ===== 伪代码骨架着色 ===== */
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
 /* ===== 环回箭头 SVG 容器 ===== */
 .cycle-svg{display:block;margin:-4px auto 0;width:100%;max-width:520px;height:90px}
 </style>
@@ -116,12 +126,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：两阶段快慢指针</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -187,8 +198,30 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   </div>
 </section>
 
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">slow</span> = <span class="var">fast</span> = <span class="var">head</span>
+
+<span class="kw">while</span> <span class="var">fast</span> <span class="kw">and</span> <span class="var">fast</span>.next:
+    <span class="zh">快慢指针各走一步</span>               <span class="cm"># slow = slow.next, fast = fast.next.next</span>
+    <span class="kw">if</span> <span class="zh">快慢相遇</span>:                  <span class="cm"># slow is fast</span>
+        <span class="var">p</span> = <span class="var">head</span>
+        <span class="kw">while</span> <span class="var">p</span> <span class="kw">is not</span> <span class="var">slow</span>:
+            <span class="zh">两指针同速前进</span>             <span class="cm"># p = p.next, slow = slow.next</span>
+        <span class="kw">return</span> <span class="var">p</span>
+<span class="kw">return</span> <span class="var">None</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">相遇后把一个指针放回头节点，两指针同速走，再次相遇即环入口。关键判断：第一阶段无环则 fast 或 fast.next 为 None，循环自然结束返回 None。</div>
+</section>
+
 <section class="card" id="viz">
-  <h2>3. 交互可视化演示</h2>
+  <h2>4. 交互可视化演示</h2>
   <p>点击「下一步」，观察快慢指针如何先在环内相遇，再通过两次相遇锁定入环点。<strong>蓝色</strong>为阶段一 slow / 阶段二 p，<strong>暖色</strong>为 fast / 阶段二 slow。</p>
 
   <div class="viz-container">
@@ -219,7 +252,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>4. 详细过程模拟</h2>
+  <h2>5. 详细过程模拟</h2>
   <p>以 <code>head = [3, 2, 0, -4]</code>，<code>pos = 1</code> 为例。</p>
 
   <h3>阶段一 · 第一次相遇：slow 与 fast 在节点 -4 相遇</h3>
@@ -259,7 +292,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="code">
-  <h2>5. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
 
   <h3>完整代码</h3>
   <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">ListNode</span>:
@@ -311,7 +344,7 @@ return p</code></pre>
 </section>
 
 <section class="card" id="complexity">
-  <h2>6. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
     <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>阶段一最多走 O(n) 步相遇；阶段二 a + c ≤ n。总线性。</td></tr>
@@ -320,7 +353,7 @@ return p</code></pre>
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>7. 常见易错点</h2>
+  <h2>8. 常见易错点</h2>
 
   <h3>错误一：无环时崩在 fast.next</h3>
   <pre><code># 错误：只判 fast，没判 fast.next
@@ -347,7 +380,7 @@ if slow is fast:        # ✅ 比较对象身份，就是同一节点</code></pr
 </section>
 
 <section class="card" id="summary">
-  <h2>8. 总结</h2>
+  <h2>9. 总结</h2>
   <div class="note green">
     <p><strong>环形链表 II</strong> 精髓：</p>
     <ul style="margin:6px 0 0;padding-left:20px;">

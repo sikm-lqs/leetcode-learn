@@ -5,76 +5,395 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3. 字符串解码 · 算法详解</title>
 <style>
-:root{--bg:#F3F3F5;--card:#fff;--text:#1F2937;--primary:#3B7DD8;--warm:#D4744C;--accent-green:#16A34A;--border:#E2E5E9;--code-bg:#111827;--code-text:#E5E7EB}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
-header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px;text-align:center}
-main{max-width:1000px;margin:0 auto;padding:24px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 26px;margin:18px 0;box-shadow:0 8px 24px rgba(15,23,42,0.05)}
-h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px}
-pre{background:var(--code-bg);color:var(--code-text);padding:16px;border-radius:14px;overflow:auto;font-size:13px}
-.stack{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
-.item{background:#F8FAFC;border:2px solid #CBD5E1;border-radius:8px;padding:6px 14px;font-family:Consolas,monospace;font-weight:700}
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.viz-cells{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin:12px 0}
+.ch-cell{min-width:34px;height:40px;display:flex;align-items:center;justify-content:center;background:#F1F5F9;border:2px solid #CBD5E1;border-radius:8px;font-family:Consolas,Monaco,monospace;font-weight:700;font-size:16px;transition:all .25s}
+.ch-cell.cur{border-color:var(--warm);background:var(--warm-soft);color:var(--warm);transform:translateY(-3px);box-shadow:0 4px 10px rgba(212,116,76,.25)}
+.ch-cell.done{opacity:.45}
+.viz-stack{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;margin:14px 0;min-height:52px;padding:10px;background:var(--card);border:1px dashed var(--border);border-radius:12px}
+.viz-stack .stack-label{font-size:12px;color:var(--text-light);margin-right:6px}
+.s-item{min-width:32px;height:36px;display:flex;align-items:center;justify-content:center;background:#F8FAFC;border:2px solid #94A3B8;border-radius:8px;font-family:Consolas,Monaco,monospace;font-weight:700;font-size:15px;transition:all .25s}
+.s-item.new{border-color:var(--accent-green);background:var(--accent-green-soft);color:#0F7A3D;animation:pop .3s ease}
+@keyframes pop{from{transform:scale(.6);opacity:.3}to{transform:scale(1);opacity:1}}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+.viz-stats{display:flex;justify-content:center;flex-wrap:wrap;gap:28px;font-size:14px;margin:8px 0 0;padding:10px 16px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.viz-stats strong{font-size:18px;font-family:Consolas,Monaco,monospace}
+.viz-stats .vl{color:var(--warm);font-weight:700}
+.viz-stats .vr{color:var(--primary);font-weight:700}
+.viz-stats .va{color:var(--accent-green);font-weight:800}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}}
 </style>
 </head>
 <body>
+
 <header>
-  <div style="background:rgba(255,255,255,0.2);display:inline-block;padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:10px">LeetCode 394 · 中等</div>
-  <h1 style="margin:0;color:#fff">3. 字符串解码</h1>
+  <div class="badge">LeetCode 394 · 中等</div>
+  <h1>3. 字符串解码</h1>
+  <p class="subtitle">给定经过编码的字符串 k[encoded_string]，返回解码后的字符串。</p>
 </header>
+
 <main>
-<div class="card">
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：栈模拟嵌套解码</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
   <h2>1. 题目理解</h2>
-  <p>解码 k[encoded_string] 形式的嵌套字符串。</p>
-</div>
+  <p>给定一个经过编码的字符串 <code>s</code>，返回解码后的字符串。编码规则为 <code>k[encoded_string]</code>，表示方括号内部的字符串正好重复 <code>k</code> 次。可以认为输入总是有效的：数字只会作为重复次数出现，且保证 <code>k</code> 为正整数。输入中可能包含嵌套的编码（如 <code>3[a2[c]]</code>）。</p>
 
-<div class="card">
-  <h2>2. 核心思路</h2>
-  <p>用栈存储 [当前数字, 当前字符串]，遇到 ] 时弹出解码并重新入栈。</p>
-</div>
+  <h3>示例</h3>
+  <pre><code>输入：s = "3[a]2[bc]"
+输出："aaabcbc"
 
-<div class="card">
-  <h2>3. 伪代码</h2>
-  <pre><code>stack = []
-for c in s:
-    if c != ']': stack.append(c)
-    else:
-        sub = pop until '['
-        k = pop number
-        stack.append( k * sub )</code></pre>
-</div>
+输入：s = "3[a2[c]]"
+输出："accaccacc"
 
-<div class="card">
-  <h2>4. 可视化 (简化)</h2>
-  <div class="stack" id="stack"></div>
-  <button onclick="step()">下一步</button>
-  <p id="log"></p>
-</div>
+输入：s = "2[abc]3[cd]ef"
+输出："abcabccdcdcdef"</code></pre>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：栈模拟嵌套解码</h2>
+  <p>用 <strong>栈</strong> 逐字符处理，遇到 <code>]</code> 时触发一次「解码」：</p>
+  <ol>
+    <li><strong>非 <code>]</code> 字符一律入栈</strong>（数字、字母、<code>[</code> 都先放着）</li>
+    <li>遇到 <code>]</code>：<strong>弹出字符直到 <code>[</code></strong>，得到括号内的字符串（注意栈是倒序取出的，需要反转）</li>
+    <li>继续 <strong>弹出数字</strong>，得到重复次数 <code>k</code>（数字可能多位，也要反转）</li>
+    <li>把 <code>k</code> 倍的字符串<strong>重新压回栈</strong>，供外层继续解码</li>
+  </ol>
+  <p>嵌套结构天然被栈化解：内层先解码、压回，外层遇到 <code>]</code> 时再把它当作普通字符弹出拼接。最后拼接栈中所有字符即为答案。</p>
+  <div class="note blue">关键洞察：解码结果「压回栈」而非直接输出——内层结果必须重新入栈，才能被外层的 <code>k[...]</code> 继续乘倍。这是栈解嵌套的核心。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="var">stack</span> = []
+
+<span class="kw">for</span> <span class="var">c</span> <span class="kw">in</span> <span class="zh">遍历 s</span>:
+    <span class="kw">if</span> <span class="var">c</span> != <span class="zh">']'</span>:
+        <span class="zh">入栈</span>                          <span class="cm"># stack.append(c)</span>
+    <span class="kw">else</span>:
+        <span class="zh">弹出到 '['，组成 now_str</span>       <span class="cm"># 倒序取出，需反转 now_str[::-1]</span>
+        <span class="zh">弹出 '['</span>
+        <span class="zh">弹出数字组成 num_str</span>          <span class="cm"># 多位数字也要反转，int(num_str)</span>
+        <span class="zh">将 now_str 重复 k 次压回栈</span>    <span class="cm"># for _ in range(num): 逐字符入栈</span>
+
+<span class="kw">return</span> <span class="zh">拼接栈中字符</span>                    <span class="cm"># ''.join(stack)</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">嵌套 = 多层「入栈 → 触发解码 → 压回」的叠加：内层压回的字符串，就是外层下一次解码时的「括号内内容」。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 s = "3[a2[c]]" 的完整解码过程（含嵌套）。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：s = "3[a2[c]]"</div>
+    <div class="viz-cells" id="chCells"></div>
+    <div class="viz-stack" id="stackBox">
+      <span class="stack-label">栈：</span>
+    </div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前字符</span>
+      <span><i style="background:#F8FAFC;border:2px solid #94A3B8"></i>栈中元素</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>刚压回栈</span>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+    <div class="viz-stats">
+      <span>当前字符：<strong class="vl" id="statChar">—</strong></span>
+      <span>栈大小：<strong class="vr" id="statSize">0</strong></span>
+      <span>最终答案：<strong class="va" id="statAns">"…"</strong></span>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <p>以较简单的 <code>s = "3[a]2[bc]"</code> 逐步走一遍：</p>
+  <table>
+    <tr><th>步骤</th><th>字符</th><th>操作</th><th>栈内容（底→顶）</th></tr>
+    <tr><td>1</td><td>'3'</td><td>入栈</td><td><code>3</code></td></tr>
+    <tr><td>2</td><td>'['</td><td>入栈</td><td><code>3 [</code></td></tr>
+    <tr><td>3</td><td>'a'</td><td>入栈</td><td><code>3 [ a</code></td></tr>
+    <tr><td>4</td><td>']'</td><td>弹出到 '[' 得 <code>"a"</code>，弹出数字 <code>3</code>，压回 <code>"aaa"</code></td><td><code>3</code> → <code>a a a</code></td></tr>
+    <tr><td>5</td><td>'2'</td><td>入栈</td><td><code>a a a 2</code></td></tr>
+    <tr><td>6</td><td>'['</td><td>入栈</td><td><code>a a a 2 [</code></td></tr>
+    <tr><td>7</td><td>'b'</td><td>入栈</td><td><code>a a a 2 [ b</code></td></tr>
+    <tr><td>8</td><td>'c'</td><td>入栈</td><td><code>a a a 2 [ b c</code></td></tr>
+    <tr><td>9</td><td>']'</td><td>弹出得 <code>"bc"</code>，数字 <code>2</code>，压回 <code>"bcbc"</code></td><td><code>a a a b c b c</code></td></tr>
+    <tr><td>10</td><td>结束</td><td>拼接全部字符</td><td><code>"aaabcbc"</code> ✅</td></tr>
+  </table>
+  <div class="note purple">观察第 4 步：解码结果没有直接输出，而是重新入栈，因此第 9 步外层 <code>2[bc]</code> 解码时，栈里已有的 <code>aaa</code> 不受影响，最终按顺序拼接。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">decodeString</span>(self, s: str) -&gt; str:
+        stack = []
+        <span style="color:#6B7280">for</span> c <span style="color:#6B7280">in</span> s:
+            <span style="color:#6B7280">if</span> c != <span style="color:#CA8A04">"]"</span>:
+                stack.append(c)              <span style="color:#6B7280"># 非 ']' 一律入栈</span>
+            <span style="color:#6B7280">else</span>:
+                now_str = <span style="color:#CA8A04">""</span>
+                <span style="color:#6B7280">while</span> stack[-<span style="color:#CA8A04">1</span>] != <span style="color:#CA8A04">"["</span>:      <span style="color:#6B7280"># 1. 弹出括号内内容</span>
+                    now_str += stack[-<span style="color:#CA8A04">1</span>]
+                    stack.pop()
+                stack.pop()                   <span style="color:#6B7280"># 弹出 '['</span>
+                now_str = now_str[::-<span style="color:#CA8A04">1</span>]       <span style="color:#6B7280"># 倒序取出 → 反转</span>
+
+                num_str = <span style="color:#CA8A04">""</span>
+                <span style="color:#6B7280">while</span> stack <span style="color:#6B7280">and</span> stack[-<span style="color:#CA8A04">1</span>].isdigit():  <span style="color:#6B7280"># 2. 弹出数字（可多位）</span>
+                    num_str += stack[-<span style="color:#CA8A04">1</span>]
+                    stack.pop()
+                num_str = num_str[::-<span style="color:#CA8A04">1</span>]
+                num = int(num_str)
+
+                <span style="color:#6B7280">for</span> _ <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(num):        <span style="color:#6B7280"># 3. 解码结果逐字符压回</span>
+                    <span style="color:#6B7280">for</span> ch <span style="color:#6B7280">in</span> now_str:
+                        stack.append(ch)
+        <span style="color:#6B7280">return</span> <span style="color:#CA8A04">""</span>.join(stack)   <span style="color:#6B7280"># 拼接栈中全部字符</span></code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>入栈阶段</strong>：数字、<code>[</code>、字母统一当作普通字符压栈，<code>[</code> 是解码的「分界标记」</li>
+    <li><strong>弹出内容</strong>：从栈顶往回取，先取到的是最内层字符，所以 <code>now_str</code> 是反的，必须 <code>[::-1]</code> 反转</li>
+    <li><strong>弹出数字</strong>：用 <code>isdigit()</code> 连续收集，<code>12[a]</code> 这类多位数字也能正确处理，同样需要反转后 <code>int()</code></li>
+    <li><strong>压回</strong>：用嵌套循环逐字符入栈，保证外层解码时顺序正确</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n)</td><td>每个字符最多入栈一次、出栈一次；<code>s</code> 的长度按解码后的总长度计</td></tr>
+    <tr><td>空间</td><td>O(n)</td><td>栈的深度即解码过程的嵌套深度，最坏为解码结果长度</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>忘记反转</strong>：从栈顶取出的内容/数字是倒序的，<code>now_str</code> 和 <code>num_str</code> 都必须 <code>[::-1]</code>，否则 <code>12[a]</code> 会变成 <code>21</code> 倍。</div>
+  <div class="note yellow"><strong>解码结果没有压回</strong>：如果直接把 <code>now_str * num</code> 输出而不是逐字符重新入栈，嵌套场景 <code>3[a2[c]]</code> 的外层解码会缺失内层结果。</div>
+  <div class="note yellow"><strong>多位数字</strong>：只取一位数字（<code>int(stack.pop())</code>）会漏掉 <code>12[a]</code> 中的 <code>1</code>，必须用 <code>while ... isdigit()</code> 连续收集。</div>
+  <div class="note red"><strong>空栈访问</strong>：弹出内容时假设必有 <code>[</code> 与它配对；题目保证输入有效，但若自己写测试用例（如裸 <code>"]"</code>）会越界。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>栈解嵌套</strong>：遇到 <code>]</code> 解码一次，结果压回栈，天然处理任意层嵌套，无需递归</li>
+    <li><strong>三个动作</strong>：弹出内容（反转）、弹出数字（反转）、压回结果</li>
+    <li><strong>复杂度</strong>：时间 O(n)、空间 O(n)，一趟扫描完成</li>
+  </ul>
+  <div class="note green">口诀：非右括全入栈，遇右括弹内容、弹数字、再压回。三处反转别忘记，最后拼接全栈。</div>
+</section>
+</main>
+
+<footer>字符串解码 · 算法学习页</footer>
 
 <script>
-let st = [];
-let i = 0;
+(function(){
 const s = "3[a2[c]]";
-function render() {
-  document.getElementById('stack').innerHTML = st.map(x => `<div class="item">${x}</div>`).join('');
-}
-function step() {
-  if (i >= s.length) return;
-  const c = s[i++];
-  document.getElementById('log').innerText = `处理: ${c}`;
-  if (c !== ']') {
-    st.push(c);
-  } else {
-    let sub = '';
-    while (st.length && st[st.length-1] !== '[') sub = st.pop() + sub;
-    st.pop(); // [
-    let k = '';
-    while (st.length && !isNaN(st[st.length-1])) k = st.pop() + k;
-    st.push( parseInt(k) * sub );
+
+function simulate(str){
+  const steps = [];
+  const stack = [];
+  let hl = -1;
+  const snap = (i, desc) => steps.push({stack: stack.slice(), hl: hl, i: i, desc: desc});
+
+  snap(-1, '初始：栈为空。开始逐字符扫描输入 s = "' + str + '"');
+
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    if (c !== ']') {
+      stack.push(c);
+      hl = stack.length - 1;
+      snap(i, '读到字符 ' + c + '，不是 ] → 入栈。当前栈（底→顶）：' + (stack.join(' ') || '空'));
+    } else {
+      let now = '';
+      while (stack.length && stack[stack.length - 1] !== '[') {
+        now = stack.pop() + now;
+      }
+      if (stack.length) stack.pop();
+      hl = stack.length - 1;
+      snap(i, '读到 ]：弹出字符直到 [，得到内容 "' + now + '"（栈顶先出，故取回的是反序，需反转）。弹出 [ 本身');
+
+      let numStr = '';
+      while (stack.length && /^\d$/.test(stack[stack.length - 1])) {
+        numStr = stack.pop() + numStr;
+      }
+      hl = stack.length - 1;
+      const num = parseInt(numStr, 10);
+      snap(i, '继续弹出数字，得到 k = ' + num + '（数字同样反序取出，需反转），即 "' + now + '" 重复 ' + num + ' 次');
+
+      const decoded = now.repeat(num);
+      for (const ch of decoded) {
+        stack.push(ch);
+        hl = stack.length - 1;
+      }
+      snap(i, '将解码结果 "' + decoded + '" 逐字符压回栈，供外层继续解码。当前栈：' + stack.join(' '));
+    }
   }
-  render();
+  snap(str.length, '✅ 扫描结束。拼接栈中所有字符 → 答案 "' + stack.join('') + '"');
+  return steps;
 }
-render();
+
+const steps = simulate(s);
+let cur = 0, playing = false, timer = null;
+
+const chCells = document.getElementById('chCells');
+const stackBox = document.getElementById('stackBox');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const statChar = document.getElementById('statChar');
+const statSize = document.getElementById('statSize');
+const statAns = document.getElementById('statAns');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+  let h = '';
+  for (let i = 0; i < s.length; i++) {
+    const cls = (i === st.i) ? 'cur' : (st.i >= 0 && i < st.i ? 'done' : '');
+    h += '<div class="ch-cell ' + cls + '">' + s[i] + '</div>';
+  }
+  chCells.innerHTML = h;
+
+  let sh = '<span class="stack-label">栈：</span>';
+  if (st.stack.length === 0) {
+    sh += '<span style="color:var(--text-light);font-size:13px">（空）</span>';
+  } else {
+    st.stack.forEach((ch, idx) => {
+      sh += '<div class="s-item ' + (idx === st.hl ? 'new' : '') + '">' + ch + '</div>';
+    });
+  }
+  stackBox.innerHTML = sh;
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  statChar.textContent = st.i >= 0 && st.i < s.length ? "'" + s[st.i] + "'" : '—';
+  statSize.textContent = st.stack.length;
+  statAns.textContent = '"' + st.stack.join('') + '"';
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) {
+  if (k >= 0 && k < steps.length) { cur = k; render(cur); }
+}
+function nextStep() {
+  if (cur < steps.length - 1) go(cur + 1);
+  else stopPlay();
+}
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1400);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
 </script>
-</main>
 </body>
 </html>

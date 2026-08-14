@@ -232,13 +232,23 @@ function nextStep() {
 }
 
 function prevStep() {
-  // 简单重置再前进（为了演示方便）
-  reset();
-  for (let k = 0; k < Math.max(0, idx-1); k++) {
-    // 重新执行
+  if (idx <= 0) return;
+  // 单调栈过程是确定性的：重置后从 0 重放到 idx-1 步，即为上一步状态
+  const target = idx - 1;
+  stopPlay();
+  ans = Array(temps.length).fill(0);
+  stack = [];
+  idx = 0;
+  while (idx < target) {
+    const t = temps[idx];
+    while (stack.length && t > temps[stack[stack.length-1]]) {
+      const prev = stack.pop();
+      ans[prev] = idx - prev;
+    }
+    stack.push(idx);
+    idx++;
   }
-  // 简化处理：直接重置到上一步
-  alert('演示中“上一步”采用重置+重放实现，请直接使用“下一步”体验单调栈过程');
+  render();
 }
 
 function reset() {

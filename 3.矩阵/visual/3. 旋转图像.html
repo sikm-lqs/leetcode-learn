@@ -111,12 +111,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：上下反转 + 主对角线转置</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -175,8 +176,28 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   </div>
 </section>
 
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">n</span> = <span class="var">matrix</span> 的行数
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">前一半行</span>:                 <span class="cm"># range(n//2)</span>
+    <span class="zh">上下交换第 i 行与第 n-1-i 行</span>  <span class="cm"># matrix[i], matrix[n-1-i] = ...</span>
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">所有行</span>:                 <span class="cm"># range(n)</span>
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="zh">右上三角</span>:            <span class="cm"># range(i+1, n)</span>
+        <span class="zh">沿主对角线交换</span>          <span class="cm"># matrix[i][j], matrix[j][i] = ...</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">两步操作各自独立，第一步整行交换（上下反转），第二步只遍历右上三角（避免重复交换）。顺序不可乱：先上下翻后转置是顺时针，先转置后左右翻是逆时针。</div>
+</section>
+
 <section class="card" id="viz">
-  <h2>3. 交互可视化演示</h2>
+  <h2>4. 交互可视化演示</h2>
   <p>点击「下一步」，观察 <code>[[1,2,3],[4,5,6],[7,8,9]]</code> 如何通过两步操作旋转 90°。</p>
   <p style="font-size:13px;color:var(--text-light);">图例：<span style="color:var(--warm);font-weight:700">暖</span>=正在交换 ／ <span style="color:#0F7A3D;font-weight:700">绿</span>=最终结果</p>
 
@@ -199,7 +220,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>4. 详细过程模拟</h2>
+  <h2>5. 详细过程模拟</h2>
   <p>以 <code>[[1,2,3],[4,5,6],[7,8,9]]</code> 为例（n = 3），分两个阶段完成旋转。</p>
 
   <h3>阶段一：上下反转</h3>
@@ -242,7 +263,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="code">
-  <h2>5. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
 
   <h3>完整代码</h3>
   <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
@@ -267,7 +288,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="complexity">
-  <h2>6. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
     <tr><td>时间复杂度</td><td><strong>O(n²)</strong></td><td>上下反转 O(n·n)（行交换）+ 转置遍历右上三角约 n²/2，合计 O(n²)。</td></tr>
@@ -276,7 +297,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>7. 常见易错点</h2>
+  <h2>8. 常见易错点</h2>
 
   <h3>错误一：转置遍历整个矩阵</h3>
   <pre><code># 错误：i, j 都从 0 到 n，会把每对交换两次 → 还原成原样
@@ -299,7 +320,7 @@ for i in range(n):              # ❌ 应该是 range(n // 2)
 </section>
 
 <section class="card" id="summary">
-  <h2>8. 总结</h2>
+  <h2>9. 总结</h2>
   <div class="note green">
     <p><strong>旋转图像</strong> 精髓：</p>
     <ul style="margin:6px 0 0;padding-left:20px;">

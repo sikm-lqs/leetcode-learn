@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1. 爬楼梯 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.stairs{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:14px 0}
+.stair{width:52px;border-radius:10px;border:2px solid #CBD5E1;background:#F1F5F9;overflow:hidden;text-align:center;padding:4px 0;transition:all .3s}
+.stair .snum{font-size:10px;color:var(--text-light)}
+.stair .sdp{font-family:Consolas,Monaco,monospace;font-weight:700;font-size:16px;padding:4px 0}
+.stair .sdp.empty{color:#CBD5E1}
+.stair.done{border-color:var(--accent-purple);background:var(--accent-purple-soft)}
+.stair.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-4px);box-shadow:0 4px 12px rgba(212,116,76,.25)}
+.stair.src1{border-color:var(--primary)}
+.stair.src2{border-color:var(--accent-green)}
+.viz-vars{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin:12px 0}
+.var-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 18px;text-align:center;min-width:110px}
+.var-box .vlabel{font-size:11px;color:var(--text-light)}
+.var-box .vval{font-family:Consolas,Monaco,monospace;font-size:20px;font-weight:700}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+.viz-stats{display:flex;justify-content:center;flex-wrap:wrap;gap:28px;font-size:14px;margin:8px 0 0;padding:10px 16px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.viz-stats strong{font-size:18px;font-family:Consolas,Monaco,monospace}
+.viz-stats .vl{color:var(--warm);font-weight:700}
+.viz-stats .vr{color:var(--primary);font-weight:700}
+.viz-stats .va{color:var(--accent-green);font-weight:800}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}.stair{width:44px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 70 · 简单</div>
+  <h1>1. 爬楼梯</h1>
+  <p class="subtitle">经典线性 DP：dp[i] = dp[i-1] + dp[i-2]（斐波那契）。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：最后一步怎么走</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>假设你正在爬楼梯。需要 <code>n</code> 阶你才能到达楼顶。每次你可以爬 1 或 2 个台阶，问有多少种不同的方法可以爬到楼顶。</p>
+  <h3>示例</h3>
+  <pre><code>输入：n = 2
+输出：2
+解释：1 阶 + 1 阶；2 阶
+
+输入：n = 3
+输出：3
+解释：1+1+1、1+2、2+1</code></pre>
+  <div class="note yellow">答案与斐波那契数列一致：1, 1, 2, 3, 5, 8, 13…（本题从 1, 1 起步）。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：最后一步怎么走</h2>
+  <ol>
+    <li><strong>状态定义</strong>：<code>dp[i]</code> = 爬到第 i 阶的方法数</li>
+    <li><strong>状态转移</strong>：到达第 i 阶的最后一步只有两种情况——从 <code>i-1</code> 爬 1 阶（<code>dp[i-1]</code> 种），或从 <code>i-2</code> 爬 2 阶（<code>dp[i-2]</code> 种），故 <code>dp[i] = dp[i-1] + dp[i-2]</code></li>
+    <li><strong>边界</strong>：<code>dp[0] = 1</code>（什么都不做）、<code>dp[1] = 1</code>（爬 1 阶）</li>
+    <li><strong>优化</strong>：只依赖前两个状态 → 滚动变量 <code>prev1/prev2</code>，空间降到 O(1)</li>
+  </ol>
+  <div class="formula">dp[i] = dp[i−1] + dp[i−2]</div>
+  <div class="note blue">核心思想：把「爬到楼顶有多少种方法」拆成「最后一步从哪来」——不关心中间过程，只关心子问题答案，这就是 DP 的无后效性。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="kw">if</span> <span class="var">n</span> <span class="kw">==</span> <span class="num">1</span>:
+    <span class="kw">return</span> <span class="num">1</span>
+
+<span class="var">prev2</span> = <span class="num">1</span>      <span class="cm"># dp[0]</span>
+<span class="var">prev1</span> = <span class="num">1</span>      <span class="cm"># dp[1]</span>
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">range(2, n+1)</span>:
+    <span class="var">current</span> <span class="kw">=</span> <span class="var">prev1</span> <span class="kw">+</span> <span class="var">prev2</span>   <span class="cm"># dp[i] = dp[i-1] + dp[i-2]</span>
+    <span class="zh">滚动</span>: <span class="var">prev2</span> <span class="kw">=</span> <span class="var">prev1</span>; <span class="var">prev1</span> <span class="kw">=</span> <span class="var">current</span>
+
+<span class="kw">return</span> <span class="var">prev1</span>      <span class="cm"># 即 dp[n]</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">滚动数组的本质：dp[i] 只用一次就不再需要，所以用两个变量「接力」，把 O(n) 空间压成 O(1)。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 n = 6 时 dp 表逐阶填充的过程。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 爬楼梯（n = 6）：每阶的 dp 值</div>
+    <div class="stairs" id="stairs"></div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前计算</span>
+      <span><i style="background:var(--accent-purple-soft);border:2px solid var(--accent-purple)"></i>已确定</span>
+      <span><i style="background:#F1F5F9;border:2px solid #CBD5E1"></i>未计算</span>
+    </div>
+    <div class="viz-vars" id="varBox"></div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+    <div class="viz-stats">
+      <span>prev2（dp[i-2]）：<strong class="vr" id="statP2">1</strong></span>
+      <span>prev1（dp[i-1]）：<strong class="vr" id="statP1">1</strong></span>
+      <span>答案 dp[6]：<strong class="va" id="statAns">—</strong></span>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table>
+    <tr><th>i</th><th>dp[i-2]</th><th>dp[i-1]</th><th>dp[i] = 前两者之和</th><th>含义</th></tr>
+    <tr><td>0</td><td>—</td><td>—</td><td>1</td><td>什么都不做</td></tr>
+    <tr><td>1</td><td>—</td><td>—</td><td>1</td><td>爬 1 阶</td></tr>
+    <tr><td>2</td><td>1</td><td>1</td><td>2</td><td>1+1、2</td></tr>
+    <tr><td>3</td><td>1</td><td>2</td><td>3</td><td>1+1+1、1+2、2+1</td></tr>
+    <tr><td>4</td><td>2</td><td>3</td><td>5</td><td>…</td></tr>
+    <tr><td>5</td><td>3</td><td>5</td><td>8</td><td>…</td></tr>
+    <tr><td>6</td><td>5</td><td>8</td><td>13</td><td>答案</td></tr>
+  </table>
+  <div class="note purple">注意 dp[0] = 1 的约定：虽然现实中"0 阶"不是一种爬法，但它是为了让 dp[2] = dp[1] + dp[0] = 2 成立而设计的边界。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">climbStairs</span>(self, n: <span style="color:#CA8A04">int</span>) -&gt; <span style="color:#CA8A04">int</span>:
+        <span style="color:#6B7280">if</span> n == <span style="color:#CA8A04">1</span>:
+            <span style="color:#6B7280">return</span> <span style="color:#CA8A04">1</span>
+        prev2 = <span style="color:#CA8A04">1</span>          <span style="color:#6B7280"># dp[0]</span>
+        prev1 = <span style="color:#CA8A04">1</span>          <span style="color:#6B7280"># dp[1]</span>
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">2</span>, n + <span style="color:#CA8A04">1</span>):
+            current = prev1 + prev2    <span style="color:#6B7280"># dp[i] = dp[i-1] + dp[i-2]</span>
+            prev2 = prev1              <span style="color:#6B7280"># 滚动：prev1 → prev2</span>
+            prev1 = current            <span style="color:#6B7280"># current → prev1</span>
+        <span style="color:#6B7280">return</span> prev1</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>边界 n == 1</strong>：直接返回，避免 n 过小时循环/索引问题</li>
+    <li><strong>滚动变量</strong>：只保留最近两个 dp 值，与 dp 数组版本完全等价</li>
+    <li><strong>循环次数</strong>：从 2 到 n 共 n-1 次迭代，每次算出新的 dp[i]</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n)</td><td>从 2 到 n 一趟循环</td></tr>
+    <tr><td>空间</td><td>O(1)</td><td>滚动数组只用了两个变量（dp 数组版本为 O(n)）</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>忘记 n == 1 边界</strong>：若不处理，循环 range(2, 2) 为空，但 prev1 初始化正确时其实也可行——关键是保证 dp[0]/dp[1] 语义清晰。</div>
+  <div class="note yellow"><strong>滚动顺序写反</strong>：必须先 <code>prev2 = prev1</code> 再 <code>prev1 = current</code>，顺序反了会丢失旧值。</div>
+  <div class="note yellow"><strong>dp[0] 的约定</strong>：dp[0] = 1 是「方便转移」的人为定义，不是真实爬法数。</div>
+  <div class="note red"><strong>数值溢出</strong>：n 较大时（如 45）答案达 18 亿级，Python 无此问题，但其它语言注意用长整型。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>状态转移</strong>：从「最后一步」出发，dp[i] = dp[i-1] + dp[i-2]</li>
+    <li><strong>滚动优化</strong>：只依赖前两个状态 → O(1) 空间</li>
+    <li><strong>范式</strong>：与斐波那契同构，是线性 DP 的入门题</li>
+  </ul>
+  <div class="note green">口诀：最后一步定转移，边界先行两状态；只要前两不要全，滚动数组省空间。</div>
+</section>
+</main>
+
+<footer>爬楼梯 · 算法学习页</footer>
+
+<script>
+(function(){
+const N = 6;
+
+function simulate(n) {
+  const steps = [];
+  const dp = new Array(n + 1).fill(null);
+  let prev2 = 1, prev1 = 1;
+  const snap = (desc, i, vars) => steps.push({desc: desc, i: i, dp: dp.slice(), vars: vars});
+
+  dp[0] = 1; dp[1] = 1;
+  snap('边界：dp[0] = 1（什么都不做），dp[1] = 1（爬 1 阶）。prev2 = dp[0] = 1，prev1 = dp[1] = 1', 0, {p2: 1, p1: 1});
+
+  for (let i = 2; i <= n; i++) {
+    const cur = prev1 + prev2;
+    dp[i] = cur;
+    snap('第 ' + i + ' 阶：dp[' + i + '] = dp[' + (i-1) + '] + dp[' + (i-2) + '] = ' + prev1 + ' + ' + prev2 + ' = ' + cur + '（最后一步从第 ' + (i-1) + ' 阶爬 1 阶，或从第 ' + (i-2) + ' 阶爬 2 阶）', i, {p2: prev1, p1: cur});
+    prev2 = prev1;
+    prev1 = cur;
+  }
+  snap('✅ 计算完成：爬到第 ' + n + ' 阶共有 ' + dp[n] + ' 种方法', n, {p2: prev2, p1: prev1});
+  return steps;
+}
+
+const steps = simulate(N);
+let cur = 0, playing = false, timer = null;
+
+const stairs = document.getElementById('stairs');
+const varBox = document.getElementById('varBox');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const statP2 = document.getElementById('statP2');
+const statP1 = document.getElementById('statP1');
+const statAns = document.getElementById('statAns');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+  let h = '';
+  for (let i = 0; i <= N; i++) {
+    let cls = '';
+    if (st.dp[i] !== null) cls = 'done';
+    if (i === st.i && st.i >= 2) cls = 'cur';
+    if (i === st.i - 1 && st.i >= 2) cls = 'src1';
+    if (i === st.i - 2 && st.i >= 2) cls = 'src2';
+    const val = st.dp[i] !== null ? st.dp[i] : '?';
+    h += '<div class="stair ' + cls + '"><div class="snum">第 ' + i + ' 阶</div>'
+       + '<div class="sdp' + (st.dp[i] === null ? ' empty' : '') + '">' + val + '</div></div>';
+  }
+  stairs.innerHTML = h;
+
+  const v = st.vars;
+  varBox.innerHTML =
+    '<div class="var-box"><div class="vlabel">prev2 = dp[i-2]</div><div class="vval" style="color:var(--primary)">' + v.p2 + '</div></div>' +
+    '<div class="var-box"><div class="vlabel">prev1 = dp[i-1]</div><div class="vval" style="color:var(--primary)">' + v.p1 + '</div></div>' +
+    '<div class="var-box"><div class="vlabel">dp[i] = 前两者之和</div><div class="vval" style="color:var(--warm)">' + (st.i >= 2 ? st.dp[st.i] : '—') + '</div></div>';
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  statP2.textContent = st.vars.p2;
+  statP1.textContent = st.vars.p1;
+  statAns.textContent = st.dp[N] !== null ? st.dp[N] : '—';
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1600);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>

@@ -69,6 +69,14 @@ th{background:#F1F5F9;font-weight:600}
 .viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
 .viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 @media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.cell{min-width:36px;height:32px;font-size:12px}.viz-cell{min-width:40px;height:36px;font-size:13px}}
 </style>
 </head>
@@ -85,12 +93,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：快慢指针</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -135,8 +144,26 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   </div>
 </section>
 
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">slow</span> = <span class="num">0</span>
+
+<span class="kw">for</span> <span class="var">fast</span> <span class="kw">in</span> <span class="zh">遍历数组</span>:
+    <span class="kw">if</span> <span class="zh">当前元素非零</span>:          <span class="cm"># nums[fast] != 0</span>
+        <span class="zh">交换 slow 和 fast 位置元素</span>  <span class="cm"># nums[slow], nums[fast] = nums[fast], nums[slow]</span>
+        <span class="var">slow</span> += <span class="num">1</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">快指针遍历寻找非零元素，慢指针标记下一个非零元素该放的位置。遇到非零就交换，slow 前移；遇到零则跳过。这样所有非零元素自然聚到前部，零被交换到末尾。</div>
+</section>
+
 <section class="card" id="viz">
-  <h2>3. 交互可视化演示</h2>
+  <h2>4. 交互可视化演示</h2>
   <p>点击"下一步"观察快慢指针如何将零一步步移到末尾。</p>
 
   <div class="viz-container">
@@ -155,7 +182,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>4. 详细过程模拟</h2>
+  <h2>5. 详细过程模拟</h2>
   <p>以 <code>nums = [0, 1, 0, 3, 12]</code> 为例，跟踪每一轮交换。</p>
 
   <h3>初始</h3>
@@ -182,7 +209,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="code">
-  <h2>5. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
   <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
     <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">moveZeroes</span>(self, nums: List[int]) -> None:
         slow = <span style="color:#CA8A04">0</span>
@@ -200,7 +227,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="complexity">
-  <h2>6. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
     <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>快指针遍历一次数组。</td></tr>
@@ -209,7 +236,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>7. 常见易错点</h2>
+  <h2>8. 常见易错点</h2>
 
   <h3>错误一：把交换写成覆盖</h3>
   <pre><code>nums[slow] = nums[fast]  # ❌ 会丢失非零数据！</code></pre>
@@ -224,7 +251,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="summary">
-  <h2>8. 总结</h2>
+  <h2>9. 总结</h2>
   <div class="note green">
     <p><strong>移动零</strong> 解法精髓：</p>
     <ul style="margin:6px 0 0;padding-left:20px;">

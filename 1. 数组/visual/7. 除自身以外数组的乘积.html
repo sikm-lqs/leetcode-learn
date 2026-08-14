@@ -65,6 +65,14 @@ th{background:#F1F5F9;font-weight:600}
 .viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
 .viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 @media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.cell{min-width:36px;height:32px;font-size:12px}}
 </style>
 </head>
@@ -81,12 +89,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：前缀积 × 后缀积</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -123,8 +132,33 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   </div>
 </section>
 
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">n</span> = <span class="var">len</span>(<span class="var">nums</span>)
+<span class="var">answer</span> = [<span class="num">1</span>] * <span class="var">n</span>
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="var">range</span>(<span class="var">n</span>):
+    <span class="zh">把左侧前缀积存进 answer</span>    <span class="cm"># answer[i] = left</span>
+    <span class="zh">更新左侧乘积</span>                  <span class="cm"># left *= nums[i]</span>
+
+<span class="var">right_product</span> = <span class="num">1</span>
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="var">range</span>(<span class="var">n</span> - <span class="num">1</span>, -<span class="num">1</span>, -<span class="num">1</span>):
+    <span class="zh">乘上右侧后缀积</span>               <span class="cm"># answer[i] *= right_product</span>
+    <span class="zh">更新右侧乘积</span>                  <span class="cm"># right_product *= nums[i]</span>
+
+<span class="kw">return</span> <span class="var">answer</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">第一遍先算前缀积暂存到 answer，第二遍从右到左把后缀积乘上去。两趟遍历顺序相反，保证每个位置只被「左边所有数的积」和「右边所有数的积」各乘一次。</div>
+</section>
+
 <section class="card" id="viz">
-  <h2>3. 交互可视化演示</h2>
+  <h2>4. 交互可视化演示</h2>
 
   <div class="viz-container">
     <div class="viz-title">📊 输入：nums = [1, 2, 3, 4]</div>
@@ -142,7 +176,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>4. 详细过程模拟</h2>
+  <h2>5. 详细过程模拟</h2>
   <p>以 <code>nums = [1, 2, 3, 4]</code> 为例。</p>
 
   <h3>第一轮：从左到右（计算前缀积）</h3>
@@ -168,7 +202,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="code">
-  <h2>5. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
   <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
     <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">productExceptSelf</span>(self, nums):
         n = <span style="color:#D4744C">len</span>(nums)
@@ -195,7 +229,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="complexity">
-  <h2>6. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
     <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>两次遍历，各 n 步</td></tr>

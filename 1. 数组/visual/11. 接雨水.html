@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11. 接雨水 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.bars{display:flex;align-items:flex-end;justify-content:center;gap:5px;margin:18px 0 6px;padding:10px 0;border-bottom:2px solid #94A3B8}
+.bcol{display:flex;flex-direction:column;align-items:center;width:38px}
+.bcol-stack{display:flex;flex-direction:column;justify-content:flex-end;width:100%}
+.water{width:100%;background:linear-gradient(#7DB4F2,#3B82F6);opacity:.8;border-radius:3px 3px 0 0;transition:height .45s ease;box-shadow:inset 0 2px rgba(255,255,255,.3)}
+.bar{width:100%;background:linear-gradient(#94A3B8,#64748B);border-radius:3px 3px 0 0;transition:background .3s}
+.bcol.cl .bar{background:linear-gradient(#E08C5E,#C0653F)}
+.bcol.cr .bar{background:linear-gradient(#5B9CF5,#2E6AC0)}
+.bcol.added .water{box-shadow:0 0 0 2px rgba(22,163,74,.35),inset 0 2px rgba(255,255,255,.3)}
+.bmark{height:18px;font-size:13px;font-weight:800;font-family:Consolas,Monaco,monospace;line-height:18px}
+.bmark.L{color:var(--warm)}
+.bmark.R{color:var(--primary)}
+.bidx{font-size:11px;color:var(--text-light);font-family:Consolas,Monaco,monospace}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-phase-wrap{text-align:center;margin-top:8px}
+.viz-phase{display:inline-block;padding:3px 14px;border-radius:14px;font-size:12px;font-weight:700;background:var(--primary-soft);color:var(--primary)}
+.viz-phase.ph-left{background:var(--warm-soft);color:var(--warm)}
+.viz-phase.ph-right{background:var(--primary-soft);color:var(--primary)}
+.viz-phase.ph-init{background:var(--accent-purple-soft);color:var(--accent-purple)}
+.viz-phase.ph-final{background:var(--accent-green-soft);color:var(--accent-green)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+.viz-stats{display:flex;justify-content:center;flex-wrap:wrap;gap:28px;font-size:14px;margin:8px 0 0;padding:10px 16px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.viz-stats strong{font-size:18px;font-family:Consolas,Monaco,monospace}
+.viz-stats .vl{color:var(--warm);font-weight:700}
+.viz-stats .vr{color:var(--primary);font-weight:700}
+.viz-stats .va{color:var(--accent-green);font-weight:800}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}.bcol{width:26px}.viz-stats{gap:16px}table{font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 42 · 困难</div>
+  <h1>11. 接雨水</h1>
+  <p class="subtitle">给定柱子高度图，计算能接多少雨水。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：双指针</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定 <code>n</code> 个非负整数，表示每个宽度为 1 的柱子的高度。计算下雨之后，这组柱子能接多少雨水。</p>
+
+  <h3>示例</h3>
+  <pre><code>输入：height = [0,1,0,2,1,0,1,3,2,1,2,1]
+输出：6
+
+输入：height = [4,2,0,3,2,5]
+输出：9</code></pre>
+
+  <div class="note blue">
+    <strong>单点接水公式：</strong>每个位置 <code>i</code> 能接的水 = <code>min(leftMax, rightMax) − height[i]</code>。其中 <code>leftMax</code> 是 <code>i</code> 左侧（含自身）最高柱、<code>rightMax</code> 是右侧（含自身）最高柱。水位由<strong>较矮的一侧</strong>决定。
+  </div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：双指针</h2>
+
+  <p>朴素做法是对每个 <code>i</code> 扫两边求 leftMax、rightMax，O(n²)；或用两个数组预存左右最大值，O(n) 时间但 O(n) 空间。<strong>双指针</strong>能把空间压到 O(1)。</p>
+
+  <p>左右指针 <code>left</code>、<code>right</code> 从两端向中间收敛，维护 <code>left_max</code>（左半已见最高）和 <code>right_max</code>（右半已见最高）。<strong>每次移动较矮的一端</strong>处理：</p>
+  <ul>
+    <li>若 <code>height[left] &lt; height[right]</code>：处理 left。若 <code>height[left] ≥ left_max</code> 更新 left_max，否则接水 <code>left_max − height[left]</code>，<code>left++</code>。</li>
+    <li>否则：处理 right（对称），<code>right--</code>。</li>
+  </ul>
+
+  <div class="formula">water(i) = min(leftMax, rightMax) − height[i]<br>双指针：移动矮端 → 该端水量只取决于同侧 max</div>
+
+  <div class="note purple">
+    <strong>核心洞察（为什么移动矮端）：</strong>水量由较矮侧决定。若 <code>height[left] &lt; height[right]</code>，则右半必然存在一根 ≥ height[right] 的柱子，于是对 left 而言 rightMax ≥ height[right] &gt; height[left] ≥ leftMax 可能性下，<code>min(leftMax, rightMax) = leftMax</code>——left 的水量<strong>只由 left_max 决定</strong>，无需知道确切的 rightMax。所以矮端可立即结算，高侧留着不动。
+  </div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">left</span>, <span class="var">right</span> = <span class="num">0</span>, n - <span class="num">1</span>
+<span class="var">leftMax</span> = <span class="var">rightMax</span> = <span class="var">ans</span> = <span class="num">0</span>
+
+<span class="kw">while</span> <span class="var">left</span> &lt; <span class="var">right</span>:
+    <span class="kw">if</span> <span class="zh">左边低</span>:                    <span class="cm"># h[left] &lt; h[right]</span>
+        <span class="zh">更新左最大值</span>               <span class="cm"># leftMax = h[left]</span>
+        <span class="zh">计算左边贡献</span>               <span class="cm"># ans += leftMax - h[left]</span>
+        <span class="var">left</span> += <span class="num">1</span>
+    <span class="kw">else</span>:                         <span class="cm"># 右边低</span>
+        <span class="zh">更新右最大值</span>               <span class="cm"># rightMax = h[right]</span>
+        <span class="zh">计算右边贡献</span>               <span class="cm"># ans += rightMax - h[right]</span>
+        <span class="var">right</span> -= <span class="num">1</span>
+<span class="kw">return</span> <span class="var">ans</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">「更新最大值」与「计算贡献」二选一：该端比本侧最高<strong>还高</strong>时刷新最高（接不住水）；否则把差额累加进 ans。左右两支完全对称。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 height = [0,1,0,2,1,0,1,3,2,1,2,1]</div>
+    <div class="bars" id="vizBars"></div>
+    <div class="viz-legend">
+      <span><i style="background:linear-gradient(#94A3B8,#64748B)"></i>柱子</span>
+      <span><i style="background:linear-gradient(#7DB4F2,#3B82F6)"></i>雨水</span>
+      <span><i style="background:linear-gradient(#E08C5E,#C0653F)"></i>left 指针</span>
+      <span><i style="background:linear-gradient(#5B9CF5,#2E6AC0)"></i>right 指针</span>
+    </div>
+    <div class="viz-phase-wrap"><span class="viz-phase ph-init" id="vizPhase">初始</span></div>
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / ?</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc">点击"下一步"开始演示</div>
+    <div class="viz-stats">
+      <span>left_max：<strong class="vl" id="lmVal">0</strong></span>
+      <span>right_max：<strong class="vr" id="rmVal">0</strong></span>
+      <span>已接雨水 ans：<strong class="va" id="ansVal">0</strong></span>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <p>以 <code>height = [0,1,0,2,1,0,1,3,2,1,2,1]</code> 为例。初始 <code>left=0, right=11, left_max=right_max=ans=0</code>。共 11 次迭代。</p>
+
+  <table>
+    <tr><th>迭代</th><th>比较 height[L] vs height[R]</th><th>处理</th><th>操作</th><th>left_max</th><th>right_max</th><th>ans</th></tr>
+    <tr><td>1</td><td>0 &lt; 1</td><td>左</td><td>0 ≥ 0 → 更新 left_max=0，L++</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>2</td><td>1 ≮ 1</td><td>右</td><td>1 ≥ 0 → 更新 right_max=1，R−−</td><td>0</td><td>1</td><td>0</td></tr>
+    <tr><td>3</td><td>1 &lt; 2</td><td>左</td><td>1 ≥ 0 → 更新 left_max=1，L++</td><td>1</td><td>1</td><td>0</td></tr>
+    <tr><td>4</td><td>0 &lt; 2</td><td>左</td><td>0 &lt; 1 → 接水 1−0=1，L++</td><td>1</td><td>1</td><td>1</td></tr>
+    <tr><td>5</td><td>2 ≮ 2</td><td>右</td><td>2 ≥ 1 → 更新 right_max=2，R−−</td><td>1</td><td>2</td><td>1</td></tr>
+    <tr><td>6</td><td>2 ≮ 1</td><td>右</td><td>1 &lt; 2 → 接水 2−1=1，R−−</td><td>1</td><td>2</td><td>2</td></tr>
+    <tr><td>7</td><td>2 ≮ 2</td><td>右</td><td>2 ≥ 2 → 更新 right_max=2，R−−</td><td>1</td><td>2</td><td>2</td></tr>
+    <tr><td>8</td><td>2 &lt; 3</td><td>左</td><td>2 ≥ 1 → 更新 left_max=2，L++</td><td>2</td><td>2</td><td>2</td></tr>
+    <tr><td>9</td><td>1 &lt; 3</td><td>左</td><td>1 &lt; 2 → 接水 2−1=1，L++</td><td>2</td><td>2</td><td>3</td></tr>
+    <tr><td>10</td><td>0 &lt; 3</td><td>左</td><td>0 &lt; 2 → 接水 2−0=2，L++</td><td>2</td><td>2</td><td>5</td></tr>
+    <tr><td>11</td><td>1 &lt; 3</td><td>左</td><td>1 &lt; 2 → 接水 2−1=1，L++</td><td>2</td><td>2</td><td>6</td></tr>
+  </table>
+  <p>第 11 次后 <code>left=7=right</code>，循环结束。接水位置分别在索引 2（1）、9（1）、4（1）、5（2）、6（1），合计 <strong>6</strong>。</p>
+  <div class="note green">最终答案：<strong>6</strong> ✅</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">trap</span>(self, height: List[int]) -> int:
+        <span style="color:#6B7280"># water[i] = min(leftMax, rightMax) - height[i]</span>
+        <span style="color:#6B7280"># 双指针，移动低的</span>
+        left, right = <span style="color:#CA8A04">0</span>, <span style="color:#D4744C">len</span>(height) - <span style="color:#CA8A04">1</span>
+        left_max = right_max = <span style="color:#CA8A04">0</span>
+        ans = <span style="color:#CA8A04">0</span>
+
+        <span style="color:#6B7280">while</span> left &lt; right:
+            <span style="color:#6B7280"># 移动较矮的一端</span>
+            <span style="color:#6B7280">if</span> height[left] &lt; height[right]:
+                <span style="color:#6B7280">if</span> height[left] &gt;= left_max:
+                    left_max = height[left]     <span style="color:#6B7280"># 出现新高，更新左侧最高</span>
+                <span style="color:#6B7280">else</span>:
+                    ans += left_max - height[left]  <span style="color:#6B7280"># 可接水</span>
+                left += <span style="color:#CA8A04">1</span>
+            <span style="color:#6B7280">else</span>:
+                <span style="color:#6B7280">if</span> height[right] &gt;= right_max:
+                    right_max = height[right]
+                <span style="color:#6B7280">else</span>:
+                    ans += right_max - height[right]
+                right -= <span style="color:#CA8A04">1</span>
+        <span style="color:#6B7280">return</span> ans</code></pre>
+
+  <p><strong>while left &lt; right</strong>：两端向中间收敛，相遇即止。每个位置恰好被处理一次。</p>
+  <p><strong>if height[left] &lt; height[right]</strong>：选较矮端处理。这是算法的关键——矮端的水量已可由同侧 max 结算。</p>
+  <p><strong>if height[left] &gt;= left_max</strong>：遇到新高柱，无法接水（水会从这根柱子两侧流走），只更新 max。否则该位置低于左侧最高，可接 <code>left_max − height[left]</code> 的水。</p>
+  <p><strong>else 分支</strong>：处理右端，逻辑完全对称。</p>
+
+  <div class="note warm">用 <code>&gt;=</code> 更新 max：相等高度也算「新高」，不接水（差为 0，加不加都一样，但走更新分支更直观）。</div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>left 与 right 合计最多各移动 n 次，整体一次遍历</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>只用 left、right、left_max、right_max、ans 五个变量</td></tr>
+  </table>
+  <div class="note yellow">对比：动态规划法需两个长度 n 的 leftMax/rightMax 数组（O(n) 空间）；单调栈法也可解但更难理解。双指针是空间最优。</div>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+
+  <h3>错误：移动较高的一端</h3>
+  <p>必须移动较矮端。若移动高侧，矮侧的 max 无法确定，会漏算或多算水。记住「矮端可立即结算」。</p>
+
+  <h3>错误：用 &gt; 而非 &gt;= 判断更新 max</h3>
+  <p>用 <code>height[left] &gt;= left_max</code>。若用 <code>&gt;</code>，相等高度会走接水分支（差 0，结果不影响），但语义上相等高度应视为新的左边界，用 <code>&gt;=</code> 更清晰。</p>
+
+  <h3>错误：ans 用 += 还是 =</h3>
+  <p>是 <code>ans += left_max - height[left]</code>，累加每个位置的接水量。单点水层 = max − height，不是覆盖。</p>
+
+  <h3>边界：单调递增/递减</h3>
+  <p>如 <code>[1,2,3,4]</code>（递增），永远处理 left（始终更矮），left_max 一路更新，不接水，ans=0。正确。</p>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <div class="note green">
+    <p><strong>接雨水</strong> 双指针解法精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li><strong>公式</strong>：water(i) = min(leftMax, rightMax) − height[i]</li>
+      <li><strong>双指针</strong>：两端向中间，每次移动较矮的一端</li>
+      <li><strong>矮端结算</strong>：矮端水量只取决于同侧 max，遇新高则更新，否则接水</li>
+      <li>时间 O(n)，空间 O(1)</li>
+    </ul>
+  </div>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：水位取左右最小，双指移动矮的一端；遇新高就记 max，低于 max 把水攒。</p>
+</section>
+</main>
+<footer>接雨水 · 算法学习页</footer>
+
+<script>
+(function(){
+const H=[0,1,0,2,1,0,1,3,2,1,2,1];
+const maxH=Math.max(...H);
+const unit=Math.floor(140/maxH)||40;
+
+function simulate(height){
+  const n=height.length;
+  let left=0,right=n-1,left_max=0,right_max=0,ans=0;
+  const water=new Array(n).fill(0);
+  const steps=[];
+  function snap(side,desc,addAt){
+    steps.push({left,right,left_max,right_max,ans,water:water.slice(),side,desc,addAt:typeof addAt==='undefined'?-1:addAt});
+  }
+  snap('init','初始：left=0，right='+(n-1)+'，left_max=right_max=ans=0。两端向中间收敛，每次移动较矮的一端。');
+  while(left<right){
+    if(height[left]<height[right]){
+      if(height[left]>=left_max){
+        left_max=height[left];
+        snap('left','左端较矮：height['+left+']='+height[left]+' ≥ left_max='+left_max+'，更新左侧最高，无法接水。left→'+(left+1)+'。');
+      }else{
+        const add=left_max-height[left];
+        water[left]=add;ans+=add;
+        snap('left','左端较矮：height['+left+']='+height[left]+' &lt; left_max='+left_max+'，接水 '+left_max+'−'+height[left]+'='+add+'。ans→'+ans+'。left→'+(left+1)+'。',left);
+      }
+      left++;
+    }else{
+      if(height[right]>=right_max){
+        right_max=height[right];
+        snap('right','右端较矮或相等：height['+right+']='+height[right]+' ≥ right_max='+right_max+'，更新右侧最高，无法接水。right→'+(right-1)+'。');
+      }else{
+        const add=right_max-height[right];
+        water[right]=add;ans+=add;
+        snap('right','右端较矮或相等：height['+right+']='+height[right]+' &lt; right_max='+right_max+'，接水 '+right_max+'−'+height[right]+'='+add+'。ans→'+ans+'。right→'+(right-1)+'。',right);
+      }
+      right--;
+    }
+  }
+  snap('final','🎉 两指针相遇，遍历结束。共接雨水 '+ans+' 单位。');
+  return steps;
+}
+
+const steps=simulate(H);
+let cur=0,playing=false,intv=null;
+const $=id=>document.getElementById(id);
+const vb=$('vizBars'),vd=$('vizDesc'),si=$('stepInfo'),vph=$('vizPhase');
+const lm=$('lmVal'),rm=$('rmVal'),av=$('ansVal');
+const pb=$('prevBtn'),nb=$('nextBtn'),pl=$('playBtn'),rs=$('resetBtn');
+
+function r(i){
+  const s=steps[i];
+  let h='';
+  H.forEach((v,j)=>{
+    const isL=j===s.left,isR=j===s.right;
+    const added=j===s.addAt;
+    let cls='bcol';
+    if(isL)cls+=' cl';
+    if(isR)cls+=' cr';
+    if(added)cls+=' added';
+    const wh=s.water[j]*unit;
+    const bh=v*unit;
+    let mark='';
+    if(isL&&isR)mark='·';
+    else if(isL)mark='L';
+    else if(isR)mark='R';
+    h+='<div class="'+cls+'"><div class="bcol-stack" style="height:'+(maxH*unit)+'px">'
+      +'<div class="water" style="height:'+wh+'px"></div>'
+      +'<div class="bar" style="height:'+bh+'px"></div>'
+      +'</div><span class="bmark '+(isL?'L':(isR?'R':''))+'">'+mark+'</span>'
+      +'<span class="bidx">'+j+'</span></div>';
+  });
+  vb.innerHTML=h;
+  vd.innerHTML=s.desc;
+  si.textContent='步骤 '+(i+1)+' / '+steps.length;
+  const ph={left:'左端',right:'右端',init:'初始',final:'完成'}[s.side]||s.side;
+  vph.textContent=ph;
+  vph.className='viz-phase ph-'+s.side;
+  lm.textContent=s.left_max;rm.textContent=s.right_max;av.textContent=s.ans;
+  pb.disabled=i===0;nb.disabled=i===steps.length-1;
+}
+function g(i){if(i>=0&&i<steps.length){cur=i;r(cur);}}
+function ns(){if(cur<steps.length-1)g(cur+1);else if(playing)sp();}
+function ps(){if(cur>0)g(cur-1);}
+function tp(){playing?sp():sta();}
+function sta(){if(cur>=steps.length-1)g(0);playing=true;pl.textContent='⏸ 暂停';pl.classList.add('playing');intv=setInterval(()=>{if(cur>=steps.length-1)sp();else ns();},1200);}
+function sp(){playing=false;pl.textContent='▶ 自动播放';pl.classList.remove('playing');if(intv){clearInterval(intv);intv=null;}}
+function rv(){sp();g(0);}
+nb.onclick=ns;pb.onclick=ps;pl.onclick=tp;rs.onclick=rv;
+document.onkeydown=e=>{if(e.key==='ArrowRight')ns();else if(e.key==='ArrowLeft')ps();else if(e.key===' '){e.preventDefault();tp();}};
+g(0);
+})();
+</script>
+</body>
+</html>

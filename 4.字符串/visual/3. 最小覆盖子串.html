@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3. 最小覆盖子串 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--primary-light:#F4F8FC;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:30px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:38px;padding:4px 8px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s}
+.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
+.cell.range{border-color:#3B7DD8;background:#E9EFF7}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.viz-cells{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0 6px}
+.viz-col{display:flex;flex-direction:column;align-items:center;gap:3px}
+.viz-mark{height:18px;font-size:12px;font-weight:700;font-family:Consolas,Monaco,monospace;line-height:18px;color:var(--text-light)}
+.viz-mark.L,.viz-mark.R{color:var(--primary)}
+.viz-cell{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;padding:4px 8px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:15px;font-family:Consolas,Monaco,monospace;transition:all .35s}
+.viz-cell.out{border-color:#E2E5E9;background:#F8FAFC;color:#C0C4CC;opacity:.65}
+.viz-cell.win{border-color:var(--primary);background:var(--primary-soft);color:#1E40AF}
+.viz-cell.cover{border-color:var(--accent-green);background:var(--accent-green-soft);color:#166534}
+.viz-cell.best{border-color:var(--accent-green);background:var(--accent-green-soft);color:#14532D;transform:scale(1.08);box-shadow:0 0 0 3px rgba(22,163,74,0.22);font-weight:800}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:8px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:4px;border:2px solid;display:inline-block}
+.viz-phase-wrap{text-align:center;margin-top:10px}
+.viz-phase{display:inline-block;padding:3px 14px;border-radius:14px;font-size:12px;font-weight:700;background:var(--primary-soft);color:var(--primary)}
+.viz-phase.ph-cover{background:var(--accent-green-soft);color:var(--accent-green)}
+.viz-phase.ph-shrink{background:var(--warm-soft);color:var(--warm)}
+.viz-phase.ph-init{background:var(--accent-purple-soft);color:var(--accent-purple)}
+.viz-phase.ph-final{background:var(--accent-green-soft);color:var(--accent-green)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+.viz-stats{display:flex;justify-content:center;flex-wrap:wrap;gap:24px;font-size:14px;margin:8px 0 0;padding:10px 16px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.viz-stats strong{font-size:16px}
+.viz-stats .val-win{color:var(--primary);font-weight:700;font-family:Consolas,Monaco,monospace}
+.viz-stats .val-ans{color:var(--accent-green);font-weight:800;font-family:Consolas,Monaco,monospace}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}.cell{min-width:30px;height:32px;font-size:12px}.viz-cell{min-width:34px;height:36px;font-size:13px}.viz-stats{gap:14px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 76 · 困难</div>
+  <h1>3. 最小覆盖子串</h1>
+  <p class="subtitle">返回 s 中包含 t 所有字符（含重复）的最短子串。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：滑动窗口</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定字符串 <code>s</code> 和 <code>t</code>，在 <code>s</code> 中找一个<strong>最短</strong>的连续子串，使它包含 <code>t</code> 中的每一个字符（<strong>包括重复字符</strong>，顺序无关）。若不存在返回 <code>""</code>。</p>
+
+  <h3>示例</h3>
+  <pre><code>输入：s = "ADOBECODEBANC", t = "ABC"
+输出："BANC"
+解释："BANC" 包含 A、B、C 各一个，且是最短的</code></pre>
+
+  <div class="array-line">
+    <span class="cell dim">A</span><span class="cell dim">D</span><span class="cell dim">O</span><span class="cell dim">B</span><span class="cell dim">E</span><span class="cell dim">C</span><span class="cell dim">O</span><span class="cell dim">D</span><span class="cell dim">E</span><span class="cell dim">B</span><span class="cell dim">A</span><span class="cell dim">N</span><span class="cell dim">C</span>
+  </div>
+  <div class="array-line">
+    <span class="cell range">A</span><span class="cell dim">D</span><span class="cell dim">O</span><span class="cell range">B</span><span class="cell dim">E</span><span class="cell range">C</span><span class="cell dim">O</span><span class="cell dim">D</span><span class="cell dim">E</span><span class="cell dim">B</span><span class="cell dim">A</span><span class="cell dim">N</span><span class="cell dim">C</span>
+    <span style="margin-left:8px">首次覆盖：<strong>"ADOBEC"</strong>（长度 6）</span>
+  </div>
+  <div class="array-line">
+    <span class="cell dim">A</span><span class="cell dim">D</span><span class="cell dim">O</span><span class="cell dim">B</span><span class="cell dim">E</span><span class="cell dim">C</span><span class="cell dim">O</span><span class="cell dim">D</span><span class="cell dim">E</span><span class="cell target">B</span><span class="cell target">A</span><span class="cell dim">N</span><span class="cell target">C</span>
+    <span style="margin-left:8px">收缩到最短：<strong>"BANC"</strong>（长度 4）✅</span>
+  </div>
+
+  <div class="note blue">
+    <strong>关键概念：</strong>窗口是否「覆盖」t，取决于窗口内每种字符的数量 ≥ t 中对应需求量。用 <code>valid</code> 统计「已达标」的字符种类数，当 <code>valid == len(target)</code> 时即覆盖。
+  </div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：滑动窗口</h2>
+
+  <p>用「右扩左缩」的滑动窗口框架：<strong>右指针负责找可行解，左指针负责把可行解优化到最短</strong>。</p>
+
+  <h3>三个关键变量</h3>
+  <ul>
+    <li><code>target</code>：t 中每种字符的需求量（如 <code>{A:1, B:1, C:1}</code>）</li>
+    <li><code>cur_window</code>：当前窗口各字符的实际数量</li>
+    <li><code>valid</code>：窗口中「数量已达标」的字符种类数</li>
+  </ul>
+
+  <div class="formula">右扩：纳入 s[right]，若某字符数量恰好达标 → valid++<br>覆盖：valid == len(target) 时，窗口包含 t 的所有字符<br>左缩：在覆盖前提下不断左移 left，寻找更短解；移出后若数量不足 → valid−−</div>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>用 <code>valid</code> 把「窗口是否覆盖 t」的判断压到 O(1)。判达标用<strong>恰好等于</strong>（<code>cur[c] == target[c]</code>）才 <code>valid++</code>，避免同一字符重复累加；收缩时用<strong>严格小于</strong>（<code>cur[rm] &lt; target[rm]</code>）才 <code>valid--</code>，因为移除一个后可能仍达标。
+  </div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">target</span> = 统计 <span class="var">t</span> 中每种字符需求量
+<span class="var">cur</span> = {}                 <span class="cm"># 当前窗口各字符数量</span>
+<span class="var">left</span> = <span class="num">0</span>
+<span class="var">valid</span> = <span class="num">0</span>               <span class="cm"># 已达标的字符种类数</span>
+<span class="var">ans</span> = ""
+<span class="var">ans_len</span> = ∞
+
+<span class="kw">for</span> <span class="var">right</span> <span class="kw">in</span> <span class="zh">遍历 s</span>:
+    <span class="var">c</span> = <span class="var">s</span>[<span class="var">right</span>]
+    <span class="zh">纳入字符到窗口</span>           <span class="cm"># cur[c]++</span>
+    <span class="kw">if</span> <span class="zh">该字符恰好达标</span>:      <span class="cm"># c in target and cur[c] == target[c]</span>
+        <span class="var">valid</span> += <span class="num">1</span>
+
+    <span class="kw">while</span> <span class="var">valid</span> == <span class="kw">len</span>(<span class="var">target</span>):
+        <span class="kw">if</span> <span class="zh">当前窗口更短</span>:       <span class="cm"># right-left+1 &lt; ans_len</span>
+            <span class="zh">更新最短答案</span>           <span class="cm"># ans_len = right-left+1; ans = s[left:right+1]</span>
+
+        <span class="var">rm</span> = <span class="var">s</span>[<span class="var">left</span>]
+        <span class="zh">移出左端字符</span>             <span class="cm"># cur[rm]--</span>
+        <span class="kw">if</span> <span class="zh">数量降至需求之下</span>:    <span class="cm"># rm in target and cur[rm] &lt; target[rm]</span>
+            <span class="var">valid</span> -= <span class="num">1</span>
+        <span class="var">left</span> += <span class="num">1</span>
+<span class="kw">return</span> <span class="var">ans</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">外层 <code>for</code> 右扩张不断纳入字符，内层 <code>while</code> 左缩在覆盖前提下持续收缩求最短。只有「恰好达标」才 <code>valid++</code>，只有「掉到需求之下」才 <code>valid--</code>，两处判断严格对称。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 s = "ADOBECODEBANC"，t = "ABC"（need = 3）</div>
+    <div class="viz-cells" id="vizCells"></div>
+    <div class="viz-legend">
+      <span><i style="border-color:var(--primary);background:var(--primary-soft)"></i>窗口内（未覆盖）</span>
+      <span><i style="border-color:var(--accent-green);background:var(--accent-green-soft)"></i>窗口内（覆盖 t）</span>
+      <span><i style="border-color:var(--accent-green);background:#BBF7D0"></i>更新最短答案</span>
+      <span><i style="border-color:#E2E5E9;background:#F8FAFC"></i>窗口外</span>
+    </div>
+    <div class="viz-phase-wrap"><span class="viz-phase ph-init" id="vizPhase">初始</span></div>
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / ?</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc">点击"下一步"开始演示</div>
+    <div class="viz-stats">
+      <span>当前窗口：<strong class="val-win" id="winVal">∅</strong></span>
+      <span>valid / need：<strong id="vdVal">0 / 3</strong></span>
+      <span>最短答案：<strong class="val-ans" id="ansVal">∅</strong></span>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <p>以 <code>s = "ADOBECODEBANC", t = "ABC"</code> 为例。右指针扩张过程中共有 <strong>3 次</strong>窗口覆盖 t，每次都尝试左缩到最短。</p>
+
+  <table>
+    <tr><th>第几次覆盖</th><th>right 到达</th><th>命中时窗口</th><th>收缩过程</th><th>最短答案</th></tr>
+    <tr>
+      <td>第 1 次</td><td>5（C）</td>
+      <td>"ADOBEC"（6）</td>
+      <td>移出 A → A 不足，失去覆盖</td>
+      <td>"ADOBEC"（6）</td>
+    </tr>
+    <tr>
+      <td>第 2 次</td><td>10（A）</td>
+      <td>"DOBECODEBA"（10）</td>
+      <td>连续移出 D、O、B、E、C，移出 C 时失去覆盖；期间长度均 ≥ 6</td>
+      <td>"ADOBEC"（6）不变</td>
+    </tr>
+    <tr>
+      <td>第 3 次</td><td>12（C）</td>
+      <td>"ODEBANC"（7）</td>
+      <td>移出 O、D → "EBANC"（5）更新；移出 E → <strong>"BANC"（4）</strong>更新；移出 B 失去覆盖</td>
+      <td><strong>"BANC"（4）</strong></td>
+    </tr>
+  </table>
+
+  <p>第 3 次覆盖是关键：<code>right=12</code>（字符 C）后窗口 <code>"ODEBANC"</code> 覆盖 t，左缩时先得到 <code>"EBANC"</code>（长度 5 &lt; 6，更新），再缩到 <code>"BANC"</code>（长度 4 &lt; 5，再次更新），这正是「左缩求最短」的价值。</p>
+
+  <div class="note green">最终答案：<strong>"BANC"</strong>（长度 4）✅</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">minWindow</span>(self, s: str, t: str) -> str:
+        <span style="color:#6B7280"># 统计 t 中每种字符的需求量</span>
+        target = {}
+        <span style="color:#6B7280">for</span> c <span style="color:#6B7280">in</span> t:
+            target[c] = target.get(c, <span style="color:#CA8A04">0</span>) + <span style="color:#CA8A04">1</span>
+
+        cur_window = {}
+        left = <span style="color:#CA8A04">0</span>
+        valid = <span style="color:#CA8A04">0</span>                 <span style="color:#6B7280"># 已达标的字符种类数</span>
+        ans = <span style="color:#CE9178">""</span>
+        ans_len = <span style="color:#D4744C">float</span>(<span style="color:#CE9178">"inf"</span>)
+
+        <span style="color:#6B7280">for</span> right <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#D4744C">len</span>(s)):
+            c = s[right]
+            cur_window[c] = cur_window.get(c, <span style="color:#CA8A04">0</span>) + <span style="color:#CA8A04">1</span>
+
+            <span style="color:#6B7280"># 注意是 ==：恰好达标才 valid++，避免重复累加</span>
+            <span style="color:#6B7280">if</span> c <span style="color:#6B7280">in</span> target <span style="color:#6B7280">and</span> cur_window[c] == target[c]:
+                valid += <span style="color:#CA8A04">1</span>
+
+            <span style="color:#6B7280"># 窗口覆盖 t，尝试左缩到最短</span>
+            <span style="color:#6B7280">while</span> valid == <span style="color:#D4744C">len</span>(target):
+                <span style="color:#6B7280">if</span> right - left + <span style="color:#CA8A04">1</span> &lt; ans_len:
+                    ans_len = right - left + <span style="color:#CA8A04">1</span>
+                    ans = s[left:right + <span style="color:#CA8A04">1</span>]     <span style="color:#6B7280"># 切片左闭右开</span>
+
+                remove = s[left]
+                cur_window[remove] -= <span style="color:#CA8A04">1</span>
+                <span style="color:#6B7280"># 严格小于才 valid--：移除一个后可能仍达标</span>
+                <span style="color:#6B7280">if</span> remove <span style="color:#6B7280">in</span> target <span style="color:#6B7280">and</span> cur_window[remove] &lt; target[remove]:
+                    valid -= <span style="color:#CA8A04">1</span>
+                left += <span style="color:#CA8A04">1</span>
+
+        <span style="color:#6B7280">return</span> ans</code></pre>
+
+  <p><strong>target 字典</strong>：把 t 的需求压缩成计数表，窗口只需对齐这些计数。</p>
+  <p><strong>cur_window[c] == target[c]</strong>：只有「恰好」达标的那一次才 <code>valid++</code>。若用 <code>&gt;=</code>，同一字符超额时会多次加 valid，导致错误。</p>
+  <p><strong>while valid == len(target)</strong>：只要窗口还覆盖 t，就持续收缩。<code>len(target)</code> 是 t 中<strong>不同字符</strong>的种类数（不是 <code>len(t)</code>）。</p>
+  <p><strong>cur_window[remove] &lt; target[remove]</strong>：移除左端字符后，只有当它的数量「掉到需求之下」才算失去覆盖，<code>valid--</code>。若仍达标，窗口继续覆盖，继续收缩。</p>
+
+  <div class="note warm">ans 初值为 <code>""</code>、ans_len 为 <code>inf</code>。若整个流程从未覆盖 t，ans 保持空串，自然返回 <code>""</code>。</div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(m + n)</strong></td><td>right 和 left 各最多遍历 s 一次（2m），建 target 遍历 t（n）</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(字符集)</strong></td><td>target 与 cur_window 最多存字符集大小（本题大写字母即 O(1)）</td></tr>
+  </table>
+  <div class="note yellow">左指针看似在 while 里反复移动，但<strong>累计</strong>最多移动 m 次（从不回退），所以整体仍是线性，不是 O(m²)。</div>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+
+  <h3>错误：valid 用 &gt;= 判断达标</h3>
+  <p>必须用 <code>cur_window[c] == target[c]</code>。例如 t 需要 2 个 A，窗口从 0→1→2 个 A，只有到 2 的那一刻 valid++；若用 <code>&gt;=</code>，第 3、4 个 A 还会重复加，valid 超过真实达标种类数。</p>
+
+  <h3>错误：收缩时用 == 判断失去覆盖</h3>
+  <p>移除字符后应判断 <code>cur_window[remove] &lt; target[remove]</code>，而非 <code>==</code>。因为之前可能超额（如窗口有 3 个 A，需求 1，移除 1 个后剩 2 仍 ≥1，不该 valid--）。</p>
+
+  <h3>错误：valid == len(t)</h3>
+  <p>应是 <code>len(target)</code>（t 去重后的种类数）。<code>len(t)</code> 是字符总数，含重复，会导致永远无法满足。</p>
+
+  <h3>边界：无解</h3>
+  <p>如 s="a", t="aa"，valid 永远到不了 need，ans 保持 <code>""</code>，正确返回空串。</p>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <div class="note green">
+    <p><strong>最小覆盖子串</strong> 解法精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li><strong>右扩找可行</strong>：right 推进，纳入字符直到窗口覆盖 t</li>
+      <li><strong>左缩求最短</strong>：覆盖后持续左移 left，边缩边更新最短答案</li>
+      <li><strong>valid 计数</strong>：用 == 计达标种类，把覆盖判断降到 O(1)</li>
+      <li>时间 O(m+n)，空间 O(字符集)</li>
+    </ul>
+  </div>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：右扩找可行，左缩求最短；valid 数达标种类，等于 need 即覆盖。</p>
+</section>
+</main>
+<footer>最小覆盖子串 · 算法学习页</footer>
+
+<script>
+(function(){
+const S="ADOBECODEBANC",T="ABC";
+
+function simulate(s,t){
+  const target={};
+  for(const c of t)target[c]=(target[c]||0)+1;
+  const need=Object.keys(target).length;
+  const cur={};
+  let left=0,valid=0,right=-1,ansStart=-1,ansLen=Infinity;
+  const steps=[];
+  const winStr=()=>s.slice(left,right+1);
+  const ansStr=()=>ansLen===Infinity?'':s.slice(ansStart,ansStart+ansLen);
+  function snap(phase,desc,extra){
+    extra=extra||{};
+    const types=new Array(s.length).fill('out');
+    const inCover=(valid===need);
+    let styleTag=inCover?'cover':'win';
+    if(extra.updated||extra.forceBest)styleTag='best';
+    if(right>=left)for(let i=left;i<=right;i++)types[i]=styleTag;
+    const marks=new Array(s.length).fill('');
+    if(right>=0&&left<=right){marks[left]='L';marks[right]='R';}
+    steps.push({types,marks,phase,desc,winLen:right<left?0:(right-left+1),winStr:winStr(),valid,need,ansLen:ansLen===Infinity?'∞':ansLen,ansStr:ansStr()===''?'∅':ansStr()});
+  }
+  snap('init','初始：left=0，right 即将从 0 开始扩张。窗口为空，valid=0，需要覆盖 '+need+' 种字符（A、B、C）。');
+  for(right=0;right<s.length;right++){
+    const c=s[right];
+    cur[c]=(cur[c]||0)+1;
+    const hit=(c in target&&cur[c]===target[c]);
+    if(hit)valid++;
+    const needC=c in target?target[c]:0;
+    const haveC=cur[c];
+    snap('expand','right→'+right+'：纳入 s['+right+']=\''+c+'\'，窗口="'+winStr()+'"。'+(hit?('该字符数量恰好达标（'+haveC+'/'+needC+'），valid→'+valid+'。'):(c in target?('该字符数量尚不足（'+haveC+'/'+needC+'），valid='+valid+'。'):'非目标字符，valid='+valid+'。')));
+    while(valid===need){
+      const len=right-left+1;
+      let updated=false;
+      if(len<ansLen){ansLen=len;ansStart=left;updated=true;}
+      snap('cover','窗口覆盖 t！当前 ['+left+'..'+right+']="'+winStr()+'"（长度 '+len+'）。'+(updated?('🎉 比 '+((ansLen))+' 更短，更新最短答案 → "'+ansStr()+'"。'):'长度 '+len+' ≥ 当前最短 '+ansLen+'，不更新。')+' 准备收缩左端。',{updated:updated});
+      const rm=s[left];
+      cur[rm]--;
+      const lost=(rm in target&&cur[rm]<target[rm]);
+      if(lost)valid--;
+      left++;
+      snap('shrink','左端移出 \''+rm+'\'，left→'+left+'，窗口="'+winStr()+'"。'+(lost?('该字符数量降至需求之下，valid→'+valid+'，失去覆盖。'):'不影响覆盖（仍有余量），valid='+valid+'，继续收缩。'));
+    }
+  }
+  const sl=left,sr=right;
+  if(ansLen<Infinity){left=ansStart;right=ansStart+ansLen-1;}
+  snap('final','遍历结束。最短覆盖子串 = "'+ansStr()+'"（长度 '+ansLen+'）。',{forceBest:true});
+  left=sl;right=sr;
+  return steps;
+}
+
+const steps=simulate(S,T);
+let cur=0,playing=false,intv=null;
+const $=id=>document.getElementById(id);
+const vc=$('vizCells'),vd=$('vizDesc'),si=$('stepInfo'),vph=$('vizPhase');
+const wv=$('winVal'),vv=$('vdVal'),av=$('ansVal');
+const pb=$('prevBtn'),nb=$('nextBtn'),pl=$('playBtn'),rs=$('resetBtn');
+
+function r(i){
+  const s=steps[i];
+  let h='';
+  s.types.forEach((t,j)=>{
+    let cls='viz-cell';if(t!=='out')cls+=' '+t;
+    const m=s.marks[j];
+    let mc='';if(m==='L'||m==='R')mc=m;
+    h+='<div class="viz-col"><span class="viz-mark '+mc+'">'+(m||'&nbsp;')+'</span><span class="'+cls+'">'+S[j]+'</span></div>';
+  });
+  vc.innerHTML=h;
+  vd.textContent=s.desc;
+  si.textContent='步骤 '+(i+1)+' / '+steps.length;
+  vph.textContent={expand:'右扩',cover:'覆盖 ✓',shrink:'左缩',init:'初始',final:'完成'}[s.phase]||s.phase;
+  vph.className='viz-phase ph-'+s.phase;
+  wv.textContent=s.winLen===0?'∅':('"'+s.winStr+'" ['+s.winLen+']');
+  vv.textContent=s.valid+' / '+s.need;
+  av.textContent=s.ansStr;
+  pb.disabled=i===0;nb.disabled=i===steps.length-1;
+}
+function g(i){if(i>=0&&i<steps.length){cur=i;r(cur);}}
+function ns(){if(cur<steps.length-1)g(cur+1);else if(playing)sp();}
+function ps(){if(cur>0)g(cur-1);}
+function tp(){playing?sp():sta();}
+function sta(){if(cur>=steps.length-1)g(0);playing=true;pl.textContent='⏸ 暂停';pl.classList.add('playing');intv=setInterval(()=>{if(cur>=steps.length-1)sp();else ns();},1300);}
+function sp(){playing=false;pl.textContent='▶ 自动播放';pl.classList.remove('playing');if(intv){clearInterval(intv);intv=null;}}
+function rv(){sp();g(0);}
+nb.onclick=ns;pb.onclick=ps;pl.onclick=tp;rs.onclick=rv;
+document.onkeydown=e=>{if(e.key==='ArrowRight')ns();else if(e.key==='ArrowLeft')ps();else if(e.key===' '){e.preventDefault();tp();}};
+g(0);
+})();
+</script>
+</body>
+</html>

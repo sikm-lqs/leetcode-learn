@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1. 搜索插入位置 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:14px 0;font-family:Consolas,Monaco,monospace;justify-content:center}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.left{border-color:var(--primary);background:var(--primary-soft)}
+.cell.right{border-color:var(--accent-red);background:var(--accent-red-soft)}
+.cell.mid{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.06);box-shadow:0 0 0 3px rgba(212,116,76,0.12)}
+.cell.found{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+.viz-stats{display:flex;justify-content:center;gap:20px;margin:12px 0;font-family:Consolas,Monaco,monospace;font-size:13px}
+.viz-stat{padding:6px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px}
+.viz-stat span{color:var(--text-light)}
+.viz-stat strong{color:var(--primary)}
+@media(max-width:640px){.array-line{flex-direction:column;align-items:stretch}.cell{width:100%}}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 35 · 简单</div>
+  <h1>1. 搜索插入位置</h1>
+  <p class="subtitle">标准二分查找 · 找到第一个大于等于目标值的位置</p>
+</header>
+
+<main>
+  <div class="card">
+    <h2>题目描述</h2>
+    <p>给定一个<strong>排序数组</strong>和一个目标值，在数组中找到目标值，并返回其索引。如果目标值不存在于数组中，返回它将会被按顺序插入的位置。</p>
+    <div class="note blue">
+      <strong>示例：</strong>nums = [1, 3, 5, 6], target = 5 → 返回 2（找到目标）<br>
+      nums = [1, 3, 5, 6], target = 2 → 返回 1（应插入位置）
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>算法思路</h2>
+    <p>标准二分查找，目标是找到<strong>第一个大于等于 target 的位置</strong>：</p>
+    <ul>
+      <li>使用左闭右闭区间 <code>[left, right]</code></li>
+      <li>如果 <code>nums[mid] &lt; target</code>：目标在右半边，<code>left = mid + 1</code></li>
+      <li>否则：目标在左半边（含 mid），<code>right = mid - 1</code></li>
+    </ul>
+    <p>当循环结束时，<code>left</code> 就是第一个 &ge; target 的位置（即插入位置）。</p>
+    <div class="note green">
+      <strong>时间复杂度：</strong>O(log n) —— 每次将搜索范围减半<br>
+      <strong>空间复杂度：</strong>O(1) —— 只用常数空间
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>核心亮点</h2>
+    <ul>
+      <li>✓ <strong>左闭右闭</strong>：使用 [left, right] 区间，经典直观的二分写法</li>
+      <li>✓ <strong>标准模板</strong>：通过 right = mid - 1 收缩，是最常用的二分查找模式</li>
+      <li>✓ <strong>清晰</strong>：循环结束时 left 自然指向插入位置</li>
+    </ul>
+  </div>
+
+  <div class="card" id="pseudo">
+    <h2>伪代码骨架</h2>
+    <p>二分查找本质是维护「第一个大于等于 target 的位置」这一不变量，代码层抽象如下：</p>
+    <pre class="pseudo"><code>
+<span class="var">left</span><span class="kw"> = </span><span class="num">0</span>
+<span class="var">right</span><span class="kw"> = </span><span class="var">n</span><span class="kw"> - </span><span class="num">1</span>
+
+<span class="kw">while</span><span class=" "></span><span class="var">left</span><span class=" "></span><span class="kw">&lt;=</span><span class=" "></span><span class="var">right</span><span class=":"></span>
+ <span class="var">mid</span><span class="kw"> = (</span><span class="var">left</span><span class=" "></span><span class="kw">+ </span><span class="var">right</span><span class=" "></span><span class="kw">// </span><span class="num">2</span>
+ <span class="kw">if</span><span class=" "></span><span class="var">nums</span><span class=" "></span><span class="var">[mid]</span><span class=" "></span><span class="kw">&lt; </span><span class="var">target</span><span class=":"></span>
+  <span class="zh">目标在右半边</span><span class="">  </span><span class="cm"># left = mid + 1</span>
+ <span class="kw">else</span><span class=":"></span><span class="">  </span><span class="cm"># nums[mid] >= target</span>
+  <span class="zh">收缩右边界</span><span class="">        </span><span class="cm"># right = mid - 1</span>
+<span class="kw">return</span><span class=" "></span><span class="var">left</span><span class="">  </span><span class="cm"># 第一个 >= target 的位置</span>
+</code></pre>
+    <div class="pseudo-legend">
+      <span><i style="background:#C792EA"></i>关键字</span>
+      <span><i style="background:#82AAFF"></i>变量</span>
+      <span><i style="background:#C3E88D"></i>中文操作</span>
+      <span><i style="background:#7C8DB5"></i>注释公式</span>
+    </div>
+    <div class="note blue">循环结束后 left 恰好停在第一个大于等于 target 的位置——这正是插入位置，无需额外判断。</div>
+  </div>
+
+  <div class="card">
+    <h2>代码实现</h2>
+<pre><code>def searchInsert(nums, target):
+    left, right = 0, len(nums) - 1
+
+    while left <= right:
+        mid = (left + right) // 2
+
+        if nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+
+    return left</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>可视化演示</h2>
+    <p>下方演示在数组 <code>[1, 3, 5, 6]</code> 中查找 <code>target = 2</code> 的过程：</p>
+
+    <div class="viz-container">
+      <div class="viz-title">二分查找过程</div>
+      <div class="viz-info" id="array-info">nums = [1, 3, 5, 6], target = 2</div>
+
+      <div class="array-line" id="array-display">
+        <div class="cell" data-index="0">1</div>
+        <div class="cell" data-index="1">3</div>
+        <div class="cell" data-index="2">5</div>
+        <div class="cell" data-index="3">6</div>
+      </div>
+
+      <div class="viz-stats" id="viz-stats">
+        <div class="viz-stat"><span>left</span> <strong id="stat-left">0</strong></div>
+        <div class="viz-stat"><span>right</span> <strong id="stat-right">3</strong></div>
+        <div class="viz-stat"><span>mid</span> <strong id="stat-mid">-</strong></div>
+        <div class="viz-stat"><span>nums[mid]</span> <strong id="stat-midval">-</strong></div>
+      </div>
+
+      <div class="viz-desc" id="viz-desc">
+        点击"下一步"开始二分查找
+      </div>
+
+      <div class="viz-controls">
+        <button id="btn-reset" onclick="reset()">重置</button>
+        <button id="btn-prev" onclick="prevStep()" disabled>上一步</button>
+        <button id="btn-next" class="btn-primary" onclick="nextStep()">下一步</button>
+        <button id="btn-play" class="btn-play" onclick="togglePlay()">自动播放</button>
+      </div>
+
+      <div class="viz-step-info" id="step-info">步骤: 0 / 4</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>算法详解</h2>
+    <p>以 <code>nums = [1, 3, 5, 6], target = 2</code> 为例：</p>
+    <table>
+      <tr><th>步骤</th><th>left</th><th>right</th><th>mid</th><th>nums[mid]</th><th>操作</th></tr>
+      <tr><td>1</td><td>0</td><td>3</td><td>1</td><td>3</td><td>3 &ge; 2，right = 0</td></tr>
+      <tr><td>2</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1 &lt; 2，left = 1</td></tr>
+      <tr><td>3</td><td>1</td><td>0</td><td>-</td><td>-</td><td>left &gt; right，退出，返回 left = 1</td></tr>
+    </table>
+    <div class="note warm">
+      <strong>结果：</strong>插入位置是 1，即 2 应该插入到索引 1 的位置，数组变为 [1, <strong>2</strong>, 3, 5, 6]
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>关键要点</h2>
+    <ul>
+      <li><strong>循环条件</strong>：<code>left &le; right</code> —— 保证所有元素都被检查</li>
+      <li><strong>循环结束</strong>：<code>left</code> 就是答案 —— 第一个 &ge; target 的位置</li>
+      <li><strong>边界处理</strong>：自动处理 target 小于所有元素（left = 0）和大于所有元素（left = len(nums)）的情况</li>
+      <li><strong>应用场景</strong>：这是"查找左边界"的通用模式，可用于查找、插入、统计等问题</li>
+    </ul>
+  </div>
+</main>
+
+<footer>
+  <p>算法详解 · 二分查找经典应用 · 时间复杂度 O(log n)</p>
+</footer>
+
+<script>
+const nums = [1, 3, 5, 6];
+const target = 2;
+let currentStep = 0;
+let isPlaying = false;
+let playInterval = null;
+
+const steps = [
+  {
+    left: 0,
+    right: 3,
+    mid: null,
+    midVal: null,
+    desc: '初始状态: left = 0, right = 3。使用左闭右闭区间'
+  },
+  {
+    left: 0,
+    right: 3,
+    mid: 1,
+    midVal: 3,
+    desc: '计算 mid = 1，nums[1] = 3 >= target = 2，目标在左半边，right = mid - 1 = 0'
+  },
+  {
+    left: 0,
+    right: 0,
+    mid: 0,
+    midVal: 1,
+    desc: '计算 mid = 0，nums[0] = 1 < target = 2，目标在右半边，left = mid + 1 = 1。现在 left > right，退出循环'
+  },
+  {
+    left: 1,
+    right: 0,
+    mid: null,
+    midVal: null,
+    desc: '结果: 返回 left = 1。这是第一个 >= 2 的位置，即插入位置'
+  }
+];
+
+function updateDisplay() {
+  const step = steps[currentStep];
+
+  // 更新统计信息
+  document.getElementById('stat-left').textContent = step.left;
+  document.getElementById('stat-right').textContent = step.right;
+  document.getElementById('stat-mid').textContent = step.mid !== null ? step.mid : '-';
+  document.getElementById('stat-midval').textContent = step.midVal !== null ? step.midVal : '-';
+
+  // 更新数组显示
+  const cells = document.querySelectorAll('.cell');
+  cells.forEach((cell, index) => {
+    cell.className = 'cell';
+    if (index === step.left && index === step.right) {
+      cell.classList.add('mid');
+    } else if (index === step.left) {
+      cell.classList.add('left');
+    } else if (index === step.right) {
+      cell.classList.add('right');
+    }
+    if (step.mid !== null && index === step.mid) {
+      cell.classList.remove('left', 'right');
+      cell.classList.add('mid');
+    }
+  });
+
+  // 更新描述
+  document.getElementById('viz-desc').textContent = step.desc;
+
+  // 更新步骤信息
+  document.getElementById('step-info').textContent = `步骤: ${currentStep + 1} / ${steps.length}`;
+
+  // 更新按钮状态
+  document.getElementById('btn-prev').disabled = currentStep === 0;
+  document.getElementById('btn-next').disabled = currentStep === steps.length - 1;
+
+  // 如果是最后一步，显示结果
+  if (currentStep === steps.length - 1) {
+    document.getElementById('viz-desc').innerHTML = '<strong style="color:var(--accent-green)">找到答案: 插入位置 = ' + step.left + '</strong>';
+  }
+}
+
+function nextStep() {
+  if (currentStep < steps.length - 1) {
+    currentStep++;
+    updateDisplay();
+  } else if (isPlaying) {
+    togglePlay();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    currentStep--;
+    updateDisplay();
+  }
+}
+
+function reset() {
+  currentStep = 0;
+  if (isPlaying) {
+    togglePlay();
+  }
+  updateDisplay();
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  const btn = document.getElementById('btn-play');
+
+  if (isPlaying) {
+    btn.textContent = '暂停';
+    btn.classList.add('playing');
+    playInterval = setInterval(() => {
+      if (currentStep < steps.length - 1) {
+        nextStep();
+      } else {
+        togglePlay();
+      }
+    }, 1500);
+  } else {
+    btn.textContent = '自动播放';
+    btn.classList.remove('playing');
+    if (playInterval) {
+      clearInterval(playInterval);
+      playInterval = null;
+    }
+  }
+}
+
+// 初始化
+updateDisplay();
+</script>
+
+</body>
+</html>

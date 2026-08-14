@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>8. 和为 K 的子数组 · 算法详解</title>
 <style>
-:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--primary-light:#F4F8FC;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
 header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
@@ -14,7 +14,7 @@ header>*{position:relative;z-index:1}
 header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
 header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
 header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
-main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
 .card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
 .card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
@@ -29,31 +29,46 @@ main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
 .note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
 .note.warm{background:var(--warm-soft);border-color:#EAD5CC}
 code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
-pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
 pre code{background:transparent;color:inherit;padding:0}
-.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
-.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s}
-.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
-.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
-.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
-.cell.range{border-color:#3B7DD8;background:#E9EFF7}
-.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
-.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
-th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
 th{background:#F1F5F9;font-weight:600}
 .formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
 .viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
-.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
-.viz-cells{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
-.viz-cell{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:42px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:15px;font-family:Consolas,Monaco,monospace;transition:all .35s}
-.viz-cell.warm{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.06);box-shadow:0 0 0 3px rgba(212,116,76,0.12)}
-.viz-cell.extend{border-color:var(--accent-green);background:var(--accent-green-soft);transform:scale(1.06);box-shadow:0 0 0 3px rgba(22,163,74,0.12)}
-.viz-cell.skip{border-color:#D1D5DB;background:#F3F4F6;color:#9CA3AF;opacity:.55}
-.viz-cell.final{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,0.18)}
-.viz-map{margin:8px 0;padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-family:Consolas,Monaco,monospace;font-size:13px;min-height:36px;text-align:center}
-.viz-map strong{color:var(--warm)}
-.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.viz-cells{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin:12px 0}
+.k-cell{min-width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F1F5F9;border:2px solid #CBD5E1;border-radius:10px;font-family:Consolas,Monaco,monospace;font-weight:700;font-size:15px;transition:all .25s;position:relative}
+.k-cell .idx{font-size:10px;color:var(--text-light);font-weight:400}
+.k-cell.cur{border-color:var(--warm);background:var(--warm-soft);color:var(--warm);transform:translateY(-3px)}
+.k-cell.done{opacity:.55}
+.k-cell.match{border-color:var(--accent-green);background:var(--accent-green-soft);box-shadow:0 0 0 3px rgba(22,163,74,.15)}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.hash-panel{flex:1;min-width:240px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.hash-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.hash-row{display:flex;justify-content:space-between;padding:4px 10px;border-radius:6px;font-family:Consolas,Monaco,monospace;font-size:13px}
+.hash-row:nth-child(odd){background:#F8FAFC}
+.hash-row.hl{background:var(--accent-green-soft);color:#0F7A3D;font-weight:700}
+.hash-key{font-weight:700}
+.hash-val{color:var(--warm);font-weight:700}
+.stats-panel{flex:1;min-width:220px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-acc{color:var(--accent-green)}
+.stat-box .s-pre{color:var(--primary)}
+.stat-box .s-ans{color:var(--warm)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
 .viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
 .viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
 .viz-controls button:disabled{opacity:.35;cursor:default}
@@ -64,11 +79,8 @@ th{background:#F1F5F9;font-weight:600}
 .viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
 .viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
 .viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
-.viz-stats{display:flex;justify-content:center;gap:24px;font-size:14px;margin:8px 0 0;padding:8px 16px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
-.viz-stats strong{font-size:18px}
-.viz-stats .val-ans{color:var(--warm)}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
-@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.cell{min-width:36px;height:32px;font-size:12px}.viz-cell{min-width:40px;height:36px;font-size:13px}}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}.k-cell{min-width:36px;height:38px}}
 </style>
 </head>
 <body>
@@ -76,7 +88,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 <header>
   <div class="badge">LeetCode 560 · 中等</div>
   <h1>8. 和为 K 的子数组</h1>
-  <p class="subtitle">统计并返回数组中和为 k 的连续子数组的个数。</p>
+  <p class="subtitle">前缀和 + 哈希表：把 O(n²) 暴力降到 O(n)。</p>
 </header>
 
 <main>
@@ -84,140 +96,267 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：前缀和 + 哈希表</a>
-  <a href="#walkthrough">3. 详细过程模拟</a>
-  <a href="#code">4. 代码逐段解释</a>
-  <a href="#complexity">5. 复杂度分析</a>
-  <a href="#pitfalls">6. 常见易错点</a>
-  <a href="#summary">7. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
   <h2>1. 题目理解</h2>
-  <p>给定数组 <code>nums</code> 和整数 <code>k</code>，统计<strong>连续子数组</strong>中和为 <code>k</code> 的个数。</p>
-
+  <p>给你一个整数数组 <code>nums</code> 和一个整数 <code>k</code>，请你统计并返回<strong>该数组中和为 k 的连续子数组的个数</strong>。子数组是数组中元素的连续非空序列。</p>
   <h3>示例</h3>
   <pre><code>输入：nums = [1, 1, 1], k = 2
 输出：2
-解释：[1, 1]（索引 0-1）和 [1, 1]（索引 1-2）</code></pre>
+解释：[1,1]（索引 0-1）和 [1,1]（索引 1-2）
 
-  <div class="array-line">
-    <span class="cell range">1</span>
-    <span class="cell range">1</span>
-    <span class="cell dim">1</span>
-  </div>
-  <p style="font-size:13px;color:var(--text-light)">和为 2 ✓</p>
-  <div class="array-line">
-    <span class="cell dim">1</span>
-    <span class="cell range">1</span>
-    <span class="cell range">1</span>
-  </div>
-  <p style="font-size:13px;color:var(--text-light)">和为 2 ✓</p>
+输入：nums = [1, 2, 3], k = 3
+输出：2
+解释：[1,2] 和 [3]</code></pre>
+  <div class="note yellow">注意：题目要求的是「连续」子数组，且数组可能含负数——所以不能对前缀和数组排序或使用滑动窗口。</div>
 </section>
 
 <section class="card" id="idea">
   <h2>2. 核心思路：前缀和 + 哈希表</h2>
+  <ol>
+    <li>定义前缀和 <code>pre[i] = nums[0] + ... + nums[i]</code></li>
+    <li>子数组 <code>nums[l→r]</code> 的和 = <code>pre[r] - pre[l-1]</code>，问题转化为找 <code>pre[r] - pre[l-1] = k</code>，即 <code>pre[l-1] = pre[r] - k</code></li>
+    <li>遍历时用<strong>哈希表</strong>记录每个前缀和出现的次数；每步先查 <code>count[s - k]</code> 累加到答案，再登记当前前缀和</li>
+    <li><strong>初始化 <code>count[0] = 1</code></strong>：表示「空前缀」，用于处理从索引 0 开始的子数组</li>
+  </ol>
+  <div class="formula">pre[r] − pre[l−1] = k &nbsp;⟺&nbsp; pre[l−1] = pre[r] − k</div>
+  <div class="note blue">经典「一边遍历一边查表」：查表时表里存的是「之前所有前缀和的频率」，恰好覆盖所有可能的 l-1。</div>
+</section>
 
-  <p>定义 <code>pre[i] = nums[0] + ... + nums[i]</code>，则子数组 <code>nums[l→r]</code> 的和 = <code>pre[r] - pre[l-1]</code>。</p>
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="var">count</span> = {<span class="num">0</span>: <span class="num">1</span>}     <span class="cm"># 初始化空前缀，处理从索引 0 开始的子数组</span>
+<span class="var">s</span> = <span class="num">0</span>              <span class="cm"># 当前前缀和</span>
+<span class="var">ans</span> = <span class="num">0</span>
 
-  <p>要求和为 k，即 <code>pre[r] - pre[l-1] = k</code> → <code>pre[l-1] = pre[r] - k</code>。</p>
+<span class="kw">for</span> <span class="var">num</span> <span class="kw">in</span> <span class="zh">遍历 nums</span>:
+    <span class="var">s</span> += <span class="var">num</span>
+    <span class="zh">累加 s - k 的出现次数</span>   <span class="cm"># ans += count.get(s - k, 0)</span>
+    <span class="zh">登记当前前缀和</span>          <span class="cm"># count[s] += 1</span>
+<span class="kw">return</span> <span class="var">ans</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">每一步只有两件事：「查表累加」和「登记当前」。查表在前、登记在后，保证子数组至少有一个元素。</div>
+</section>
 
-  <p>所以遍历时：</p>
-  <ul>
-    <li>维护当前前缀和 <code>s</code></li>
-    <li>在哈希表中查找 <code>s - k</code> 的出现次数</li>
-    <li>将当前前缀和存入哈希表</li>
-  </ul>
-
-  <div class="formula">当前前缀和 s → 查找 count[s - k] → 累加答案</div>
-
-  <div class="note purple">
-    <strong>核心洞察：</strong>将子数组求和转化为"两个前缀和的差"，用哈希表存前缀和频率，将 O(n²) 暴力降至 O(n)。初始化 count[0] = 1 是为了处理从索引 0 开始的子数组。
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 nums = [1, 1, 1], k = 2 的求解过程。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：nums = [1, 1, 1]，k = 2</div>
+    <div class="viz-cells" id="kCells"></div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前元素</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>贡献答案</span>
+      <span><i style="background:#F1F5F9;border:2px solid #CBD5E1;opacity:.55"></i>已处理</span>
+    </div>
+    <div class="viz-panel">
+      <div class="hash-panel">
+        <h4>哈希表 count（前缀和 → 次数）</h4>
+        <div id="hashBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">当前前缀和 s<b class="s-pre" id="statPre">0</b></div>
+        <div class="stat-box">查找 s - k<b class="s-acc" id="statNeed">0</b></div>
+        <div class="stat-box">s - k 出现次数<b class="s-acc" id="statHit">0</b></div>
+        <div class="stat-box">答案 ans<b class="s-ans" id="statAns">0</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
   </div>
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>3. 详细过程模拟</h2>
-  <p>以 <code>nums = [1, 1, 1], k = 2</code> 为例。</p>
-
+  <h2>5. 详细过程模拟</h2>
   <table>
-    <tr><th>i</th><th>num</th><th>前缀和 s</th><th>s - k</th><th>count[s-k]</th><th>ans</th><th>存入</th></tr>
-    <tr><td>—</td><td>—</td><td>0</td><td>—</td><td>—</td><td>0</td><td>{0:1}</td></tr>
-    <tr><td>0</td><td>1</td><td>1</td><td>-1</td><td>0</td><td>0</td><td>{0:1, 1:1}</td></tr>
-    <tr><td>1</td><td>1</td><td>2</td><td>0</td><td>1</td><td>1</td><td>{0:1, 1:1, 2:1}</td></tr>
-    <tr><td>2</td><td>1</td><td>3</td><td>1</td><td>1</td><td>2</td><td>{0:1, 1:1, 2:1, 3:1}</td></tr>
+    <tr><th>步骤</th><th>num</th><th>s</th><th>查找 s-k=2</th><th>count 变化</th><th>ans</th></tr>
+    <tr><td>初始</td><td>—</td><td>0</td><td>—</td><td>{0:1}</td><td>0</td></tr>
+    <tr><td>1</td><td>1</td><td>1</td><td>count[-1]=0</td><td>{0:1, 1:1}</td><td>0</td></tr>
+    <tr><td>2</td><td>1</td><td>2</td><td>count[0]=1 🎯</td><td>{0:1, 1:1, 2:1}</td><td>1</td></tr>
+    <tr><td>3</td><td>1</td><td>3</td><td>count[1]=1 🎯</td><td>{0:1, 1:1, 2:1, 3:1}</td><td>2</td></tr>
   </table>
-
-  <p>两次命中：</p>
-  <ul>
-    <li><code>s=2</code> 时，<code>s-k=0</code> → 找到前缀和为 0（索引 0 到 1 的和为 2）</li>
-    <li><code>s=3</code> 时，<code>s-k=1</code> → 找到前缀和为 1（索引 1 到 2 的和为 2）</li>
-  </ul>
-
-  <div class="note green">最终答案：<strong>2</strong> ✅</div>
+  <div class="note purple">第 3 步：s = 3 时 count[1] = 1 表示「存在一个前缀和为 1 的位置」，它到当前下标之间的子数组和恰为 3 - 1 = 2。</div>
 </section>
 
 <section class="card" id="code">
-  <h2>4. 代码逐段解释</h2>
-  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
-    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">subarraySum</span>(self, nums: List[int], k: int) -> int:
-        count = {<span style="color:#CA8A04">0</span>: <span style="color:#CA8A04">1</span>}  <span style="color:#6B7280"># 前缀和为 0 出现 1 次</span>
-        s = <span style="color:#CA8A04">0</span>; ans = <span style="color:#CA8A04">0</span>
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">subarraySum</span>(self, nums: List[<span style="color:#CA8A04">int</span>], k: <span style="color:#CA8A04">int</span>) -&gt; <span style="color:#CA8A04">int</span>:
+        count = {<span style="color:#CA8A04">0</span>: <span style="color:#CA8A04">1</span>}          <span style="color:#6B7280"># 前缀和 → 出现次数，空前缀 = 1</span>
+        s = <span style="color:#CA8A04">0</span>                     <span style="color:#6B7280"># 当前前缀和</span>
+        ans = <span style="color:#CA8A04">0</span>
         <span style="color:#6B7280">for</span> num <span style="color:#6B7280">in</span> nums:
             s += num
-            ans += count.<span style="color:#D4744C">get</span>(s - k, <span style="color:#CA8A04">0</span>)
-            count[s] = count.<span style="color:#D4744C">get</span>(s, <span style="color:#CA8A04">0</span>) + <span style="color:#CA8A04">1</span>
+            ans += count.get(s - k, <span style="color:#CA8A04">0</span>)   <span style="color:#6B7280"># 有 count[s-k] 个前缀，与当前下标构成和为 k 的子数组</span>
+            count[s] = count.get(s, <span style="color:#CA8A04">0</span>) + <span style="color:#CA8A04">1</span>  <span style="color:#6B7280"># 登记当前前缀和</span>
         <span style="color:#6B7280">return</span> ans</code></pre>
-
-  <p><strong>count = {0: 1}</strong>：初始化前缀和为 0 出现 1 次。这一步很关键，处理从索引 0 开始的子数组。</p>
-  <p><strong>ans += count.get(s - k, 0)</strong>：查找有多少个前缀和等于 <code>s - k</code>，这些位置到当前位置的子数组和都为 k。</p>
-  <p><strong>count[s] = count.get(s, 0) + 1</strong>：记录当前前缀和的出现次数。</p>
-
-  <div class="note warm">因为 nums 可能有负数，相同的前缀和可能出现多次，所以用频率计数而不是布尔值。</div>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>初始化 count[0] = 1</strong>：前缀和为 0 出现 1 次，等价于「下标 -1 的前缀和 = 0」，覆盖 <code>nums[0:r]</code> 整体等于 k 的情况</li>
+    <li><strong>查表在登记前</strong>：先查 <code>s - k</code> 再登记 <code>s</code>，保证「自己减自己」不被计入（子数组至少一个元素）</li>
+    <li><strong>负数也可用</strong>：只依赖前缀和差值，与元素正负无关（这是比滑动窗口强的原因）</li>
+  </ul>
 </section>
 
 <section class="card" id="complexity">
-  <h2>5. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
-    <tr><th>维度</th><th>值</th><th>说明</th></tr>
-    <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>单次遍历，哈希表操作 O(1)</td></tr>
-    <tr><td>空间复杂度</td><td><strong>O(n)</strong></td><td>哈希表最多存储 n 个不同前缀和</td></tr>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n)</td><td>一趟遍历，哈希表查询/插入均为 O(1)</td></tr>
+    <tr><td>空间</td><td>O(n)</td><td>哈希表最多存 n 个不同的前缀和</td></tr>
   </table>
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>6. 常见易错点</h2>
-
-  <h3>错误：忘记初始化 count[0] = 1</h3>
-  <p>如果不初始化，从索引 0 开始的子数组会被漏掉。</p>
-
-  <h3>错误：先记录再查找</h3>
-  <pre><code>count[s] = 1  # ❌ 先存
-ans += count.get(s - k, 0)  # 如果 k=0，自己会被算进去</code></pre>
-  <p>必须先查再存，防止 k=0 时把当前子数组也算上。</p>
-
-  <h3>边界：负数</h3>
-  <p>前缀和可能变小，哈希表能正确处理。</p>
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>忘记初始化 count[0] = 1</strong>：nums = [1,1,1], k = 3 时，漏掉初始化会少算从索引 0 开始的子数组。</div>
+  <div class="note yellow"><strong>查表与登记顺序颠倒</strong>：先登记再查表会把「当前前缀和自身」算进去，产生错误的子数组（长度为 0）。</div>
+  <div class="note yellow"><strong>用滑动窗口替代</strong>：数组含负数时窗口收缩条件不单调，滑动窗口失效，必须用前缀和。</div>
+  <div class="note red"><strong>与「两数之和」混淆</strong>：本题查的是 <code>s - k</code> 的<strong>出现次数</strong>（累加），不是<strong>是否存在</strong>（返回下标）。</div>
 </section>
 
 <section class="card" id="summary">
-  <h2>7. 总结</h2>
-  <div class="note green">
-    <p><strong>和为 K 的子数组</strong> 解法精髓：</p>
-    <ul style="margin:6px 0 0;padding-left:20px;">
-      <li><strong>前缀和</strong>将子数组和转化为差值</li>
-      <li><strong>哈希表</strong>记录前缀和频率</li>
-      <li><strong>初始化 count[0]=1</strong> 处理从头开始的子数组</li>
-    </ul>
-  </div>
-  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
-    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">subarraySum</span>(self, nums, k):
-        m = {<span style="color:#CA8A04">0</span>:<span style="color:#CA8A04">1</span>}; s = <span style="color:#CA8A04">0</span>; ans = <span style="color:#CA8A04">0</span>
-        <span style="color:#6B7280">for</span> v <span style="color:#6B7280">in</span> nums:
-            s += v; ans += m.<span style="color:#D4744C">get</span>(s - k, <span style="color:#CA8A04">0</span>); m[s] = m.<span style="color:#D4744C">get</span>(s, <span style="color:#CA8A04">0</span>) + <span style="color:#CA8A04">1</span>
-        <span style="color:#6B7280">return</span> ans</code></pre>
-  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：前缀和加哈希表，s-k 频率累加。初始化 0:1，从头开始不漏掉。</p>
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>转化</strong>：子数组和 → 前缀和差值，问题变成「统计差值为 k 的前缀和配对」</li>
+    <li><strong>哈希表</strong>：用频率表把「枚举所有左端点」压缩成 O(1) 查表</li>
+    <li><strong>复杂度</strong>：O(n) 时间、O(n) 空间，处理含负数的数组依然成立</li>
+  </ul>
+  <div class="note green">口诀：前缀和加哈希表，s-k 频率累加；初始化 0:1，从头开始不漏掉。</div>
 </section>
 </main>
+
 <footer>和为 K 的子数组 · 算法学习页</footer>
+
+<script>
+(function(){
+const nums = [1, 1, 1];
+const K = 2;
+
+function simulate(arr, k) {
+  const steps = [];
+  const count = {0: 1};
+  let s = 0, ans = 0;
+  const snap = (desc, idx, hit, need) => {
+    const c = Object.keys(count).map(Number).sort((a, b) => a - b);
+    steps.push({desc: desc, idx: idx, hit: hit, need: need, s: s, ans: ans, count: c.map(key => [key, count[key]])});
+  };
+  snap('初始：count = {0: 1}（空前缀），s = 0，ans = 0。开始遍历', -1, false, null);
+
+  for (let i = 0; i < arr.length; i++) {
+    s += arr[i];
+    const need = s - k;
+    const hit = count[need] || 0;
+    snap('读到 nums[' + i + '] = ' + arr[i] + ' → s = ' + s + '。查找 count[' + need + '] = ' + hit + (hit > 0 ? ' 🎯 累加到 ans' : '（没有，不贡献）'), i, hit, need);
+    ans += hit;
+    count[s] = (count[s] || 0) + 1;
+    snap('登记 count[' + s + '] = ' + count[s] + '。当前 ans = ' + ans, i, hit, need);
+  }
+  snap('✅ 完成。和为 ' + k + ' 的子数组共 ' + ans + ' 个', arr.length - 1, null, null);
+  return steps;
+}
+
+const steps = simulate(nums, K);
+let cur = 0, playing = false, timer = null;
+
+const kCells = document.getElementById('kCells');
+const hashBox = document.getElementById('hashBox');
+const statPre = document.getElementById('statPre');
+const statNeed = document.getElementById('statNeed');
+const statHit = document.getElementById('statHit');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+
+  let h = '';
+  nums.forEach((v, i) => {
+    let cls = '';
+    if (st.idx === i) cls = 'cur';
+    else if (st.idx >= 0 && i < st.idx) cls = 'done';
+    if (st.hit > 0 && st.idx === i) cls = 'match';
+    h += '<div class="k-cell ' + cls + '">' + v + '<span class="idx">' + i + '</span></div>';
+  });
+  kCells.innerHTML = h;
+
+  let hh = '';
+  if (st.count.length === 0) hh = '<div style="font-size:12px;color:var(--text-light)">（空）</div>';
+  st.count.forEach(([key, val]) => {
+    const hl = st.need !== null && key === st.need;
+    hh += '<div class="hash-row' + (hl ? ' hl' : '') + '"><span class="hash-key">' + key + '</span><span class="hash-val">× ' + val + '</span></div>';
+  });
+  hashBox.innerHTML = hh;
+
+  statPre.textContent = st.s;
+  statNeed.textContent = st.need !== null ? st.need : '—';
+  statHit.textContent = st.hit !== null ? st.hit : '—';
+  statAns.textContent = st.ans;
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1500);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2. 最大子数组和 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.viz-cells{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin:12px 0}
+.k-cell{min-width:44px;height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F1F5F9;border:2px solid #CBD5E1;border-radius:10px;font-family:Consolas,Monaco,monospace;font-weight:700;font-size:15px;transition:all .25s;position:relative}
+.k-cell .idx{font-size:10px;color:var(--text-light);font-weight:400}
+.k-cell .dpv{font-size:10px;font-weight:600;color:var(--accent-purple)}
+.k-cell.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-3px)}
+.k-cell.inseg{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.k-cell.done{opacity:.6}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.choice-panel{flex:1;min-width:260px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.choice-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.choice-row{display:flex;justify-content:space-between;padding:6px 10px;border-radius:6px;font-family:Consolas,Monaco,monospace;font-size:13px;margin:4px 0}
+.choice-row:nth-child(odd){background:#F8FAFC}
+.choice-row.pick{background:var(--accent-green-soft);color:#0F7A3D;font-weight:700}
+.choice-row.pick .tag::after{content:' ✓ 选中';font-size:11px;font-weight:700}
+.stats-panel{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-dp{color:var(--accent-purple)}
+.stat-box .s-ans{color:var(--accent-green)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}.k-cell{min-width:36px;height:40px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 53 · 中等</div>
+  <h1>2. 最大子数组和</h1>
+  <p class="subtitle">「以 i 结尾」的状态定义 + 二选一转移（Kadane 算法）。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：接上 or 重新开始</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给你一个整数数组 <code>nums</code>，找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。</p>
+  <h3>示例</h3>
+  <pre><code>输入：nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]
+输出：6
+解释：连续子数组 [4, -1, 2, 1] 的和最大，为 6。
+
+输入：nums = [1]
+输出：1</code></pre>
+  <div class="note yellow">暴力做法是枚举所有起点和终点，O(n²) 个候选；DP 通过「以 i 结尾」的状态定义把问题压缩到一趟扫描。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：接上 or 重新开始</h2>
+  <ol>
+    <li><strong>状态定义</strong>：<code>dp[i]</code> = 以 <code>nums[i]</code> 为右端点的最大子数组和</li>
+    <li><strong>状态转移</strong>：每个位置二选一——
+      <ul>
+        <li><strong>接上</strong>：把 <code>nums[i]</code> 接到 <code>dp[i-1]</code> 的最优段后面 → <code>dp[i-1] + nums[i]</code></li>
+        <li><strong>重新开始</strong>：从 <code>nums[i]</code> 单独开始 → <code>nums[i]</code></li>
+      </ul>
+      取较大值：<code>dp[i] = max(dp[i-1] + nums[i], nums[i])</code></li>
+    <li><strong>答案</strong>：遍历时维护 <code>ans = max(ans, dp[i])</code>，因为最优子数组的右端点可以是任意位置</li>
+  </ol>
+  <div class="formula">dp[i] = max(dp[i−1] + nums[i], nums[i])</div>
+  <div class="note blue">为什么能这么做？最优子数组的任意前缀也必然是最优的——如果「以 i 结尾」的最优段前缀不是最优，换成更优的前缀只会更大（最优子结构）。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="var">dp</span>[<span class="num">0</span>] <span class="kw">=</span> <span class="var">nums</span>[<span class="num">0</span>]
+<span class="var">ans</span> <span class="kw">=</span> <span class="var">nums</span>[<span class="num">0</span>]
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">range(1, n)</span>:
+    <span class="zh">二选一：接上 or 重新开始</span>   <span class="cm"># dp[i] = max(dp[i-1] + nums[i], nums[i])</span>
+    <span class="zh">更新全局最大值</span>          <span class="cm"># ans = max(ans, dp[i])</span>
+<span class="kw">return</span> <span class="var">ans</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">关键决策：「接上」的前提是 dp[i-1] &gt; 0 才值得；但写成 max 就不用显式判断——负数时 max 自动选择「重新开始」。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4] 的 DP 计算过程。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]</div>
+    <div class="viz-cells" id="kCells"></div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前元素 i</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>当前最优段</span>
+      <span><i style="background:#F1F5F9;border:2px solid #CBD5E1;opacity:.6"></i>已处理</span>
+    </div>
+    <div class="viz-panel">
+      <div class="choice-panel">
+        <h4>候选值二选一（i 位置）</h4>
+        <div id="choiceBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">dp[i]（以 i 结尾）<b class="s-dp" id="statDp">—</b></div>
+        <div class="stat-box">全局答案 ans<b class="s-ans" id="statAns">—</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table>
+    <tr><th>i</th><th>nums[i]</th><th>接上：dp[i-1]+nums[i]</th><th>重新开始：nums[i]</th><th>dp[i]</th><th>ans</th></tr>
+    <tr><td>0</td><td>-2</td><td>—</td><td>—</td><td>-2</td><td>-2</td></tr>
+    <tr><td>1</td><td>1</td><td>-2+1=-1</td><td>1</td><td>1</td><td>1</td></tr>
+    <tr><td>2</td><td>-3</td><td>1+(-3)=-2</td><td>-3</td><td>-2</td><td>1</td></tr>
+    <tr><td>3</td><td>4</td><td>-2+4=2</td><td>4</td><td>4</td><td>4</td></tr>
+    <tr><td>4</td><td>-1</td><td>4+(-1)=3</td><td>-1</td><td>3</td><td>4</td></tr>
+    <tr><td>5</td><td>2</td><td>3+2=5</td><td>2</td><td>5</td><td>5</td></tr>
+    <tr><td>6</td><td>1</td><td>5+1=6</td><td>1</td><td>6</td><td>6</td></tr>
+    <tr><td>7</td><td>-5</td><td>6+(-5)=1</td><td>-5</td><td>1</td><td>6</td></tr>
+    <tr><td>8</td><td>4</td><td>1+4=5</td><td>4</td><td>5</td><td>6</td></tr>
+  </table>
+  <div class="note purple">答案 6 出现在 i = 6 时（段 [4,-1,2,1]）；i = 7 时 dp 掉到 1，但 ans 保持 6——全局最大值与「以 i 结尾」的最大值是两个概念。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">maxSubArray</span>(self, nums: List[<span style="color:#CA8A04">int</span>]) -&gt; <span style="color:#CA8A04">int</span>:
+        n = <span style="color:#D4744C">len</span>(nums)
+        dp = [<span style="color:#CA8A04">0</span>] * n
+        dp[<span style="color:#CA8A04">0</span>] = nums[<span style="color:#CA8A04">0</span>]          <span style="color:#6B7280"># 以 0 结尾的最大和就是它自己</span>
+        ans = nums[<span style="color:#CA8A04">0</span>]            <span style="color:#6B7280"># 记录所有 dp[i] 的最大值</span>
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">1</span>, n):
+            dp[i] = <span style="color:#D4744C">max</span>(dp[i - <span style="color:#CA8A04">1</span>] + nums[i], nums[i])  <span style="color:#6B7280"># 接上 or 重新开始</span>
+            ans = <span style="color:#D4744C">max</span>(ans, dp[i])
+        <span style="color:#6B7280">return</span> ans</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>初始化</strong>：dp[0] = nums[0]（只有一个元素时它就是答案），ans 同步初始化</li>
+    <li><strong>转移</strong>：max 二选一——「接上」可能越接越小（遇到负数），「重新开始」兜底</li>
+    <li><strong>答案维护</strong>：dp[i] 只保证「以 i 结尾」，最优段右端点未知，所以全程取 max</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n)</td><td>一趟扫描，每个位置常数时间</td></tr>
+    <tr><td>空间</td><td>O(n)</td><td>dp 数组；可滚动为 O(1)（只依赖 dp[i-1]）</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>ans 初始化为 0</strong>：全负数数组（如 [-1, -2]）会错误返回 0，必须初始化为 <code>nums[0]</code> 或负无穷。</div>
+  <div class="note yellow"><strong>dp 含义混淆</strong>：dp[i] 是「以 i 结尾」的最大和，不是「前 i 个元素」的最大和——后者无法直接转移（子数组必须连续）。</div>
+  <div class="note yellow"><strong>「接上」不是无脑加</strong>：dp[i-1] 为负数时接上更差，max 会自动选择重新开始，不要手动加判断。</div>
+  <div class="note red"><strong>与「和为 K 的子数组」混淆</strong>：本题求最大和（无固定 K），用 DP；固定 K 的计数题用前缀和+哈希表。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>状态定义</strong>：「以 i 结尾」——子数组类 DP 的标准姿势</li>
+    <li><strong>转移</strong>：接上 or 重新开始，max 二选一</li>
+    <li><strong>答案</strong>：全局 max 与局部 dp[i] 分开维护</li>
+  </ul>
+  <div class="note green">口诀：以 i 结尾定状态，接上重开二选一；局部最优全局比，一趟扫完得答案。</div>
+</section>
+</main>
+
+<footer>最大子数组和 · 算法学习页</footer>
+
+<script>
+(function(){
+const nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
+
+function simulate(arr) {
+  const n = arr.length;
+  const steps = [];
+  const dp = new Array(n).fill(null);
+  const snap = (desc, i, segStart, segEnd, take, restart, picked) => {
+    steps.push({desc: desc, i: i, dp: dp.slice(), segStart: segStart, segEnd: segEnd, take: take, restart: restart, picked: picked});
+  };
+
+  dp[0] = arr[0];
+  let ans = arr[0];
+  snap('初始化：dp[0] = nums[0] = ' + arr[0] + '（以 0 结尾的最大和就是它自己），ans = ' + ans, 0, 0, 0, null, null, 'init');
+
+  let segStart = 0, segEnd = 0;
+  for (let i = 1; i < n; i++) {
+    const take = dp[i - 1] + arr[i];
+    const restart = arr[i];
+    if (take >= restart) {
+      dp[i] = take;
+      segEnd = i;
+      snap('i = ' + i + '，nums[' + i + '] = ' + arr[i] + '：接上 dp[' + (i-1) + '] = ' + dp[i-1] + ' → ' + take + '；重新开始 = ' + restart + '。选「接上」，dp[' + i + '] = ' + take, i, segStart, segEnd, take, restart, 'take');
+    } else {
+      dp[i] = restart;
+      segStart = segEnd = i;
+      snap('i = ' + i + '，nums[' + i + '] = ' + arr[i] + '：接上 = ' + take + '；重新开始 = ' + restart + '。选「重新开始」（新段从 i 开始），dp[' + i + '] = ' + restart, i, segStart, segEnd, take, restart, 'restart');
+    }
+    const oldAns = ans;
+    ans = Math.max(ans, dp[i]);
+    if (ans > oldAns) {
+      snap('更新全局答案：ans = max(' + oldAns + ', dp[' + i + '] = ' + dp[i] + ') = ' + ans + ' 🎯 当前最优段 [' + segStart + '..' + segEnd + ']', i, segStart, segEnd, take, restart, 'pick');
+    }
+  }
+  snap('✅ 完成：最大子数组和为 ' + ans + '（最优段 [' + segStart + '..' + segEnd + ']）', n - 1, segStart, segEnd, null, null, 'final');
+  return steps;
+}
+
+const steps = simulate(nums);
+let cur = 0, playing = false, timer = null;
+
+const kCells = document.getElementById('kCells');
+const choiceBox = document.getElementById('choiceBox');
+const statDp = document.getElementById('statDp');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+
+  let h = '';
+  nums.forEach((v, i) => {
+    let cls = '';
+    if (st.segStart !== null && i >= st.segStart && i <= st.segEnd && st.segStart >= 0) cls = 'inseg';
+    if (i === st.i) cls += ' cur';
+    else if (st.i >= 0 && i < st.i) cls += ' done';
+    const dpv = st.dp[i] !== null ? '<span class="dpv">dp=' + st.dp[i] + '</span>' : '';
+    h += '<div class="k-cell ' + cls + '">' + v + dpv + '<span class="idx">' + i + '</span></div>';
+  });
+  kCells.innerHTML = h;
+
+  let ch = '';
+  if (st.picked === 'init' || st.picked === 'final') {
+    ch = '<div style="font-size:13px;color:var(--text-light);padding:8px">' + (st.picked === 'init' ? '等待第一次决策…' : '✅ 计算完成') + '</div>';
+  } else {
+    ch = '<div class="choice-row' + (st.picked === 'take' ? ' pick' : '') + '"><span class="tag">接上：dp[' + (st.i - 1) + '] + nums[' + st.i + '] = ' + (st.take !== null ? st.take : '—') + '</span></div>'
+       + '<div class="choice-row' + (st.picked === 'restart' ? ' pick' : '') + '"><span class="tag">重新开始：nums[' + st.i + '] = ' + (st.restart !== null ? st.restart : '—') + '</span></div>';
+  }
+  choiceBox.innerHTML = ch;
+
+  statDp.textContent = st.dp[st.i] !== null ? st.dp[st.i] : '—';
+  statAns.textContent = st.dp[st.i] !== null ? Math.max.apply(null, st.dp.filter(x => x !== null)) : '—';
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1700);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>

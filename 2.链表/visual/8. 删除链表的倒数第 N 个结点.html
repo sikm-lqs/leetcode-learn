@@ -98,6 +98,14 @@ th{background:#F1F5F9;font-weight:600}
 .viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
 @media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.ll-val{min-width:40px;height:38px;font-size:13px}.ll-null{height:38px;line-height:38px}}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 </style>
 </head>
 <body>
@@ -113,12 +121,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：双指针 + 哑节点</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -178,8 +187,28 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   </div>
 </section>
 
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">dummy</span> = <span class="kw">ListNode</span>(<span class="num">0</span>, <span class="var">head</span>)
+<span class="var">slow</span> = <span class="var">fast</span> = <span class="var">dummy</span>
+
+<span class="zh">fast 先走 n+1 步</span>                <span class="cm"># for _ in range(n+1): fast = fast.next</span>
+<span class="kw">while</span> <span class="var">fast</span> 非空:                    <span class="cm"># while fast is not None</span>
+    <span class="zh">slow、fast 同步前进一步</span>        <span class="cm"># slow, fast = slow.next, fast.next</span>
+<span class="zh">slow.next 跳过被删节点</span>            <span class="cm"># slow.next = slow.next.next</span>
+<span class="kw">return</span> <span class="var">dummy</span>.next</code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">fast 多走那 1 步，是为了让 slow 最终停在被删节点的<strong>前驱</strong>而非本身；哑节点 dummy 让「删除头节点」也走同一套流程，最终统一返回 dummy.next。</div>
+</section>
+
 <section class="card" id="viz">
-  <h2>3. 交互可视化演示</h2>
+  <h2>4. 交互可视化演示</h2>
   <p>点击「下一步」，观察 <code>fast</code> 先走 n+1 步、再与 <code>slow</code> 同步前进，最终 <code>slow</code> 停在被删节点(4)的前驱位置(3)。</p>
 
   <div class="viz-container">
@@ -201,7 +230,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>4. 详细过程模拟</h2>
+  <h2>5. 详细过程模拟</h2>
   <p>以 <code>head = [1, 2, 3, 4, 5]</code>，<code>n = 2</code> 为例，复现三个关键画面。</p>
 
   <h3>画面一：fast 先走 n + 1 = 3 步</h3>
@@ -261,7 +290,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="code">
-  <h2>5. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
 
   <h3>完整代码</h3>
   <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">ListNode</span>:
@@ -310,7 +339,7 @@ return dummy.next</code></pre>
 </section>
 
 <section class="card" id="complexity">
-  <h2>6. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
     <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>fast 先走 n+1 步、再与 slow 同步走到末尾，整体每个节点最多访问一次。</td></tr>
@@ -319,7 +348,7 @@ return dummy.next</code></pre>
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>7. 常见易错点</h2>
+  <h2>8. 常见易错点</h2>
 
   <h3>错误一：忘记加哑节点</h3>
   <pre><code># 错误：直接 slow = fast = head
@@ -346,7 +375,7 @@ return dummy.next   # ✅ 统一处理，删头也正确</code></pre>
 </section>
 
 <section class="card" id="summary">
-  <h2>8. 总结</h2>
+  <h2>9. 总结</h2>
   <div class="note green">
     <p><strong>删除倒数第 N 个结点</strong> 精髓：</p>
     <ul style="margin:6px 0 0;padding-left:20px;">

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>4. 三数之和 · 算法详解</title>
 <style>
-:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--primary-light:#F4F8FC;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
 header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
@@ -14,7 +14,7 @@ header>*{position:relative;z-index:1}
 header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
 header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
 header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
-main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
 .card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
 .card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
@@ -29,21 +29,54 @@ main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
 .note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
 .note.warm{background:var(--warm-soft);border-color:#EAD5CC}
 code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
-pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
 pre code{background:transparent;color:inherit;padding:0}
-.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
-.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s}
-.cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
-.cell.dim{border-color:#D1D5DB;background:#F3F4F6;color:#6B7280}
-.cell.pivot{border-color:var(--warm);background:var(--warm-soft)}
-.idx-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px;margin-bottom:10px}
-.idx{display:inline-flex;justify-content:center;min-width:44px;font-size:12px;color:var(--text-light)}
-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
-th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
 th{background:#F1F5F9;font-weight:600}
 .formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.viz-cells{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin:12px 0}
+.t-cell{min-width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F1F5F9;border:2px solid #CBD5E1;border-radius:10px;font-family:Consolas,Monaco,monospace;font-weight:700;font-size:15px;transition:all .25s;position:relative}
+.t-cell .tag{position:absolute;top:-18px;font-size:11px;color:var(--text-light);font-family:inherit;font-weight:600}
+.t-cell .idx{font-size:10px;color:var(--text-light);font-weight:400}
+.t-cell.i-fix{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.t-cell.l-ptr{border-color:var(--warm);background:var(--warm-soft);color:var(--warm);transform:translateY(-3px)}
+.t-cell.r-ptr{border-color:var(--accent-green);background:var(--accent-green-soft);color:#0F7A3D;transform:translateY(-3px)}
+.t-cell.done{opacity:.45}
+.t-cell.found{border-color:var(--accent-purple);background:var(--accent-purple-soft);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.viz-res{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:12px 0}
+.res-chip{background:var(--accent-purple-soft);color:#6D28D9;border:1px solid #DDD6FE;border-radius:20px;padding:4px 14px;font-family:Consolas,Monaco,monospace;font-size:13px;font-weight:700}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+.viz-stats{display:flex;justify-content:center;flex-wrap:wrap;gap:28px;font-size:14px;margin:8px 0 0;padding:10px 16px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.viz-stats strong{font-size:18px;font-family:Consolas,Monaco,monospace}
+.viz-stats .vl{color:var(--warm);font-weight:700}
+.viz-stats .vr{color:var(--primary);font-weight:700}
+.viz-stats .va{color:var(--accent-green);font-weight:800}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
-@media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.cell{min-width:36px;height:32px;font-size:12px}}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}.t-cell{min-width:36px;height:38px}}
 </style>
 </head>
 <body>
@@ -51,7 +84,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 <header>
   <div class="badge">LeetCode 15 · 中等</div>
   <h1>4. 三数之和</h1>
-  <p class="subtitle">返回数组中和为 0 的不重复三元组。</p>
+  <p class="subtitle">排序 + 双指针：从 O(n³) 暴力降到 O(n²)。</p>
 </header>
 
 <main>
@@ -59,163 +92,303 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：排序 + 双指针</a>
-  <a href="#walkthrough">3. 详细过程模拟</a>
-  <a href="#code">4. 代码逐段解释</a>
-  <a href="#complexity">5. 复杂度分析</a>
-  <a href="#pitfalls">6. 常见易错点</a>
-  <a href="#summary">7. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
   <h2>1. 题目理解</h2>
-  <p>给定数组 <code>nums</code>，找出所有和为 <code>0</code> 且<strong>不重复</strong>的三元组 <code>[nums[i], nums[j], nums[k]]</code>。</p>
-
-  <div class="note blue"><strong>注意：</strong>答案中不能包含重复的三元组。i、j、k 互不相同。</div>
-
+  <p>给定一个包含 <code>n</code> 个整数的数组 <code>nums</code>，判断是否存在三个元素 <code>a, b, c</code>，使得 <code>a + b + c = 0</code>。请找出所有<strong>不重复</strong>的三元组。</p>
   <h3>示例</h3>
   <pre><code>输入：nums = [-1, 0, 1, 2, -1, -4]
-输出：[[-1, -1, 2], [-1, 0, 1]]</code></pre>
+输出：[[-1, -1, 2], [-1, 0, 1]]
 
-  <div class="array-line">
-    <span class="cell pivot">-1</span>
-    <span class="cell">0</span>
-    <span class="cell">1</span>
-    <span class="cell">2</span>
-    <span class="cell pivot">-1</span>
-    <span class="cell dim">-4</span>
-  </div>
-  <p>不重复的三元组：<code>[-1, -1, 2]</code> 和 <code>[-1, 0, 1]</code>。</p>
+输入：nums = [0, 1, 1]
+输出：[]
+
+输入：nums = [0, 0, 0]
+输出：[[0, 0, 0]]</code></pre>
+  <div class="note yellow">答案中不能包含重复的三元组——这是本题最容易漏掉的要求。</div>
 </section>
 
 <section class="card" id="idea">
   <h2>2. 核心思路：排序 + 双指针</h2>
-
-  <p>将 O(n³) 暴力枚举优化到 O(n²)：</p>
   <ol>
-    <li><strong>排序</strong>数组 —— 让双指针可以工作</li>
-    <li>固定第一个数 <code>nums[i]</code></li>
-    <li>在 <code>[i+1, n-1]</code> 区间用<strong>双指针</strong>找两数之和为 <code>-nums[i]</code></li>
-    <li>去重：跳过重复的 <code>nums[i]</code> 和重复的左右指针值</li>
+    <li><strong>排序</strong>：数组有序后，重复元素相邻，方便去重</li>
+    <li><strong>固定一个数 <code>nums[i]</code></strong>：问题降维成「在剩余区间找两数之和 = -nums[i]」</li>
+    <li><strong>双指针收缩</strong>：<code>left</code> 指向 <code>i+1</code>，<code>right</code> 指向末尾；和小于目标则 <code>left++</code>，大于目标则 <code>right--</code>，等于则记录并双向收缩</li>
+    <li><strong>三处去重</strong>：i 去重（相邻相同跳过）、left 去重、right 去重</li>
   </ol>
+  <div class="note blue">为什么双指针可行？排序后区间单调，指针向内移动时「和」单调变化，可以在 O(n) 内扫完一个固定 i 的所有两数和。</div>
+</section>
 
-  <div class="note purple">
-    <strong>核心洞察：</strong>排序后，两数和问题可以用双指针在 O(n) 时间解决，使整体从 O(n³) 降到 O(n²)。再加上去重逻辑，确保结果不重复。
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="var">nums</span>.<span class="zh">排序</span>()
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">遍历每个下标</span>:
+    <span class="kw">if</span> <span class="zh">与前一个数相同</span>:            <span class="cm"># 去重：i > 0 and nums[i] == nums[i-1]</span>
+        <span class="kw">continue</span>
+    <span class="var">left</span>, <span class="var">right</span> <span class="kw">=</span> <span class="var">i</span>+<span class="num">1</span>, <span class="var">n</span>-<span class="num">1</span>
+    <span class="kw">while</span> <span class="var">left</span> &lt; <span class="var">right</span>:
+        <span class="var">total</span> <span class="kw">=</span> <span class="var">nums</span>[<span class="var">i</span>] <span class="kw">+</span> <span class="var">nums</span>[<span class="var">left</span>] <span class="kw">+</span> <span class="var">nums</span>[<span class="var">right</span>]
+        <span class="kw">if</span> <span class="var">total</span> <span class="kw">==</span> <span class="num">0</span>:
+            <span class="zh">记录三元组</span>
+            <span class="zh">左右指针分别去重</span>        <span class="cm"># 跳过相邻相同值</span>
+            <span class="var">left</span>++, <span class="var">right</span>--
+        <span class="kw">elif</span> <span class="var">total</span> &lt; <span class="num">0</span>:
+            <span class="var">left</span>++                      <span class="cm"># 和太小，右移左指针</span>
+        <span class="kw">else</span>:
+            <span class="var">right</span>--                     <span class="cm"># 和太大，左移右指针</span>
+<span class="kw">return</span> <span class="var">res</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">排序是双指针的前提，去重是答案不重复的前提——「排序」与「去重」是一对组合拳，缺一不可。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 nums = [-1, 0, 1, 2, -1, -4] 的完整求解过程。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 排序后：[-4, -1, -1, 0, 1, 2]</div>
+    <div class="viz-cells" id="tCells"></div>
+    <div class="viz-legend">
+      <span><i style="background:var(--primary-soft);border:2px solid var(--primary)"></i>固定的 nums[i]</span>
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>left 指针</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>right 指针</span>
+      <span><i style="background:var(--accent-purple-soft);border:2px solid var(--accent-purple)"></i>命中三元组</span>
+    </div>
+    <div class="viz-res" id="resBox"></div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+    <div class="viz-stats">
+      <span>i：<strong class="vr" id="statI">—</strong></span>
+      <span>nums[i]：<strong class="vr" id="statIv">—</strong></span>
+      <span>total：<strong class="vl" id="statTotal">—</strong></span>
+      <span>已找到：<strong class="va" id="statCnt">0</strong> 组</span>
+    </div>
   </div>
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>3. 详细过程模拟</h2>
-  <p>以 <code>nums = [-1, 0, 1, 2, -1, -4]</code> 为例。</p>
-
-  <h3>第一步：排序</h3>
-  <div class="array-line">
-    <span class="cell pivot">-4</span>
-    <span class="cell pivot">-1</span>
-    <span class="cell">-1</span>
-    <span class="cell">0</span>
-    <span class="cell">1</span>
-    <span class="cell">2</span>
-  </div>
-  <div class="idx-row"><span class="idx">0</span><span class="idx">1</span><span class="idx">2</span><span class="idx">3</span><span class="idx">4</span><span class="idx">5</span></div>
-
-  <h3>i=0, nums[0]=-4</h3>
-  <p>目标：在 [1, 5] 中找两数和 = 4。双指针扫描：</p>
+  <h2>5. 详细过程模拟</h2>
+  <p>以 i = 0（nums[0] = -4）为例，双指针在 [-1, -1, 0, 1, 2] 中找两数和 = 4：</p>
   <table>
-    <tr><th>l</th><th>r</th><th>sum</th><th></th></tr>
-    <tr><td>1(-1)</td><td>5(2)</td><td>1</td><td>1<4 → l++</td></tr>
-    <tr><td>2(-1)</td><td>5(2)</td><td>1</td><td>1<4 → l++</td></tr>
-    <tr><td>3(0)</td><td>5(2)</td><td>2</td><td>2<4 → l++</td></tr>
-    <tr><td>4(1)</td><td>5(2)</td><td>3</td><td>3<4 → l++</td></tr>
-    <tr><td colspan="4">l 与 r 相遇，无解</td></tr>
+    <tr><th>i</th><th>left</th><th>right</th><th>三数和</th><th>操作</th></tr>
+    <tr><td>0 (-4)</td><td>1 (-1)</td><td>5 (2)</td><td>-3</td><td>total &lt; 0，left++</td></tr>
+    <tr><td>0 (-4)</td><td>2 (-1)</td><td>5 (2)</td><td>-3</td><td>total &lt; 0，left++</td></tr>
+    <tr><td>0 (-4)</td><td>3 (0)</td><td>5 (2)</td><td>-2</td><td>total &lt; 0，left++</td></tr>
+    <tr><td>0 (-4)</td><td>4 (1)</td><td>5 (2)</td><td>-1</td><td>total &lt; 0，left++ → left &gt; right 结束</td></tr>
   </table>
-
-  <h3>i=1, nums[1]=-1</h3>
-  <p>目标：在 [2, 5] 中找两数和 = 1。</p>
-  <table>
-    <tr><th>l</th><th>r</th><th>sum</th><th></th></tr>
-    <tr><td>2(-1)</td><td>5(2)</td><td>1</td><td>等于目标 → 记录 [-1, -1, 2]，l++, r--</td></tr>
-    <tr><td>3(0)</td><td>4(1)</td><td>1</td><td>等于目标 → 记录 [-1, 0, 1]，l++, r--</td></tr>
-    <tr><td colspan="4">l≥r，结束</td></tr>
-  </table>
-
-  <h3>i=2, nums[2]=-1</h3>
-  <p>与 i=1 重复，跳过。</p>
-
-  <h3>i=3, nums[3]=0</h3>
-  <p>目标：在 [4, 5] 中找两数和 = 0 → left=1, right=2 → 无解。</p>
-
-  <h3>i=4, nums[4]=1</h3>
-  <p>目标 = -1，双指针无法找到和为负数的组合，结束。</p>
-
-  <div class="note green">最终结果：<strong>[[-1, -1, 2], [-1, 0, 1]]</strong> ✅</div>
+  <p>接下来 i = 1（nums[1] = -1）时，双指针会命中 <code>[-1, -1, 2]</code> 和 <code>[-1, 0, 1]</code> 两组答案。</p>
+  <div class="note purple">注意 i = 2 时 nums[2] == nums[1] == -1，直接跳过——否则会与 i = 1 的结果重复。</div>
 </section>
 
 <section class="card" id="code">
-  <h2>4. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
   <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
     <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">threeSum</span>(self, nums):
-        nums.<span style="color:#D4744C">sort</span>()
+        nums.sort()                       <span style="color:#6B7280"># 排序：去重与双指针的前提</span>
         res = []
-        n = <span style="color:#D4744C">len</span>(nums)
+        n = len(nums)
         <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(n):
-            <span style="color:#6B7280">if</span> i > <span style="color:#CA8A04">0</span> <span style="color:#6B7280">and</span> nums[i] == nums[i-<span style="color:#CA8A04">1</span>]:
-                <span style="color:#6B7280">continue</span>  <span style="color:#6B7280"># 跳过重复的 i</span>
-            l, r = i + <span style="color:#CA8A04">1</span>, n - <span style="color:#CA8A04">1</span>
-            <span style="color:#6B7280">while</span> l < r:
-                s = nums[i] + nums[l] + nums[r]
-                <span style="color:#6B7280">if</span> s == <span style="color:#CA8A04">0</span>:
-                    res.<span style="color:#D4744C">append</span>([nums[i], nums[l], nums[r]])
-                    <span style="color:#6B7280">while</span> l < r <span style="color:#6B7280">and</span> nums[l] == nums[l+<span style="color:#CA8A04">1</span>]: l += <span style="color:#CA8A04">1</span>
-                    <span style="color:#6B7280">while</span> l < r <span style="color:#6B7280">and</span> nums[r] == nums[r-<span style="color:#CA8A04">1</span>]: r -= <span style="color:#CA8A04">1</span>
-                    l += <span style="color:#CA8A04">1</span>; r -= <span style="color:#CA8A04">1</span>
-                <span style="color:#6B7280">elif</span> s < <span style="color:#CA8A04">0</span>: l += <span style="color:#CA8A04">1</span>
-                <span style="color:#6B7280">else</span>: r -= <span style="color:#CA8A04">1</span>
+            <span style="color:#6B7280">if</span> i &gt; <span style="color:#CA8A04">0</span> <span style="color:#6B7280">and</span> nums[i] == nums[i - <span style="color:#CA8A04">1</span>]:
+                <span style="color:#6B7280">continue</span>                 <span style="color:#6B7280"># 去重①：固定数相同则跳过</span>
+            left, right = i + <span style="color:#CA8A04">1</span>, n - <span style="color:#CA8A04">1</span>
+            <span style="color:#6B7280">while</span> left &lt; right:
+                total = nums[i] + nums[left] + nums[right]
+                <span style="color:#6B7280">if</span> total == <span style="color:#CA8A04">0</span>:
+                    res.append([nums[i], nums[left], nums[right]])
+                    <span style="color:#6B7280">while</span> left &lt; right <span style="color:#6B7280">and</span> nums[left] == nums[left + <span style="color:#CA8A04">1</span>]:
+                        left += <span style="color:#CA8A04">1</span>        <span style="color:#6B7280"># 去重②：跳过重复 left</span>
+                    <span style="color:#6B7280">while</span> left &lt; right <span style="color:#6B7280">and</span> nums[right] == nums[right - <span style="color:#CA8A04">1</span>]:
+                        right -= <span style="color:#CA8A04">1</span>       <span style="color:#6B7280"># 去重③：跳过重复 right</span>
+                    left += <span style="color:#CA8A04">1</span>; right -= <span style="color:#CA8A04">1</span>
+                <span style="color:#6B7280">elif</span> total &lt; <span style="color:#CA8A04">0</span>:
+                    left += <span style="color:#CA8A04">1</span>              <span style="color:#6B7280"># 和太小，右移左指针</span>
+                <span style="color:#6B7280">else</span>:
+                    right -= <span style="color:#CA8A04">1</span>             <span style="color:#6B7280"># 和太大，左移右指针</span>
         <span style="color:#6B7280">return</span> res</code></pre>
-
-  <p><strong>去重逻辑</strong>共三处：</p>
-  <ol>
-    <li><code>if i > 0 and nums[i] == nums[i-1]: continue</code> — 防止第一个数重复</li>
-    <li><code>while l < r and nums[l] == nums[l+1]: l += 1</code> — 防止左指针值重复</li>
-    <li><code>while l < r and nums[r] == nums[r-1]: r -= 1</code> — 防止右指针值重复</li>
-  </ol>
-
-  <div class="note warm">先移动指针去重，再收缩一次，确保跳过所有重复值。</div>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>i 去重</strong>：固定数相同只会产生重复组合，直接跳过</li>
+    <li><strong>命中后去重</strong>：找到一组后先把相邻重复值跳过，再收缩指针，避免同一组合出现多次</li>
+    <li><strong>双指针移动</strong>：total 是单调的——排序保证 left 右移和变大、right 左移和变小</li>
+  </ul>
 </section>
 
 <section class="card" id="complexity">
-  <h2>5. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
-    <tr><th>维度</th><th>值</th><th>说明</th></tr>
-    <tr><td>时间复杂度</td><td><strong>O(n²)</strong></td><td>排序 O(n log n) + 外层循环 n × 内层双指针 O(n)</td></tr>
-    <tr><td>空间复杂度</td><td><strong>O(1)</strong></td><td>除结果数组外，只用了常数空间</td></tr>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n²)</td><td>排序 O(n log n) + 固定 i 的 O(n) 次双指针扫描 O(n)，总 O(n²)</td></tr>
+    <tr><td>空间</td><td>O(1)</td><td>除答案外只用了常数空间（排序可原地）</td></tr>
   </table>
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>6. 常见易错点</h2>
-  <h3>错误：忘记去重导致重复三元组</h3>
-  <p>三个地方的去重缺一不可，否则会出现 <code>[-1, -1, 2]</code> 重复出现。</p>
-
-  <h3>错误：去重顺序搞错</h3>
-  <p>先移动指针去重，后再收缩一次。正确顺序：</p>
-  <pre><code>while l < r and nums[l] == nums[l+1]: l += 1
-while l < r and nums[r] == nums[r-1]: r -= 1
-l += 1; r -= 1  # 别忘了再缩一次</code></pre>
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>忘记去重</strong>：三处去重缺一处都会产生重复三元组，尤其是「命中后」必须先跳过重复值再收缩指针。</div>
+  <div class="note yellow"><strong>先排序再讨论</strong>：未排序就做双指针会得到错误结果；双指针的正确性完全依赖单调性。</div>
+  <div class="note yellow"><strong>i 去重边界</strong>：判断用 <code>i &gt; 0 and nums[i] == nums[i-1]</code>，与 <code>nums[i] == nums[i+1]</code> 不同（后者会漏掉 [-1, -1, 2] 这类答案）。</div>
+  <div class="note red"><strong>跳过重复值导致漏解</strong>：命中后先「去重到最后一个重复值」，再 <code>left++, right--</code>，顺序不能反。</div>
 </section>
 
 <section class="card" id="summary">
-  <h2>7. 总结</h2>
-  <div class="note green">
-    <p><strong>三数之和</strong> 解法精髓：</p>
-    <ul style="margin:6px 0 0;padding-left:20px;">
-      <li><strong>排序</strong> + 固定一个数</li>
-      <li>剩余区间 <strong>双指针</strong> 找两数和</li>
-      <li><strong>三处去重</strong> 保证结果不重复</li>
-    </ul>
-  </div>
-  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：排序固定第一个，双指针找剩下俩。三处去重不能少，O(n²) 就搞定。</p>
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>降维</strong>：三数和 → 排序后固定一个数 → 两数之和（双指针 O(n)）</li>
+    <li><strong>去重三件套</strong>：i 去重、命中后 left/right 去重</li>
+    <li><strong>复杂度</strong>：O(n²) 时间、O(1) 空间，是「排序 + 双指针」的代表题</li>
+  </ul>
+  <div class="note green">口诀：排序固定第一个，双指针找剩下俩；三处去重不能少，O(n²) 就搞定。</div>
 </section>
 </main>
+
 <footer>三数之和 · 算法学习页</footer>
+
+<script>
+(function(){
+const rawNums = [-1, 0, 1, 2, -1, -4];
+
+function simulate(nums) {
+  const arr = nums.slice().sort((a, b) => a - b);
+  const steps = [];
+  const res = [];
+  const snap = (desc, i, l, r, hits, over) => {
+    steps.push({desc: desc, i: i, l: l, r: r, res: res.map(x => x.slice()), hits: hits || [], over: over || []});
+  };
+  snap('初始：排序后 ' + JSON.stringify(arr) + '。固定 i = 0（nums[0] = -4），在剩余区间找两数和 = 4', 0, 1, arr.length - 1);
+
+  for (let i = 0; i < arr.length; i++) {
+    if (i > 0 && arr[i] === arr[i - 1]) {
+      snap('nums[' + i + '] = ' + arr[i] + ' 与 nums[' + (i-1) + '] 相同 → 跳过（去重①）', i, -1, -1, [], []);
+      continue;
+    }
+    let l = i + 1, r = arr.length - 1;
+    if (l >= r) { snap('剩余区间不足两个数，结束', i, l, r); break; }
+    snap('固定 nums[' + i + '] = ' + arr[i] + '，目标两数和 = ' + (-arr[i]) + '。left=' + l + '，right=' + r, i, l, r);
+    while (l < r) {
+      const total = arr[i] + arr[l] + arr[r];
+      if (total === 0) {
+        res.push([arr[i], arr[l], arr[r]]);
+        snap('命中！' + arr[i] + ' + ' + arr[l] + ' + ' + arr[r] + ' = 0 → 加入答案 ' + JSON.stringify([arr[i], arr[l], arr[r]]), i, l, r, [[l, r]]);
+        while (l < r && arr[l] === arr[l + 1]) l++;
+        while (l < r && arr[r] === arr[r - 1]) r--;
+        l++; r--;
+      } else if (total < 0) {
+        snap('三数和 = ' + total + ' < 0，和太小 → left++（右移左指针）', i, l, r, [], [l]);
+        l++;
+      } else {
+        snap('三数和 = ' + total + ' > 0，和太大 → right--（左移右指针）', i, l, r, [], [r]);
+        r--;
+      }
+    }
+    if (i + 1 < arr.length) {
+      snap('当前区间扫描完毕（left=' + l + '，right=' + r + '），进入下一个固定数', i, l, r);
+    }
+  }
+  snap('✅ 完成。共找到 ' + res.length + ' 组：' + JSON.stringify(res), -1, -1, -1);
+  return steps;
+}
+
+const steps = simulate(rawNums);
+let cur = 0, playing = false, timer = null;
+
+const tCells = document.getElementById('tCells');
+const resBox = document.getElementById('resBox');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const statI = document.getElementById('statI');
+const statIv = document.getElementById('statIv');
+const statTotal = document.getElementById('statTotal');
+const statCnt = document.getElementById('statCnt');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+const arr = rawNums.slice().sort((a, b) => a - b);
+
+function render(k) {
+  const st = steps[k];
+  let h = '';
+  arr.forEach((v, idx) => {
+    let cls = '';
+    let tag = '';
+    if (st.i >= 0 && idx === st.i) { cls = 'i-fix'; tag = 'i=' + st.i; }
+    if (st.l >= 0 && idx === st.l) { cls = 'l-ptr'; tag = 'left'; }
+    if (st.r >= 0 && idx === st.r) { cls = 'r-ptr'; tag = 'right'; }
+    if (st.hits.some(p => p[0] === idx || p[1] === idx)) cls = 'found';
+    if (st.over.includes(idx)) cls = 'done';
+    h += '<div class="t-cell ' + cls + '">' + (tag ? '<span class="tag">' + tag + '</span>' : '') + v + '<span class="idx">' + idx + '</span></div>';
+  });
+  tCells.innerHTML = h;
+
+  let rh = '<span style="font-size:12px;color:var(--text-light);line-height:36px">已找到：</span>';
+  if (st.res.length === 0) rh += '<span style="font-size:12px;color:var(--text-light);line-height:36px">（暂无）</span>';
+  st.res.forEach(t => { rh += '<span class="res-chip">' + JSON.stringify(t) + '</span>'; });
+  resBox.innerHTML = rh;
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  statI.textContent = st.i >= 0 ? st.i : '—';
+  statIv.textContent = st.i >= 0 ? arr[st.i] : '—';
+  const lv = st.l >= 0 ? arr[st.l] : '-';
+  const rv = st.r >= 0 ? arr[st.r] : '-';
+  statTotal.textContent = st.i >= 0 && st.l >= 0 && st.r >= 0 ? (arr[st.i] + lv + rv) : '—';
+  statCnt.textContent = st.res.length;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1500);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
 </body>
 </html>

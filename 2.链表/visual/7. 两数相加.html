@@ -41,6 +41,14 @@ main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
 code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
 pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
 pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 .array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0;font-family:Consolas,Monaco,monospace}
 .cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
 .cell.target{border-color:var(--accent-green);background:var(--accent-green-soft)}
@@ -120,12 +128,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：模拟加法 + 进位</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -195,8 +204,33 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   </div>
 </section>
 
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">dummy</span> = <span class="var">cur</span> = <span class="kw">new</span> <span class="kw">node</span>(<span class="num">0</span>)
+<span class="var">carry</span> = <span class="num">0</span>
+
+<span class="kw">while</span> <span class="var">l1</span> <span class="kw">or</span> <span class="var">l2</span> <span class="kw">or</span> <span class="var">carry</span>:
+    <span class="zh">取当前位值</span>                  <span class="cm"># x = l1.val if l1 else 0</span>
+    <span class="zh">取当前位值</span>                  <span class="cm"># y = l2.val if l2 else 0</span>
+    <span class="var">s</span> = <span class="var">x</span> + <span class="var">y</span> + <span class="var">carry</span>
+    <span class="zh">计算进位</span>                   <span class="cm"># carry = s // 10</span>
+    <span class="zh">创建结果节点</span>                <span class="cm"># cur.next = new node(s % 10)</span>
+    <span class="var">cur</span> = <span class="var">cur</span>.next
+    <span class="zh">前移指针</span>                   <span class="cm"># if l1: l1 = l1.next</span>
+    <span class="zh">前移指针</span>                   <span class="cm"># if l2: l2 = l2.next</span>
+<span class="kw">return</span> <span class="var">dummy</span>.next</code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">「取当前位值」两处执行完全相同的逻辑：若链表未空则取节点值，否则补 0。每轮迭代创建一个新结果节点并让 cur 前进；循环条件带 carry 保证最高位进位也会被写入。</div>
+</section>
+
 <section class="card" id="viz">
-  <h2>3. 交互可视化演示</h2>
+  <h2>4. 交互可视化演示</h2>
   <p>点击「下一步」，观察逐位相加与进位如何写入结果链表。橙色为当前位，绿色为已写入结果，黄色高亮表示 carry=1。</p>
 
   <div class="viz-container">
@@ -229,7 +263,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>4. 详细过程模拟</h2>
+  <h2>5. 详细过程模拟</h2>
   <p>以 <code>l1 = [2,4,3]</code>（342）与 <code>l2 = [5,6,4]</code>（465）为例完整模拟。</p>
 
   <div class="formula">
@@ -317,7 +351,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="code">
-  <h2>5. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
 
   <h3>完整代码</h3>
   <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">ListNode</span>:
@@ -378,7 +412,7 @@ if l2:
 </section>
 
 <section class="card" id="complexity">
-  <h2>6. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
     <tr><td>时间复杂度</td><td><strong>O(max(m, n))</strong></td><td>遍历较长的链表（含可能的最后一位进位），m、n 为两链表长度。</td></tr>
@@ -388,7 +422,7 @@ if l2:
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>7. 常见易错点</h2>
+  <h2>8. 常见易错点</h2>
 
   <h3>错误一：循环条件漏掉 carry</h3>
   <pre><code><span style="color:#6B7280">while</span> l1 <span style="color:#6B7280">or</span> l2:        # ❌ 漏掉 carry
@@ -423,7 +457,7 @@ carry = s // 10                # ✅ 顺序无影响，因 s 未变</code></pre>
 </section>
 
 <section class="card" id="summary">
-  <h2>8. 总结</h2>
+  <h2>9. 总结</h2>
   <div class="note green">
     <p><strong>两数相加</strong> 精髓：</p>
     <ul style="margin:6px 0 0;padding-left:20px;">

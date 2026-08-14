@@ -98,6 +98,14 @@ th{background:#F1F5F9;font-weight:600}
 .viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
 @media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.ll-val{min-width:40px;height:38px;font-size:13px}.ll-null{height:38px;line-height:38px}}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 </style>
 </head>
 <body>
@@ -113,12 +121,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：三指针迭代</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -179,8 +188,28 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   </div>
 </section>
 
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">prev</span>, <span class="var">cur</span> = <span class="kw">None</span>, <span class="var">head</span>
+
+<span class="kw">while</span> <span class="var">cur</span> 非空:                    <span class="cm"># while cur is not None</span>
+    <span class="zh">暂存下一节点</span>               <span class="cm"># nxt = cur.next</span>
+    <span class="zh">反转指针指向 prev</span>         <span class="cm"># cur.next = prev</span>
+    <span class="zh">prev 前进</span>                  <span class="cm"># prev = cur</span>
+    <span class="zh">cur 前进</span>                   <span class="cm"># cur = nxt</span>
+<span class="kw">return</span> <span class="var">prev</span>                        <span class="cm"># 新头节点</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">顺序必须是「先存后改」：先用 nxt 保存 cur.next，再修改 cur.next，否则后续节点会丢失；循环结束时 prev 恰好停在新头节点。</div>
+</section>
+
 <section class="card" id="viz">
-  <h2>3. 交互可视化演示</h2>
+  <h2>4. 交互可视化演示</h2>
   <p>点击「下一步」，观察 <code>prev</code>、<code>cur</code>、<code>nxt</code> 三个指针如何协作完成反转。绿色箭头表示已反转的指针。</p>
 
   <div class="viz-container">
@@ -202,7 +231,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>4. 详细过程模拟</h2>
+  <h2>5. 详细过程模拟</h2>
   <p>以 <code>head = [1, 2, 3, 4, 5]</code> 为例，完整模拟。</p>
 
   <h3>初始：prev = null, cur = 1</h3>
@@ -264,7 +293,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="code">
-  <h2>5. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
 
   <h3>完整代码</h3>
   <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
@@ -309,7 +338,7 @@ cur = nxt</code></pre>
 </section>
 
 <section class="card" id="complexity">
-  <h2>6. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
     <tr><td>时间复杂度</td><td><strong>O(n)</strong></td><td>每个节点访问一次。</td></tr>
@@ -318,7 +347,7 @@ cur = nxt</code></pre>
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>7. 常见易错点</h2>
+  <h2>8. 常见易错点</h2>
 
   <h3>错误一：忘记先保存 next</h3>
   <pre><code># 错误：先改指针 → 后续节点丢失
@@ -340,7 +369,7 @@ return prev    # ✅ prev 停在新头部</code></pre>
 </section>
 
 <section class="card" id="summary">
-  <h2>8. 总结</h2>
+  <h2>9. 总结</h2>
   <div class="note green">
     <p><strong>反转链表</strong> 精髓：</p>
     <ul style="margin:6px 0 0;padding-left:20px;">

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3. 打家劫舍 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.houses{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:14px 0}
+.house{width:64px;border-radius:10px;border:2px solid #CBD5E1;background:#F1F5F9;overflow:hidden;text-align:center;padding:6px 0;transition:all .3s;position:relative}
+.house .hnum{font-size:10px;color:var(--text-light)}
+.house .hmoney{font-family:Consolas,Monaco,monospace;font-weight:700;font-size:17px;padding:2px 0}
+.house .hdp{font-size:10px;color:var(--accent-purple);font-weight:700;font-family:Consolas,Monaco,monospace}
+.house.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-4px);box-shadow:0 4px 12px rgba(212,116,76,.25)}
+.house.src{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.house.src2{border-color:var(--primary);background:var(--primary-soft)}
+.house.done{border-color:var(--accent-purple);background:var(--accent-purple-soft)}
+.house.rob{box-shadow:0 0 0 3px rgba(124,58,237,.25)}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.choice-panel{flex:1;min-width:260px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.choice-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.choice-row{display:flex;justify-content:space-between;padding:6px 10px;border-radius:6px;font-family:Consolas,Monaco,monospace;font-size:13px;margin:4px 0}
+.choice-row:nth-child(odd){background:#F8FAFC}
+.choice-row.pick{background:var(--accent-green-soft);color:#0F7A3D;font-weight:700}
+.choice-row.pick .tag::after{content:' ✓ 选中';font-size:11px;font-weight:700}
+.stats-panel{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-dp{color:var(--accent-purple)}
+.stat-box .s-ans{color:var(--accent-green)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}.house{width:54px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 198 · 中等</div>
+  <h1>3. 打家劫舍</h1>
+  <p class="subtitle">「偷 or 不偷」的 0-1 决策：dp[i] = max(dp[i-1], dp[i-2] + nums[i])。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：最后一间偷还是不偷</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>沿街房屋排成一排，每间房内藏有现金 <code>nums[i]</code>。相邻两间房屋装有防盗系统，同一晚偷相邻两间会报警。计算<strong>不触动警报</strong>的情况下，一夜之内能偷到的最高金额。</p>
+  <h3>示例</h3>
+  <pre><code>输入：nums = [1, 2, 3, 1]
+输出：4
+解释：偷 1 号（1）和 3 号（3），共 4。
+
+输入：nums = [2, 7, 9, 3, 1]
+输出：12
+解释：偷 1 号（2）、3 号（9）、5 号（1），共 12。</code></pre>
+  <div class="note yellow">约束只有一个：不能偷相邻的两间。贪心（每次取更大的那间）会出错——因为取大可能堵死后面更大的。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：最后一间偷还是不偷</h2>
+  <ol>
+    <li><strong>状态定义</strong>：<code>dp[i]</code> = 考虑前 i 间房屋（0..i）能偷到的最高金额</li>
+    <li><strong>状态转移</strong>：对最后一间房 i，只有两种决策——
+      <ul>
+        <li><strong>不偷</strong>：等于前 i-1 间的最优值 → <code>dp[i-1]</code></li>
+        <li><strong>偷</strong>：第 i-1 间不能偷，等于前 i-2 间最优 + 本间 → <code>dp[i-2] + nums[i]</code></li>
+      </ul>
+      取较大值：<code>dp[i] = max(dp[i-1], dp[i-2] + nums[i])</code></li>
+    <li><strong>边界</strong>：<code>dp[0] = nums[0]</code>；<code>dp[1] = max(nums[0], nums[1])</code></li>
+  </ol>
+  <div class="formula">dp[i] = max(dp[i−1], dp[i−2] + nums[i])</div>
+  <div class="note blue">「偷 or 不偷」是 0-1 决策类 DP 的核心：决策是互斥的，分别算出两种选择的收益再取 max，就是最优子结构的体现。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="kw">if</span> <span class="zh">n == 0</span>: <span class="kw">return</span> <span class="num">0</span>
+<span class="kw">if</span> <span class="zh">n == 1</span>: <span class="kw">return</span> <span class="var">nums</span>[<span class="num">0</span>]
+
+<span class="var">dp</span>[<span class="num">0</span>] <span class="kw">=</span> <span class="var">nums</span>[<span class="num">0</span>]
+<span class="var">dp</span>[<span class="num">1</span>] <span class="kw">=</span> <span class="zh">max(前两间)</span>       <span class="cm"># max(nums[0], nums[1])</span>
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">range(2, n)</span>:
+    <span class="zh">不偷</span> <span class="kw">vs</span> <span class="zh">偷</span> <span class="zh">二选一</span>      <span class="cm"># dp[i] = max(dp[i-1], dp[i-2] + nums[i])</span>
+
+<span class="kw">return</span> <span class="var">dp</span>[<span class="var">n</span>-<span class="num">1</span>]</code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">与爬楼梯同源（都只依赖前两个状态），但这里是「取 max」而非「求和」——决策类与计数类 DP 的典型区别。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 nums = [2, 7, 9, 3, 1] 的 DP 决策过程。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：nums = [2, 7, 9, 3, 1]</div>
+    <div class="houses" id="houses"></div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前决策房</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>dp[i-2]（偷的来源）</span>
+      <span><i style="background:var(--primary-soft);border:2px solid var(--primary)"></i>dp[i-1]（不偷）</span>
+      <span><i style="background:var(--accent-purple-soft);border:2px solid var(--accent-purple)"></i>已确定</span>
+    </div>
+    <div class="viz-panel">
+      <div class="choice-panel">
+        <h4>最后一间房 i 的两种决策</h4>
+        <div id="choiceBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">dp[i]（前 i 间最优）<b class="s-dp" id="statDp">—</b></div>
+        <div class="stat-box">最终答案 dp[n-1]<b class="s-ans" id="statAns">—</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table>
+    <tr><th>i</th><th>nums[i]</th><th>不偷：dp[i-1]</th><th>偷：dp[i-2]+nums[i]</th><th>dp[i]</th><th>决策</th></tr>
+    <tr><td>0</td><td>2</td><td>—</td><td>—</td><td>2</td><td>只有一间，偷</td></tr>
+    <tr><td>1</td><td>7</td><td>—</td><td>—</td><td>7</td><td>max(2, 7)，偷 1 号</td></tr>
+    <tr><td>2</td><td>9</td><td>7</td><td>2+9=11</td><td>11</td><td>偷 0 号和 2 号</td></tr>
+    <tr><td>3</td><td>3</td><td>11</td><td>7+3=10</td><td>11</td><td>不偷 3 号（11 更大）</td></tr>
+    <tr><td>4</td><td>1</td><td>11</td><td>11+1=12</td><td>12</td><td>偷 4 号（dp[2]+1=12）</td></tr>
+  </table>
+  <div class="note purple">观察 i = 3：nums[3] = 3 很小，「偷它」反而从 11 降到 10——max 决策自动放弃低收益选项，这正是「偷 or 不偷」的精髓。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">rob</span>(self, nums: List[<span style="color:#CA8A04">int</span>]) -&gt; <span style="color:#CA8A04">int</span>:
+        n = <span style="color:#D4744C">len</span>(nums)
+        <span style="color:#6B7280">if</span> n == <span style="color:#CA8A04">0</span>:
+            <span style="color:#6B7280">return</span> <span style="color:#CA8A04">0</span>                      <span style="color:#6B7280"># 没有房屋</span>
+        <span style="color:#6B7280">if</span> n == <span style="color:#CA8A04">1</span>:
+            <span style="color:#6B7280">return</span> nums[<span style="color:#CA8A04">0</span>]               <span style="color:#6B7280"># 只有一间</span>
+        dp = [<span style="color:#CA8A04">0</span>] * n
+        dp[<span style="color:#CA8A04">0</span>] = nums[<span style="color:#CA8A04">0</span>]
+        dp[<span style="color:#CA8A04">1</span>] = <span style="color:#D4744C">max</span>(nums[<span style="color:#CA8A04">0</span>], nums[<span style="color:#CA8A04">1</span>])   <span style="color:#6B7280"># 前两间只能偷一间</span>
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">2</span>, n):
+            dp[i] = <span style="color:#D4744C">max</span>(dp[i - <span style="color:#CA8A04">1</span>], dp[i - <span style="color:#CA8A04">2</span>] + nums[i])  <span style="color:#6B7280"># 不偷 vs 偷</span>
+        <span style="color:#6B7280">return</span> dp[n - <span style="color:#CA8A04">1</span>]</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>n == 0/1 边界</strong>：空数组和单元素数组直接返回，避免 dp 数组索引越界</li>
+    <li><strong>dp[1]</strong>：前两间相邻不能都偷，只能取金额较大的一间</li>
+    <li><strong>转移</strong>：偷第 i 间时必须跳开第 i-1 间，所以依赖 dp[i-2]；不偷则沿用 dp[i-1]</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n)</td><td>一趟循环，每间房常数时间决策</td></tr>
+    <tr><td>空间</td><td>O(n)</td><td>dp 数组；只依赖前两个状态，可滚动到 O(1)</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>贪心思路错误</strong>：每次偷更大的一间会堵死相邻的更大的房子，必须用 DP 全局决策。</div>
+  <div class="note yellow"><strong>dp[1] 初始化</strong>：dp[1] = max(nums[0], nums[1])，不能写 dp[1] = nums[1]（可能漏掉 nums[0] 更大的情况）。</div>
+  <div class="note yellow"><strong>偷的依赖</strong>：「偷第 i 间」依赖 dp[i-2] 而非 dp[i-1]——因为第 i-1 间必须跳过，这是转移方程最容易写错的地方。</div>
+  <div class="note red"><strong>空数组边界</strong>：n = 0 时直接访问 nums[0] 会越界，必须提前返回 0。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>决策建模</strong>：最后一间「偷 or 不偷」，两种互斥选择分别求值再取 max</li>
+    <li><strong>转移</strong>：dp[i] = max(dp[i-1], dp[i-2] + nums[i])</li>
+    <li><strong>范式</strong>：0-1 决策类线性 DP，可滚动到 O(1) 空间</li>
+  </ul>
+  <div class="note green">口诀：最后一间两选择，偷则跳一加现金；不偷沿用前一间，max 决策全局优。</div>
+</section>
+</main>
+
+<footer>打家劫舍 · 算法学习页</footer>
+
+<script>
+(function(){
+const nums = [2, 7, 9, 3, 1];
+
+function simulate(arr) {
+  const n = arr.length;
+  const steps = [];
+  const dp = new Array(n).fill(null);
+  const snap = (desc, i, src1, src2, notRob, rob, picked, robSet) => {
+    steps.push({desc: desc, i: i, dp: dp.slice(), src1: src1, src2: src2, notRob: notRob, rob: rob, picked: picked, robSet: robSet ? robSet.slice() : []});
+  };
+
+  if (n === 0) return [{desc: '空数组，答案 0', i: -1, dp: [], src1: -1, src2: -1, notRob: null, rob: null, picked: 'final', robSet: []}];
+  dp[0] = arr[0];
+  snap('dp[0] = nums[0] = ' + arr[0] + '（只有一间房，只能偷它）', 0, -1, -1, null, null, 'init', [0]);
+  if (n === 1) {
+    snap('✅ 只有一间房，最高金额 = ' + dp[0], 0, -1, -1, null, null, 'final', [0]);
+    return steps;
+  }
+
+  dp[1] = Math.max(arr[0], arr[1]);
+  snap('dp[1] = max(nums[0], nums[1]) = max(' + arr[0] + ', ' + arr[1] + ') = ' + dp[1] + '（相邻不能都偷，取金额大的一间）', 1, -1, -1, null, null, 'init', arr[0] >= arr[1] ? [0] : [1]);
+
+  for (let i = 2; i < n; i++) {
+    const notRob = dp[i - 1];
+    const rob = dp[i - 2] + arr[i];
+    if (rob > notRob) {
+      dp[i] = rob;
+      const rs = [i];
+      snap('第 ' + i + ' 间（金额 ' + arr[i] + '）：不偷 → dp[' + (i-1) + '] = ' + notRob + '；偷 → dp[' + (i-2) + '] + ' + arr[i] + ' = ' + dp[i-2] + ' + ' + arr[i] + ' = ' + rob + '。选「偷」→ dp[' + i + '] = ' + rob, i, i - 2, i - 1, notRob, rob, 'rob', rs);
+    } else {
+      dp[i] = notRob;
+      snap('第 ' + i + ' 间（金额 ' + arr[i] + '）：不偷 → dp[' + (i-1) + '] = ' + notRob + '；偷 → dp[' + (i-2) + '] + ' + arr[i] + ' = ' + dp[i-2] + ' + ' + arr[i] + ' = ' + rob + '。选「不偷」→ dp[' + i + '] = ' + notRob, i, i - 2, i - 1, notRob, rob, 'notrob', []);
+    }
+  }
+  snap('✅ 完成：一夜能偷到的最高金额 = ' + dp[n - 1], n - 1, n - 3, n - 2, null, null, 'final', []);
+  return steps;
+}
+
+const steps = simulate(nums);
+let cur = 0, playing = false, timer = null;
+
+const houses = document.getElementById('houses');
+const choiceBox = document.getElementById('choiceBox');
+const statDp = document.getElementById('statDp');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+
+  let h = '';
+  nums.forEach((v, i) => {
+    let cls = '';
+    if (st.dp[i] !== null && st.picked !== 'init') cls = 'done';
+    if (i === st.i) cls = 'cur';
+    if (i === st.src1 && st.picked !== 'init') cls = 'src2';
+    if (i === st.src2 && st.picked !== 'init') cls = 'src';
+    if (st.robSet.includes(i)) cls += ' rob';
+    const dpv = st.dp[i] !== null ? '<div class="hdp">dp=' + st.dp[i] + '</div>' : '';
+    h += '<div class="house ' + cls + '"><div class="hnum">房 ' + i + '</div><div class="hmoney">' + v + '</div>' + dpv + '</div>';
+  });
+  houses.innerHTML = h;
+
+  let ch = '';
+  if (st.picked === 'init' || st.picked === 'final') {
+    ch = '<div style="font-size:13px;color:var(--text-light);padding:8px">' + (st.picked === 'init' ? '设置边界状态…' : '✅ 决策完成') + '</div>';
+  } else {
+    ch = '<div class="choice-row' + (st.picked === 'notrob' ? ' pick' : '') + '"><span class="tag">不偷：dp[' + (st.i - 1) + '] = ' + st.notRob + '</span></div>'
+       + '<div class="choice-row' + (st.picked === 'rob' ? ' pick' : '') + '"><span class="tag">偷：dp[' + (st.i - 2) + '] + ' + nums[st.i] + ' = ' + st.rob + '</span></div>';
+  }
+  choiceBox.innerHTML = ch;
+
+  statDp.textContent = st.dp[st.i] !== null ? st.dp[st.i] : '—';
+  statAns.textContent = st.dp[nums.length - 1] !== null ? st.dp[nums.length - 1] : '—';
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1700);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>

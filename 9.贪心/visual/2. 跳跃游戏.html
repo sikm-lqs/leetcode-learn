@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2. 跳跃游戏 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:20px 0;font-family:Consolas,Monaco,monospace;justify-content:center}
+.cell{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:60px;height:60px;padding:6px 12px;border-radius:12px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease;position:relative}
+.cell .index{font-size:11px;color:var(--text-light);margin-bottom:2px}
+.cell .value{font-size:18px}
+.cell .jump-range{font-size:10px;color:var(--text-light);margin-top:2px}
+.cell.current{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.08);box-shadow:0 0 0 3px rgba(212,116,76,0.15)}
+.cell.reachable{border-color:var(--accent-green);background:var(--accent-green-soft)}
+cell.unreachable{border-color:var(--accent-red);background:var(--accent-red-soft)}
+.cell.visited{border-color:var(--primary);background:var(--primary-soft)}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+.viz-stats{display:flex;justify-content:center;gap:20px;margin:12px 0;font-family:Consolas,Monaco,monospace;font-size:13px}
+.viz-stat{padding:6px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px}
+.viz-stat span{color:var(--text-light)}
+.viz-stat strong{color:var(--primary)}
+.result-display{display:flex;justify-content:center;margin:16px 0;font-family:Consolas,Monaco,monospace;font-size:16px}
+.result-success{padding:12px 24px;background:var(--accent-green-soft);border:2px solid var(--accent-green);border-radius:12px;font-weight:700}
+.result-fail{padding:12px 24px;background:var(--accent-red-soft);border:2px solid var(--accent-red);border-radius:12px;font-weight:700}
+@media(max-width:640px){.array-line{flex-direction:column;align-items:stretch}.cell{width:100%}}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 55 · 中等</div>
+  <h1>2. 跳跃游戏</h1>
+  <p class="subtitle">贪心策略 · 维护最大覆盖范围</p>
+</header>
+
+<main>
+  <div class="card">
+    <h2>题目描述</h2>
+    <p>给你一个非负整数数组 <code>nums</code>，你最初位于数组的 <strong>第一个下标</strong>。数组中的每个元素代表你在该位置可以 <strong>跳跃的最大长度</strong>。</p>
+    <p>判断你是否能够到达最后一个下标，如果可以，返回 <code>true</code>；否则，返回 <code>false</code>。</p>
+    <div class="note blue">
+      <strong>示例：</strong>nums = [2,3,1,1,4] → 输出: true<br>
+      nums = [3,2,1,0,4] → 输出: false
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>算法思路</h2>
+    <p><strong>贪心策略</strong>：维护 <code>max_reach</code>（当前能够到达的最远距离），每一步贪心地扩大这个覆盖范围。</p>
+    <ul>
+      <li>遍历数组，维护 <code>max_reach = max(max_reach, i + nums[i])</code></li>
+      <li>如果当前索引 <code>i > max_reach</code>，说明无法到达该位置，返回 <code>false</code></li>
+      <li>如果能够遍历完整个数组，说明可以到达最后一个位置，返回 <code>true</code></li>
+    </ul>
+    <div class="note green">
+      <strong>时间复杂度：</strong>O(n) —— 只需遍历一次<br>
+      <strong>空间复杂度：</strong>O(1) —— 只用常数空间
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>核心亮点</h2>
+    <ul>
+      <li>✓ <strong>简化思维</strong>：将复杂问题转化为简单的边界判断</li>
+      <li>✓ <strong>贪心证明</strong>：只要能到达当前点，之前的所有点都能到达</li>
+      <li>✓ <strong>一次遍历</strong>：无需回溯或复杂的状态管理</li>
+    </ul>
+  </div>
+
+  <div class="card" id="pseudo">
+    <h2>伪代码骨架</h2>
+    <p>只维护一个变量 max_reach：能跳多远跳多远，一旦当前下标超出可达范围即失败。</p>
+    <pre class="pseudo"><code>
+<span class="var">max_reach</span><span class="kw"> = </span><span class="num">0</span>
+
+<span class="kw">for</span><span class=" "></span><span class="var">i</span><span class=" "></span><span class="kw">in</span><span class=" "></span><span class="zh">遍历下标</span><span class=":"></span>
+ <span class="kw">if</span><span class=" "></span><span class="var">i</span><span class=" "></span><span class="kw"> > </span><span class="var">max_reach</span><span class=":"></span><span class="">  </span><span class="cm"># 当前位置不可达</span>
+  <span class="kw">return</span><span class=" "></span><span class="var">False</span>
+ <span class="zh">更新最远可达</span><span class="">        </span><span class="cm"># max_reach = max(max_reach, i + nums[i])</span>
+<span class="kw">return</span><span class=" "></span><span class="var">True</span>
+</code></pre>
+    <div class="pseudo-legend">
+      <span><i style="background:#C792EA"></i>关键字</span>
+      <span><i style="background:#82AAFF"></i>变量</span>
+      <span><i style="background:#C3E88D"></i>中文操作</span>
+      <span><i style="background:#7C8DB5"></i>注释公式</span>
+    </div>
+    <div class="note blue">i > max_reach 意味着前面所有跳法都够不到当前位置，游戏必然失败——贪心只关心「可达范围」这一个量。</div>
+  </div>
+
+  <div class="card">
+    <h2>代码实现</h2>
+<pre><code>def canJump(nums):
+    max_reach = 0
+
+    for i in range(len(nums)):
+        # 如果当前索引无法到达，返回 false
+        if i > max_reach:
+            return False
+
+        # 更新能够到达的最远距离
+        max_reach = max(max_reach, i + nums[i])
+
+    return True</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>可视化演示</h2>
+    <p>下方演示跳跃游戏过程：nums = [2,3,1,1,4]</p>
+
+    <div class="viz-container">
+      <div class="viz-title">跳跃过程</div>
+      <div class="viz-info" id="array-info">nums = [2,3,1,1,4], 目标: 到达索引 4</div>
+
+      <div class="array-line" id="array-display">
+        <div class="cell" data-index="0">
+          <div class="index">索引 0</div>
+          <div class="value">2</div>
+          <div class="jump-range">可跳到: [0-2]</div>
+        </div>
+        <div class="cell" data-index="1">
+          <div class="index">索引 1</div>
+          <div class="value">3</div>
+          <div class="jump-range">可跳到: [1-4]</div>
+        </div>
+        <div class="cell" data-index="2">
+          <div class="index">索引 2</div>
+          <div class="value">1</div>
+          <div class="jump-range">可跳到: [2-3]</div>
+        </div>
+        <div class="cell" data-index="3">
+          <div class="index">索引 3</div>
+          <div class="value">1</div>
+          <div class="jump-range">可跳到: [3-4]</div>
+        </div>
+        <div class="cell" data-index="4">
+          <div class="index">索引 4</div>
+          <div class="value">4</div>
+          <div class="jump-range">终点</div>
+        </div>
+      </div>
+
+      <div class="viz-stats" id="viz-stats">
+        <div class="viz-stat"><span>当前位置</span> <strong id="stat-pos">0</strong></div>
+        <div class="viz-stat"><span>max_reach</span> <strong id="stat-reach">0</strong></div>
+        <div class="viz-stat"><span>可达范围</span> <strong id="stat-range">[0-0]</strong></div>
+      </div>
+
+      <div class="viz-desc" id="viz-desc">
+        点击"下一步"开始演示
+      </div>
+
+      <div class="viz-controls">
+        <button id="btn-reset" onclick="reset()">重置</button>
+        <button id="btn-prev" onclick="prevStep()" disabled>上一步</button>
+        <button id="btn-next" class="btn-primary" onclick="nextStep()">下一步</button>
+        <button id="btn-play" class="btn-play" onclick="togglePlay()">自动播放</button>
+      </div>
+
+      <div class="viz-step-info" id="step-info">步骤: 0 / 5</div>
+      <div class="result-display" id="result-display"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>算法详解</h2>
+    <p>以 <code>nums = [2,3,1,1,4]</code> 为例：</p>
+
+    <table>
+      <tr><th>步骤</th><th>当前位置 i</th><th>nums[i]</th><th>更新后 max_reach</th><th>判断</th></tr>
+      <tr><td>1</td><td>0</td><td>2</td><td>max(0, 0+2) = 2</td><td>0 ≤ 2，可以继续</td></tr>
+      <tr><td>2</td><td>1</td><td>3</td><td>max(2, 1+3) = 4</td><td>1 ≤ 2，可以继续</td></tr>
+      <tr><td>3</td><td>2</td><td>1</td><td>max(4, 2+1) = 4</td><td>2 ≤ 4，可以继续</td></tr>
+      <tr><td>4</td><td>3</td><td>1</td><td>max(4, 3+1) = 4</td><td>3 ≤ 4，可以继续</td></tr>
+      <tr><td>5</td><td>4</td><td>4</td><td>max(4, 4+4) = 8</td><td>4 ≤ 4，到达终点！</td></tr>
+    </table>
+
+    <div class="note warm">
+      <strong>关键观察：</strong><br>
+      - 在位置 1 时，max_reach 更新为 4，已经能到达终点<br>
+      - 之后所有位置都在可达范围内，最终成功到达
+    </div>
+
+    <h3>失败案例：nums = [3,2,1,0,4]</h3>
+    <table>
+      <tr><th>步骤</th><th>当前位置 i</th><th>nums[i]</th><th>更新后 max_reach</th><th>判断</th></tr>
+      <tr><td>1</td><td>0</td><td>3</td><td>max(0, 0+3) = 3</td><td>0 ≤ 3，可以继续</td></tr>
+      <tr><td>2</td><td>1</td><td>2</td><td>max(3, 1+2) = 3</td><td>1 ≤ 3，可以继续</td></tr>
+      <tr><td>3</td><td>2</td><td>1</td><td>max(3, 2+1) = 3</td><td>2 ≤ 3，可以继续</td></tr>
+      <tr><td>4</td><td>3</td><td>0</td><td>max(3, 3+0) = 3</td><td>3 ≤ 3，可以继续</td></tr>
+      <tr><td>5</td><td>4</td><td>-</td><td>-</td><td><strong style="color:var(--accent-red)">4 > 3，无法到达！返回 false</strong></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>关键要点</h2>
+    <ul>
+      <li><strong>贪心核心</strong>：维护能到达的最远位置，不断扩大覆盖范围</li>
+      <li><strong>边界判断</strong>：如果当前位置超出可达范围，立即返回 false</li>
+      <li><strong>最优证明</strong>：只要能到达当前点，之前的路径必定最优</li>
+      <li><strong>应用场景</strong>：路径规划、资源分配、可达性分析等</li>
+    </ul>
+  </div>
+</main>
+
+<footer>
+  <p>算法详解 · 贪心跳跃策略 · 时间复杂度 O(n)</p>
+</footer>
+
+<script>
+const nums = [2,3,1,1,4];
+let currentStep = 0;
+let isPlaying = false;
+let playInterval = null;
+
+const steps = [
+  {
+    pos: 0,
+    value: 2,
+    maxReach: 2,
+    desc: '位置 0：nums[0]=2，可以跳到 [0-2]。更新 max_reach = max(0, 0+2) = 2。当前位置 0 ≤ max_reach 2，可以继续'
+  },
+  {
+    pos: 1,
+    value: 3,
+    maxReach: 4,
+    desc: '位置 1：nums[1]=3，可以跳到 [1-4]。更新 max_reach = max(2, 1+3) = 4。当前位置 1 ≤ max_reach 2，可以继续。现在可以直接到达终点！'
+  },
+  {
+    pos: 2,
+    value: 1,
+    maxReach: 4,
+    desc: '位置 2：nums[2]=1，可以跳到 [2-3]。更新 max_reach = max(4, 2+1) = 4。当前位置 2 ≤ max_reach 4，可以继续'
+  },
+  {
+    pos: 3,
+    value: 1,
+    maxReach: 4,
+    desc: '位置 3：nums[3]=1，可以跳到 [3-4]。更新 max_reach = max(4, 3+1) = 4。当前位置 3 ≤ max_reach 4，可以继续'
+  },
+  {
+    pos: 4,
+    value: 4,
+    maxReach: 8,
+    desc: '位置 4：nums[4]=4，这是终点！当前位置 4 ≤ max_reach 4，成功到达！返回 true'
+  }
+];
+
+function updateDisplay() {
+  const step = steps[currentStep];
+
+  // 更新统计信息
+  document.getElementById('stat-pos').textContent = step.pos;
+  document.getElementById('stat-reach').textContent = step.maxReach;
+  document.getElementById('stat-range').textContent = `[0-${step.maxReach}]`;
+
+  // 更新数组显示
+  const cells = document.querySelectorAll('.cell');
+  cells.forEach((cell, index) => {
+    cell.className = 'cell';
+    if (index <= step.maxReach) {
+      cell.classList.add('reachable');
+    }
+    if (index === step.pos) {
+      cell.classList.remove('reachable');
+      cell.classList.add('current');
+    }
+    if (index < step.pos) {
+      cell.classList.remove('reachable', 'current');
+      cell.classList.add('visited');
+    }
+  });
+
+  // 更新描述
+  document.getElementById('viz-desc').textContent = step.desc;
+
+  // 更新步骤信息
+  document.getElementById('step-info').textContent = `步骤: ${currentStep + 1} / ${steps.length}`;
+
+  // 更新按钮状态
+  document.getElementById('btn-prev').disabled = currentStep === 0;
+  document.getElementById('btn-next').disabled = currentStep === steps.length - 1;
+
+  // 如果是最后一步，显示结果
+  if (currentStep === steps.length - 1) {
+    document.getElementById('result-display').innerHTML =
+      '<div class="result-success">✓ 成功到达终点！返回 true</div>';
+    document.getElementById('viz-desc').innerHTML =
+      '<strong style="color:var(--accent-green)">到达位置 4（终点），成功！</strong>';
+  } else {
+    document.getElementById('result-display').innerHTML = '';
+  }
+}
+
+function nextStep() {
+  if (currentStep < steps.length - 1) {
+    currentStep++;
+    updateDisplay();
+  } else if (isPlaying) {
+    togglePlay();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    currentStep--;
+    updateDisplay();
+  }
+}
+
+function reset() {
+  currentStep = 0;
+  if (isPlaying) {
+    togglePlay();
+  }
+  updateDisplay();
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  const btn = document.getElementById('btn-play');
+
+  if (isPlaying) {
+    btn.textContent = '暂停';
+    btn.classList.add('playing');
+    playInterval = setInterval(() => {
+      if (currentStep < steps.length - 1) {
+        nextStep();
+      } else {
+        togglePlay();
+      }
+    }, 1500);
+  } else {
+    btn.textContent = '自动播放';
+    btn.classList.remove('playing');
+    if (playInterval) {
+      clearInterval(playInterval);
+      playInterval = null;
+    }
+  }
+}
+
+// 初始化
+updateDisplay();
+</script>
+
+</body>
+</html>

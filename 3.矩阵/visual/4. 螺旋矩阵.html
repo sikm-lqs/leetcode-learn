@@ -95,6 +95,14 @@ th{background:#F1F5F9;font-weight:600}
 .viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
 .viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 @media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.mx-cell{width:42px;height:40px;font-size:14px}.mx-row-label span{width:42px}}
 </style>
 </head>
@@ -111,12 +119,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：边界收缩法</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -182,8 +191,40 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   </div>
 </section>
 
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">top</span>, <span class="var">bottom</span> = <span class="num">0</span>, m - <span class="num">1</span>
+<span class="var">left</span>, <span class="var">right</span> = <span class="num">0</span>, n - <span class="num">1</span>
+<span class="var">res</span> = []
+
+<span class="kw">while</span> <span class="var">top</span> &lt;= <span class="var">bottom</span> <span class="kw">and</span> <span class="var">left</span> &lt;= <span class="var">right</span>:
+    <span class="zh">走上边从左到右</span>          <span class="cm"># j: left → right, 收集 matrix[top][j]</span>
+    <span class="var">top</span> += <span class="num">1</span>
+
+    <span class="zh">走右边从上到下</span>          <span class="cm"># i: top → bottom, 收集 matrix[i][right]</span>
+    <span class="var">right</span> -= <span class="num">1</span>
+
+    <span class="kw">if</span> <span class="var">top</span> &lt;= <span class="var">bottom</span>:
+        <span class="zh">走下边从右到左</span>      <span class="cm"># j: right → left, 收集 matrix[bottom][j]</span>
+    <span class="var">bottom</span> -= <span class="num">1</span>
+
+    <span class="kw">if</span> <span class="var">left</span> &lt;= <span class="var">right</span>:
+        <span class="zh">走左边从下到上</span>      <span class="cm"># i: bottom → top, 收集 matrix[i][left]</span>
+    <span class="var">left</span> += <span class="num">1</span>
+
+<span class="kw">return</span> <span class="var">res</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">四条边按顺时针顺序收缩：上→右→下→左。每次走完一条边就收缩对应边界，未遍历区域不断向内缩小。注意下边/左边前的 <code>if</code> 判断防止单行/单列重复遍历。</div>
+</section>
+
 <section class="card" id="viz">
-  <h2>3. 交互可视化演示</h2>
+  <h2>4. 交互可视化演示</h2>
   <p>点击「下一步」，观察四条边界如何顺时针一圈圈向内收缩，把元素依次收集进 <code>res</code>。</p>
   <p style="font-size:13px;color:var(--text-light);">图例：<span style="color:#0F7A3D;font-weight:700">绿</span>=已访问（右上角数字为访问顺序）／ <span style="color:var(--warm);font-weight:700">暖</span>=本步正在访问</p>
 
@@ -206,7 +247,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>4. 详细过程模拟</h2>
+  <h2>5. 详细过程模拟</h2>
   <p>以 <code>3×3</code> 矩阵 <code>[[1,2,3],[4,5,6],[7,8,9]]</code> 为例。初始 <code>top=0, bottom=2, left=0, right=2</code>。</p>
 
   <h3>四边界收缩示意</h3>
@@ -262,7 +303,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="code">
-  <h2>5. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
 
   <h3>完整代码</h3>
   <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
@@ -310,7 +351,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="complexity">
-  <h2>6. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
     <tr><td>时间复杂度</td><td><strong>O(m×n)</strong></td><td>每个元素恰好被访问一次，总访问量 = 元素总数。</td></tr>
@@ -322,7 +363,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>7. 常见易错点</h2>
+  <h2>8. 常见易错点</h2>
 
   <h3>错误一：下边/左边不加判断 → 单行单列重复收集</h3>
   <pre><code><span style="color:#6B7280"># 错误：省略 if 判断
@@ -342,7 +383,7 @@ bottom -= 1</code></pre>
 </section>
 
 <section class="card" id="summary">
-  <h2>8. 总结</h2>
+  <h2>9. 总结</h2>
   <div class="note green">
     <p><strong>螺旋矩阵</strong> 精髓：</p>
     <ul style="margin:6px 0 0;padding-left:20px;">

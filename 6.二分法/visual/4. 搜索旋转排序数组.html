@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4. 搜索旋转排序数组 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:14px 0;font-family:Consolas,Monaco,monospace;justify-content:center}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.left{border-color:var(--primary);background:var(--primary-soft)}
+.cell.right{border-color:var(--accent-red);background:var(--accent-red-soft)}
+.cell.mid{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.06);box-shadow:0 0 0 3px rgba(212,116,76,0.12)}
+.cell.found{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.cell.sorted{border-color:var(--accent-purple);background:var(--accent-purple-soft)}
+.cell.pivot{border-color:var(--accent-yellow);background:var(--accent-yellow-soft)}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+.viz-stats{display:flex;justify-content:center;gap:20px;margin:12px 0;font-family:Consolas,Monaco,monospace;font-size:13px}
+.viz-stat{padding:6px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px}
+.viz-stat span{color:var(--text-light)}
+.viz-stat strong{color:var(--primary)}
+.result-display{display:flex;justify-content:center;margin:16px 0;font-family:Consolas,Monaco,monospace;font-size:16px}
+.result-found{padding:12px 24px;background:var(--accent-green-soft);border:2px solid var(--accent-green);border-radius:12px;font-weight:700}
+.result-notfound{padding:12px 24px;background:var(--accent-red-soft);border:2px solid var(--accent-red);border-radius:12px;font-weight:700}
+@media(max-width:640px){.array-line{flex-direction:column;align-items:stretch}.cell{width:100%}}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 33 · 中等</div>
+  <h1>4. 搜索旋转排序数组</h1>
+  <p class="subtitle">旋转数组二分查找 · 利用"一半有序"特性</p>
+</header>
+
+<main>
+  <div class="card">
+    <h2>题目描述</h2>
+    <p>整数数组 <code>nums</code> 按升序排列，数组中的值 <strong>互不相同</strong>。在传递给函数之前，<code>nums</code> 在预先未知的某个下标 <code>k</code>（0 &le; k &lt; nums.length）上进行了<strong>向左旋转</strong>。</p>
+    <p>给定旋转后的数组 <code>nums</code> 和一个整数 <code>target</code>，如果 <code>nums</code> 中存在这个目标值 <code>target</code>，则返回它的下标，否则返回 <code>-1</code>。</p>
+    <div class="note blue">
+      <strong>示例：</strong>nums = [4,5,6,7,0,1,2], target = 0 → 返回 4<br>
+      nums = [4,5,6,7,0,1,2], target = 3 → 返回 -1
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>算法思路</h2>
+    <p><strong>关键特性</strong>：旋转数组有一个重要特性 —— <strong>至少有一半是有序的</strong>。</p>
+    <p>二分时先判断哪一半是有序的，然后判断 target 是否在有序的那一半内：</p>
+
+    <h3>情况1：左半边有序（nums[left] &le; nums[mid]）</h3>
+    <ul>
+      <li>如果 <code>nums[left] &le; target &le; nums[mid]</code>：target 在左半边，<code>right = mid - 1</code></li>
+      <li>否则：target 在右半边，<code>left = mid + 1</code></li>
+    </ul>
+
+    <h3>情况2：右半边有序（nums[left] &gt; nums[mid]）</h3>
+    <ul>
+      <li>如果 <code>nums[mid] &le; target &le; nums[right]</code>：target 在右半边，<code>left = mid + 1</code></li>
+      <li>否则：target 在左半边，<code>right = mid - 1</code></li>
+    </ul>
+
+    <div class="note green">
+      <strong>时间复杂度：</strong>O(log n) —— 每次将搜索范围减半<br>
+      <strong>空间复杂度：</strong>O(1) —— 只用常数空间
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>核心亮点</h2>
+    <ul>
+      <li>✓ <strong>利用有序性</strong>：旋转数组的一半一定是有序的，利用这个特性排除一半</li>
+      <li>✓ <strong>关键判断</strong>：通过边界判断哪一半是有序的（nums[left] 与 nums[mid] 的关系）</li>
+      <li>✓ <strong>模板通用</strong>：这是二分查找的变体，适用于旋转数组场景</li>
+    </ul>
+  </div>
+
+  <div class="card" id="pseudo">
+    <h2>伪代码骨架</h2>
+    <p>旋转后仍有一半是有序的：先判定哪半边有序，再看目标是否落在有序半边内，据此决定收缩方向。</p>
+    <pre class="pseudo"><code>
+<span class="var">left</span><span class="kw"> = </span><span class="num">0</span><span class="kw">; </span><span class="var">right</span><span class="kw"> = </span><span class="var">n</span><span class="kw"> - </span><span class="num">1</span>
+
+<span class="kw">while</span><span class=" "></span><span class="var">left</span><span class=" "></span><span class="kw">&lt;=</span><span class=" "></span><span class="var">right</span><span class=":"></span>
+ <span class="var">mid</span><span class="kw"> = (</span><span class="var">left</span><span class=" "></span><span class="kw">+ </span><span class="var">right</span><span class=" "></span><span class="kw">// </span><span class="num">2</span>
+ <span class="kw">if</span><span class=" "></span><span class="var">nums</span><span class=" "></span><span class="var">[mid]</span><span class=" "></span><span class="kw">== </span><span class="var">target</span><span class=":"></span>
+  <span class="kw">return</span><span class=" "></span><span class="var">mid</span>
+ <span class="kw">if</span><span class=" "></span><span class="zh">左半边有序</span><span class=":"></span><span class="">      </span><span class="cm"># nums[left] &lt;= nums[mid]</span>
+  <span class="kw">if</span><span class=" "></span><span class="zh">目标在左半边</span><span class=":"></span><span class="">      </span><span class="cm"># nums[left] &lt;= target &lt;= nums[mid]</span>
+   <span class="var">right</span><span class="kw"> = </span><span class="var">mid</span><span class=" "></span><span class="kw">- </span><span class="num">1</span>
+  <span class="kw">else</span><span class=":"></span>
+   <span class="var">left</span><span class="kw"> = </span><span class="var">mid</span><span class=" "></span><span class="kw">+ </span><span class="num">1</span>
+ <span class="kw">else</span><span class=":"></span><span class="">      </span><span class="cm"># 右半边有序</span>
+  <span class="kw">if</span><span class=" "></span><span class="zh">目标在右半边</span><span class=":"></span><span class="">      </span><span class="cm"># nums[mid] &lt;= target &lt;= nums[right]</span>
+   <span class="var">left</span><span class="kw"> = </span><span class="var">mid</span><span class=" "></span><span class="kw">+ </span><span class="num">1</span>
+  <span class="kw">else</span><span class=":"></span>
+   <span class="var">right</span><span class="kw"> = </span><span class="var">mid</span><span class=" "></span><span class="kw">- </span><span class="num">1</span>
+<span class="kw">return</span><span class=" ">-</span><span class="num">1</span>
+</code></pre>
+    <div class="pseudo-legend">
+      <span><i style="background:#C792EA"></i>关键字</span>
+      <span><i style="background:#82AAFF"></i>变量</span>
+      <span><i style="background:#C3E88D"></i>中文操作</span>
+      <span><i style="background:#7C8DB5"></i>注释公式</span>
+    </div>
+    <div class="note blue">关键判断是「nums[left] <= nums[mid]」而非「nums[left] <= nums[right]」——先锁定有序半边，再判断归属。</div>
+  </div>
+
+  <div class="card">
+    <h2>代码实现</h2>
+<pre><code>def search(nums, target):
+    left, right = 0, len(nums) - 1
+
+    while left <= right:
+        mid = (left + right) // 2
+
+        # 找到目标值
+        if nums[mid] == target:
+            return mid
+
+        # 判断哪一半是有序的
+        if nums[left] <= nums[mid]:
+            # 左半边有序
+            if nums[left] <= target <= nums[mid]:
+                right = mid - 1
+            else:
+                left = mid + 1
+        else:
+            # 右半边有序
+            if nums[mid] <= target <= nums[right]:
+                left = mid + 1
+            else:
+                right = mid - 1
+
+    return -1</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>可视化演示</h2>
+    <p>下方演示在旋转数组 <code>[4,5,6,7,0,1,2]</code> 中查找 <code>target = 0</code> 的过程：</p>
+
+    <div class="viz-container">
+      <div class="viz-title">二分查找过程</div>
+      <div class="viz-info" id="array-info">nums = [4,5,6,7,0,1,2], target = 0</div>
+
+      <div class="array-line" id="array-display">
+        <div class="cell" data-index="0">4</div>
+        <div class="cell" data-index="1">5</div>
+        <div class="cell" data-index="2">6</div>
+        <div class="cell" data-index="3">7</div>
+        <div class="cell pivot" data-index="4">0</div>
+        <div class="cell" data-index="5">1</div>
+        <div class="cell" data-index="6">2</div>
+      </div>
+
+      <div class="viz-stats" id="viz-stats">
+        <div class="viz-stat"><span>left</span> <strong id="stat-left">0</strong></div>
+        <div class="viz-stat"><span>right</span> <strong id="stat-right">6</strong></div>
+        <div class="viz-stat"><span>mid</span> <strong id="stat-mid">-</strong></div>
+        <div class="viz-stat"><span>nums[mid]</span> <strong id="stat-midval">-</strong></div>
+      </div>
+
+      <div class="viz-desc" id="viz-desc">
+        点击"下一步"开始二分查找
+      </div>
+
+      <div class="viz-controls">
+        <button id="btn-reset" onclick="reset()">重置</button>
+        <button id="btn-prev" onclick="prevStep()" disabled>上一步</button>
+        <button id="btn-next" class="btn-primary" onclick="nextStep()">下一步</button>
+        <button id="btn-play" class="btn-play" onclick="togglePlay()">自动播放</button>
+      </div>
+
+      <div class="viz-step-info" id="step-info">步骤: 0 / 4</div>
+      <div class="result-display" id="result-display"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>算法详解</h2>
+    <p>以 <code>nums = [4,5,6,7,0,1,2], target = 0</code> 为例：</p>
+    <p><strong>旋转点：</strong>索引 4（值为 0）是旋转点，左半边 [4,5,6,7] 有序，右半边 [0,1,2] 有序。</p>
+
+    <table>
+      <tr><th>步骤</th><th>left</th><th>right</th><th>mid</th><th>nums[mid]</th><th>判断</th><th>操作</th></tr>
+      <tr><td>1</td><td>0</td><td>6</td><td>3</td><td>7</td><td>nums[0]=4 &le; nums[3]=7，左半边有序</td><td>0 不在 [4,7] 内，left = 4</td></tr>
+      <tr><td>2</td><td>4</td><td>6</td><td>5</td><td>1</td><td>nums[4]=0 &le; nums[5]=1，左半边有序</td><td>0 在 [0,1] 内，right = 4</td></tr>
+      <tr><td>3</td><td>4</td><td>4</td><td>4</td><td>0</td><td>-</td><td>nums[4]=0 == target，返回 4</td></tr>
+    </table>
+
+    <div class="note warm">
+      <strong>详解：</strong><br>
+      步骤1：mid = 3，nums[0]=4 &le; nums[3]=7，左半边 [4,5,6,7] 有序。target=0 不在这个范围内，所以去右半边找，left = 4。<br>
+      步骤2：mid = 5，nums[4]=0 &le; nums[5]=1，左半边 [0,1] 有序。target=0 在这个范围内，所以去左半边找，right = 4。<br>
+      步骤3：mid = 4，nums[4]=0 == target，找到！返回 4。
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>关键要点</h2>
+    <ul>
+      <li><strong>判断有序性</strong>：通过 <code>nums[left] &le; nums[mid]</code> 判断左半边是否有序</li>
+      <li><strong>范围判断</strong>：target 在有序的那一半内，就去哪一半找</li>
+      <li><strong>边界处理</strong>：注意 &le; 和 &lt; 的使用，确保边界元素被正确处理</li>
+      <li><strong>应用场景</strong>：适用于旋转排序数组的查找，如循环数组、轮转数组等</li>
+    </ul>
+  </div>
+</main>
+
+<footer>
+  <p>算法详解 · 旋转数组二分查找 · 时间复杂度 O(log n)</p>
+</footer>
+
+<script>
+const nums = [4,5,6,7,0,1,2];
+const target = 0;
+let currentStep = 0;
+let isPlaying = false;
+let playInterval = null;
+
+const steps = [
+  {
+    left: 0,
+    right: 6,
+    mid: 3,
+    midVal: 7,
+    desc: '初始: left=0, right=6, mid=3, nums[3]=7。nums[0]=4 <= nums[3]=7，左半边[4,5,6,7]有序。target=0不在[4,7]内，left=4'
+  },
+  {
+    left: 4,
+    right: 6,
+    mid: 5,
+    midVal: 1,
+    desc: 'left=4, right=6, mid=5, nums[5]=1。nums[4]=0 <= nums[5]=1，左半边[0,1]有序。target=0在[0,1]内，right=4'
+  },
+  {
+    left: 4,
+    right: 4,
+    mid: 4,
+    midVal: 0,
+    desc: 'left=4, right=4, mid=4, nums[4]=0 == target=0，找到！返回索引 4'
+  }
+];
+
+function updateDisplay() {
+  const step = steps[currentStep];
+
+  // 更新统计信息
+  document.getElementById('stat-left').textContent = step.left;
+  document.getElementById('stat-right').textContent = step.right;
+  document.getElementById('stat-mid').textContent = step.mid;
+  document.getElementById('stat-midval').textContent = step.midVal;
+
+  // 更新数组显示
+  const cells = document.querySelectorAll('.cell');
+  cells.forEach((cell, index) => {
+    cell.className = 'cell';
+    // 旋转点保持高亮
+    if (index === 4) {
+      cell.classList.add('pivot');
+    }
+    if (index === step.mid) {
+      cell.classList.remove('pivot');
+      cell.classList.add('mid');
+    }
+    if (index === step.left) {
+      cell.classList.add('left');
+    }
+    if (index === step.right) {
+      cell.classList.add('right');
+    }
+    // 标记有序区域
+    if (currentStep === 0 && index >= 0 && index <= 3) {
+      if (index !== step.mid) cell.classList.add('sorted');
+    }
+    if (currentStep === 1 && index >= 4 && index <= 5) {
+      if (index !== step.mid) cell.classList.add('sorted');
+    }
+  });
+
+  // 更新描述
+  document.getElementById('viz-desc').textContent = step.desc;
+
+  // 更新步骤信息
+  document.getElementById('step-info').textContent = `步骤: ${currentStep + 1} / ${steps.length}`;
+
+  // 更新按钮状态
+  document.getElementById('btn-prev').disabled = currentStep === 0;
+  document.getElementById('btn-next').disabled = currentStep === steps.length - 1;
+
+  // 如果是最后一步，显示结果
+  if (currentStep === steps.length - 1) {
+    document.getElementById('result-display').innerHTML =
+      '<div class="result-found">✓ 找到目标值 0，返回索引 4</div>';
+    document.getElementById('viz-desc').innerHTML =
+      '<strong style="color:var(--accent-green)">找到目标: nums[4] = 0 = target</strong>';
+  } else {
+    document.getElementById('result-display').innerHTML = '';
+  }
+}
+
+function nextStep() {
+  if (currentStep < steps.length - 1) {
+    currentStep++;
+    updateDisplay();
+  } else if (isPlaying) {
+    togglePlay();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    currentStep--;
+    updateDisplay();
+  }
+}
+
+function reset() {
+  currentStep = 0;
+  if (isPlaying) {
+    togglePlay();
+  }
+  updateDisplay();
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  const btn = document.getElementById('btn-play');
+
+  if (isPlaying) {
+    btn.textContent = '暂停';
+    btn.classList.add('playing');
+    playInterval = setInterval(() => {
+      if (currentStep < steps.length - 1) {
+        nextStep();
+      } else {
+        togglePlay();
+      }
+    }, 1500);
+  } else {
+    btn.textContent = '自动播放';
+    btn.classList.remove('playing');
+    if (playInterval) {
+      clearInterval(playInterval);
+      playInterval = null;
+    }
+  }
+}
+
+// 初始化
+updateDisplay();
+</script>
+
+</body>
+</html>

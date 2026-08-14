@@ -98,6 +98,14 @@ th{background:#F1F5F9;font-weight:600}
 .viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
 @media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.ll-val{min-width:40px;height:38px;font-size:13px}.ll-null{height:38px;line-height:38px}}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 </style>
 </head>
 <body>
@@ -113,12 +121,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：双指针切换链表</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -202,8 +211,27 @@ listB = [5, 6, 1, 8, 4, 5]
   </div>
 </section>
 
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">pa</span> = <span class="var">headA</span>
+<span class="var">pb</span> = <span class="var">headB</span>
+
+<span class="kw">while</span> <span class="var">pa</span> != <span class="var">pb</span>:
+    <span class="zh">pa 移动到下一节点</span>       <span class="cm"># pa = pa.next if pa else headB</span>
+    <span class="zh">pb 移动到下一节点</span>       <span class="cm"># pb = pb.next if pb else headA</span>
+<span class="kw">return</span> <span class="var">pa</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">关键操作「移动到下一节点」：指针非空则前进，走到末尾（null）就切换到另一链表头部。两指针路径等长（a+c+b = b+c+a），必然在交点相遇或同时为 null。</div>
+</section>
+
 <section class="card" id="viz">
-  <h2>3. 交互可视化演示</h2>
+  <h2>4. 交互可视化演示</h2>
   <p>点击「下一步」，观察 <code>pa</code>、<code>pb</code> 两个指针如何通过「切换链表」最终在交点相遇。</p>
 
   <div class="viz-container">
@@ -225,7 +253,7 @@ listB = [5, 6, 1, 8, 4, 5]
 </section>
 
 <section class="card" id="walkthrough">
-  <h2>4. 详细过程模拟</h2>
+  <h2>5. 详细过程模拟</h2>
   <p>以 <code>listA = [4,1,8,4,5]</code>、<code>listB = [5,6,1,8,4,5]</code> 为例，模拟关键几步。</p>
 
   <h3>初始：pa 在 A 头，pb 在 B 头</h3>
@@ -334,7 +362,7 @@ listB = [5, 6, 1, 8, 4, 5]
 </section>
 
 <section class="card" id="code">
-  <h2>5. 代码逐段解释</h2>
+  <h2>6. 代码逐段解释</h2>
 
   <h3>完整代码</h3>
   <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">ListNode</span>:
@@ -371,7 +399,7 @@ pb = pb.next if pb else headA</code></pre>
 </section>
 
 <section class="card" id="complexity">
-  <h2>6. 复杂度分析</h2>
+  <h2>7. 复杂度分析</h2>
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
     <tr><td>时间复杂度</td><td><strong>O(a+b)</strong></td><td>两指针最多各走 a+c+b / b+c+a 步，即 O(a+b) 级别。</td></tr>
@@ -380,7 +408,7 @@ pb = pb.next if pb else headA</code></pre>
 </section>
 
 <section class="card" id="pitfalls">
-  <h2>7. 常见易错点</h2>
+  <h2>8. 常见易错点</h2>
 
   <h3>错误一：先计算长度差</h3>
   <pre><code># 常见思路：先遍历计算两链表长度差 d，长的先走 d 步
@@ -406,7 +434,7 @@ while pa != pb:      # ✅ 让它们在 null 时也能继续切换</code></pre>
 </section>
 
 <section class="card" id="summary">
-  <h2>8. 总结</h2>
+  <h2>9. 总结</h2>
   <div class="note green">
     <p><strong>相交链表</strong> 精髓：</p>
     <ul style="margin:6px 0 0;padding-left:20px;">

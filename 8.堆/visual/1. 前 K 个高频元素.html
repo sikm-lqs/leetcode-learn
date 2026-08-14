@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1. 前 K 个高频元素 · 算法详解</title>
+<style>
+:root {
+  --bg: #F3F3F5; --card: #FFFFFF; --text: #1F2937; --text-light: #6B7280;
+  --primary: #3B7DD8; --primary-hover: #2E6AC0; --primary-soft: #E9EFF7; --primary-light: #F4F8FC;
+  --warm: #D4744C; --warm-soft: #F5E6DE;
+  --accent-green: #16A34A; --accent-green-soft: #DCFCE7;
+  --accent-red: #DC2626; --accent-red-soft: #FEE2E2;
+  --accent-yellow: #CA8A04; --accent-yellow-soft: #FEF3C7;
+  --accent-purple: #7C3AED; --accent-purple-soft: #EDE9FE;
+  --code-bg: #111827; --code-text: #E5E7EB; --border: #E2E5E9;
+  --shadow: 0 8px 24px rgba(15,23,42,0.05); --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1000px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.6;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.array-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:14px 0;font-family:Consolas,Monaco,monospace;justify-content:center}
+.cell{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:38px;padding:4px 10px;border-radius:10px;border:2px solid #CBD5E1;background:#F8FAFC;font-weight:700;font-size:14px;transition:all .3s ease}
+.cell.current{border-color:var(--warm);background:var(--warm-soft);transform:scale(1.06);box-shadow:0 0 0 3px rgba(212,116,76,0.12)}
+.cell.counted{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.freq-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+.freq-table th,.freq-table td{border:1px solid var(--border);padding:8px 12px;text-align:center;vertical-align:middle}
+.freq-table th{background:#F1F5F9;font-weight:600}
+.heap-container{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;padding:20px;background:#FAFBFC;border:1px solid var(--border);border-radius:12px;margin:14px 0;min-height:100px}
+.heap-item{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:60px;padding:8px;border-radius:8px;border:2px solid var(--accent-green);background:var(--accent-green-soft);font-weight:700;font-size:13px;font-family:Consolas,Monaco,monospace;transition:all .35s ease}
+.heap-item .freq{font-size:11px;color:var(--text-light);margin-bottom:2px}
+.heap-item .num{font-size:16px;color:var(--accent-green)}
+.heap-item.new{border-color:var(--warm);background:var(--warm-soft);box-shadow:0 0 0 3px rgba(212,116,76,0.15)}
+.heap-item.min-heap{border-color:var(--accent-purple);background:var(--accent-purple-soft)}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.viz-info{font-size:13px;color:var(--primary);margin-bottom:12px;padding:8px 14px;background:var(--primary-soft);border-radius:8px;font-family:Consolas,Monaco,monospace;border-left:3px solid var(--primary)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--text-light)}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+.viz-stats{display:flex;justify-content:center;gap:20px;margin:12px 0;font-family:Consolas,Monaco,monospace;font-size:13px}
+.viz-stat{padding:6px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px}
+.viz-stat span{color:var(--text-light)}
+.viz-stat strong{color:var(--primary)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.mini-card{border:1px solid var(--border);border-radius:14px;padding:14px 16px;background:#FAFBFC}
+.mini-card h3{margin:0 0 6px;font-size:15px}
+.mini-card p{margin:4px 0;font-size:13px}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 347 · 中等</div>
+  <h1>1. 前 K 个高频元素</h1>
+  <p class="subtitle">哈希表统计频率 + 小根堆维护前k个高频元素</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：哈希表 + 堆</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#comparison">8. 解法对比</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定整数数组 `nums` 和整数 `k`，返回其中出现频率前 `k` 高的元素。可以按任意顺序返回答案。</p>
+
+  <div class="note blue">
+    <strong>注意：</strong>返回的是按频率排序的前 k 个元素，而非第 k 个高频元素。例如 [1,1,1,2,2,3] 的前 2 高频元素是 [1, 2]，频率分别是 3 和 2。
+  </div>
+
+  <h3>示例</h3>
+  <pre><code>输入：nums = [1,1,1,2,2,3], k = 2
+输出：[1, 2]
+解释：元素 1 出现 3 次，元素 2 出现 2 次，元素 3 出现 1 次
+
+输入：nums = [1], k = 1
+输出：[1]</code></pre>
+
+  <div class="note yellow">
+    <strong>朴素思路：</strong>统计所有元素的频率，按频率降序排序，取前 k 个。时间 O(n log n)。当 k 较小时，可以优化。
+  </div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：哈希表 + 堆</h2>
+
+  <h3>为什么用堆？</h3>
+  <p>我们只关心<strong>频率最高的 k 个元素</strong>，不需要完整排序。分两步：</p>
+  <ol>
+    <li><strong>哈希表统计频率</strong>：O(n) 时间遍历数组，统计每个元素出现次数</li>
+    <li><strong>小根堆维护前 k 个</strong>：将 [频率, 元素] 对入堆，保持堆大小为 k</li>
+  </ol>
+
+  <h3>算法流程</h3>
+  <ol>
+    <li>用哈希表统计每个元素的频率</li>
+    <li>遍历哈希表，将 [频率, 元素] 对加入小根堆</li>
+    <li>若堆大小超过 k，弹出堆顶（频率最低的元素）</li>
+    <li>最终堆中剩余的就是前 k 个高频元素</li>
+  </ol>
+
+  <div class="note purple">
+    <strong>核心洞察：</strong>小根堆按频率排序，堆顶是频率最低的。当堆大小超过 k 时弹出堆顶，确保堆中只保留频率最高的 k 个元素。最后提取所有元素即可。
+  </div>
+
+  <div class="note green">
+    <strong>时间复杂度优势：</strong>统计频率 O(n)，堆操作 O(n log k)。当 k << n 时，明显优于全排序 O(n log n)。
+  </div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <pre class="pseudo"><code><span class="kw">import</span> <span class="var">heapq</span>
+
+<span class="zh">统计频率</span>
+<span class="var">freq</span> = {}
+<span class="kw">for</span> <span class="var">num</span> <span class="kw">in</span> <span class="var">nums</span>:
+    <span class="var">freq</span>[<span class="var">num</span>] = <span class="var">freq</span>.get(<span class="var">num</span>, 0) + 1
+
+<span class="zh">用堆维护前 k 个</span>
+<span class="var">heap</span> = []
+<span class="kw">for</span> <span class="var">num</span>, <span class="var">count</span> <span class="kw">in</span> <span class="var">freq</span>.items():
+    <span class="var">heapq</span>.heappush(<span class="var">heap</span>, [<span class="var">count</span>, <span class="var">num</span>])
+
+    <span class="kw">if</span> <span class="zh">堆大小超过 k</span>:
+        <span class="var">heapq</span>.heappop(<span class="var">heap</span>)
+
+<span class="kw">return</span> [<span class="var">item</span>[1] <span class="kw">for</span> <span class="var">item</span> <span class="kw">in</span> <span class="var">heap</span>]</code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+  </div>
+  <div class="note blue"> 注意：heappush 的第一个元素是排序键（频率），所以用 [频率, 元素] 的形式。小根堆会按频率从小到大排序。 </div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击"下一步"观察哈希表统计 + 堆维护前 k 个高频元素的完整过程。</p>
+
+  <div class="viz-container">
+    <div class="viz-title">📊 数组：[1,1,1,2,2,3]，k = 2</div>
+    <div class="viz-info" id="vizInfo">找前 2 个高频元素</div>
+
+    <div class="viz-stats">
+      <div class="viz-stat"><span>当前元素：</span><strong id="curVal">-</strong></div>
+      <div class="viz-stat"><span>当前频率：</span><strong id="curFreq">-</strong></div>
+      <div class="viz-stat"><span>堆大小：</span><strong id="heapSize">0</strong></div>
+    </div>
+
+    <div class="array-line" id="arrayCells"></div>
+
+    <div class="heap-container" id="heapContainer">
+      <div class="viz-stat" style="font-size:13px;color:var(--text-light)">堆为空</div>
+    </div>
+
+    <div class="viz-controls">
+      <button id="prevBtn" disabled>← 上一步</button>
+      <span class="viz-step-info" id="stepInfo">步骤 1 / 8</span>
+      <button id="nextBtn">下一步 →</button>
+      <button id="playBtn" class="btn-play">▶ 自动播放</button>
+      <button id="resetBtn" class="btn-primary">↺ 重置</button>
+    </div>
+
+    <div class="viz-desc" id="vizDesc">点击"下一步"开始演示</div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <p>以 <code>nums = [1,1,1,2,2,3], k = 2</code> 为例。</p>
+
+  <h3>第1步：统计频率</h3>
+  <pre><code>遍历数组，用哈希表统计频率：
+freq = {
+  1: 3,  # 元素1出现3次
+  2: 2,  # 元素2出现2次
+  3: 1   # 元素3出现1次
+}</code></pre>
+
+  <h3>第2步：处理元素 1（频率3）</h3>
+  <pre><code>heappush([3, 1]) → 堆 = [[3, 1]]
+堆大小 = 1 ≤ 2，不弹出</code></pre>
+
+  <h3>第3步：处理元素 2（频率2）</h3>
+  <pre><code>heappush([2, 2]) → 堆 = [[2, 2], [3, 1]]
+堆大小 = 2 ≤ 2，不弹出</code></pre>
+
+  <h3>第4步：处理元素 3（频率1）</h3>
+  <pre><code>heappush([1, 3]) → 堆 = [[1, 3], [3, 1], [2, 2]]
+堆大小 = 3 > 2，弹出堆顶 [1, 3]
+堆 = [[2, 2], [3, 1]]</code></pre>
+
+  <div class="note warm">
+    弹出元素 3（频率1）是因为我们只要频率最高的 2 个元素。元素 3 频率太低，不在前 2 名。
+  </div>
+
+  <h3>第5步：提取结果</h3>
+  <pre><code>堆中剩余：[[2, 2], [3, 1]]
+提取元素：[2, 1]（顺序可能不同）</code></pre>
+
+  <div class="note green">
+    <strong>最终结果：</strong>[1, 2]（或 [2, 1]）✅
+  </div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+
+  <h3>完整代码</h3>
+  <pre><code>import heapq
+from typing import List
+
+class Solution:
+    def topKFrequent(self, nums: List[int], k: int) -> List[int]:
+        # 第1步：统计频率
+        freq = {}
+        for num in nums:
+            freq[num] = freq.get(num, 0) + 1
+
+        # 第2步：用小根堆维护前 k 个高频元素
+        heap = []
+        for num, count in freq.items():
+            heapq.heappush(heap, [count, num])
+            if len(heap) > k:
+                heapq.heappop(heap)
+
+        # 第3步：提取堆中的元素
+        return [item[1] for item in heap]</code></pre>
+
+  <h3>逐段说明</h3>
+
+  <p><strong>第 1 步：统计频率</strong></p>
+  <pre><code>freq = {}
+for num in nums:
+    freq[num] = freq.get(num, 0) + 1</code></pre>
+  <p>用哈希表统计，时间 O(n)，空间 O(n)。</p>
+
+  <p><strong>第 2 步：构建堆</strong></p>
+  <pre><code>heap = []
+for num, count in freq.items():
+    heapq.heappush(heap, [count, num])
+    if len(heap) > k:
+        heapq.heappop(heap)</code></pre>
+  <p>将 [频率, 元素] 对入堆。注意频率在前，作为排序键。</p>
+
+  <p><strong>第 3 步：提取结果</strong></p>
+  <pre><code>return [item[1] for item in heap]</code></pre>
+  <p>堆中每个元素是 [频率, 元素]，提取第2个元素（下标1）得到元素本身。</p>
+
+  <div class="note blue">
+    <strong>关键：</strong>小根堆按频率排序，堆顶是频率最低的。超过 k 时弹出频率最低的，最终堆中就是频率最高的 k 个元素。
+  </div>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th>维度</th><th>值</th><th>说明</th></tr>
+    <tr><td>时间复杂度</td><td><strong>O(n log k)</strong></td>
+      <td>统计频率 O(n) + 堆操作 O(n log k)</td></tr>
+    <tr><td>空间复杂度</td><td><strong>O(n)</strong></td>
+      <td>哈希表 O(n) + 堆 O(k)</td></tr>
+  </table>
+
+  <div class="note green">
+    <strong>优势：</strong>当 k << n 时（例如找前 10 个高频），明显快于全排序 O(n log n)。
+  </div>
+</section>
+
+<section class="card" id="comparison">
+  <h2>8. 解法对比</h2>
+  <table>
+    <tr><th>解法</th><th>时间复杂度</th><th>空间复杂度</th><th>特点</th></tr>
+    <tr><td><strong>哈希表 + 排序</strong></td><td>O(n log n)</td><td>O(n)</td><td>简单直接，适合任意 k</td></tr>
+    <tr><td><strong>哈希表 + 堆</strong></td><td>O(n log k)</td><td>O(n)</td><td>k << n 时最优，本文解法</td></tr>
+    <tr><td><strong>桶排序</strong></td><td>O(n)</td><td>O(n)</td><td>需要知道频率范围，实现复杂</td></tr>
+  </table>
+
+  <div class="note purple">
+    <strong>选择建议：</strong>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li>代码简洁、k 较小 → 用堆（本文解法）</li>
+      <li>追求线性时间、知道频率范围 → 用桶排序</li>
+      <li>只需要一次调用 → 用哈希表 + 排序</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <div class="note green">
+    <p><strong>前 K 个高频元素</strong> 解法精髓：</p>
+    <ul style="margin:6px 0 0;padding-left:20px;">
+      <li><strong>哈希表统计频率</strong>：O(n) 时间遍历数组</li>
+      <li><strong>小根堆维护前 k 个</strong>：按频率排序，超限时弹出最低频</li>
+      <li>将 [频率, 元素] 对入堆，频率作为排序键</li>
+      <li>时间 O(n log k)，空间 O(n)</li>
+      <li>当 k << n 时，明显快于全排序</li>
+    </ul>
+  </div>
+  <pre><code>import heapq
+class Solution:
+    def topKFrequent(self, nums, k):
+        # 统计频率
+        freq = {}
+        for num in nums:
+            freq[num] = freq.get(num, 0) + 1
+
+        # 堆维护前k个
+        heap = []
+        for num, count in freq.items():
+            heapq.heappush(heap, [count, num])
+            if len(heap) > k:
+                heapq.heappop(heap)
+
+        return [item[1] for item in heap]</code></pre>
+  <p style="color:var(--text-light);font-size:13px;text-align:center;margin-top:20px;">💡 口诀：哈希统计频率，堆顶最小频。超限即弹出，前k自然成。</p>
+</section>
+</main>
+
+<footer>前K个高频元素 · 算法学习页</footer>
+
+<script>
+(function(){
+const nums = [1, 1, 1, 2, 2, 3];
+const k = 2;
+const freqMap = {1:3, 2:2, 3:1};
+const steps = [
+  {idx:0, val:1, freq:3, heap:[[3,1]], heapSize:1, op:'push', desc:'统计频率后：{1:3, 2:2, 3:1}。处理元素1（频率3）：入堆[3,1]。堆大小=1≤2，不弹出。'},
+  {idx:1, val:2, freq:2, heap:[[2,2],[3,1]], heapSize:2, op:'push', desc:'处理元素2（频率2）：入堆[2,2]。堆=[[2,2],[3,1]]。堆大小=2≤2，不弹出。'},
+  {idx:2, val:3, freq:1, heap:[[2,2],[3,1]], popped:[1,3], heapSize:2, op:'push+pop', desc:'处理元素3（频率1）：入堆后堆=[[1,3],[2,2],[3,1]]，堆大小=3>2。弹出堆顶[1,3]。堆=[[2,2],[3,1]]。'},
+  {final:[1,2], desc:'🎉 结束！堆=[[2,2],[3,1]]，提取元素得 [1,2]。前2个高频元素是 1（频率3）和 2（频率2）。'},
+];
+
+let curStep = 0, isPlaying = false, interval = null;
+const $ = id => document.getElementById(id);
+const arrayCells = $('arrayCells'), heapContainer = $('heapContainer');
+const vizDesc = $('vizDesc'), stepInfo = $('stepInfo');
+const curVal = $('curVal'), curFreq = $('curFreq'), heapSize = $('heapSize');
+const prevBtn = $('prevBtn'), nextBtn = $('nextBtn'), playBtn = $('playBtn'), resetBtn = $('resetBtn');
+
+function render(i){
+  if(i >= steps.length - 1){
+    const s = steps[steps.length - 1];
+    curVal.textContent = '-';
+    curFreq.textContent = '-';
+    heapSize.textContent = '2';
+    vizDesc.textContent = s.desc;
+    stepInfo.textContent = `步骤 ${i+1} / ${steps.length}`;
+    prevBtn.disabled = i===0;
+    nextBtn.disabled = true;
+    renderFinal();
+    return;
+  }
+
+  const s = steps[i];
+  // render array
+  let ah = '';
+  nums.forEach((v, idx) => {
+    let cls = 'cell';
+    if(idx === s.idx) cls += ' current';
+    if(idx < s.idx) cls += ' counted';
+    ah += `<div class="${cls}">${v}</div>`;
+  });
+  arrayCells.innerHTML = ah;
+
+  // render heap
+  let hh = '';
+  if(s.heap && s.heap.length){
+    const sortedHeap = [...s.heap].sort((a,b) => a[0]-b[0]);
+    sortedHeap.forEach((item, idx) => {
+      const isMin = item[0] === s.heap[0][0];
+      hh += `<div class="heap-item ${isMin?'min-heap':''}"><div class="freq">${item[0]}</div><div class="num">${item[1]}</div></div>`;
+    });
+  } else {
+    hh = '<div class="viz-stat" style="font-size:13px;color:var(--text-light)">堆为空</div>';
+  }
+  heapContainer.innerHTML = hh;
+
+  // stats
+  curVal.textContent = s.val;
+  curFreq.textContent = s.freq;
+  heapSize.textContent = s.heapSize;
+
+  // desc
+  vizDesc.textContent = s.desc;
+
+  // step
+  stepInfo.textContent = `步骤 ${i+1} / ${steps.length}`;
+  prevBtn.disabled = i===0;
+  nextBtn.disabled = false;
+}
+
+function renderFinal(){
+  let hh = '<div class="heap-item"><div class="freq">2</div><div class="num">2</div></div>';
+  hh += '<div class="heap-item"><div class="freq">3</div><div class="num">1</div></div>';
+  hh += '<div style="margin-left:12px;color:var(--accent-green);font-weight:700">← 前2个高频</div>';
+  heapContainer.innerHTML = hh;
+
+  let ah = '';
+  nums.forEach(v => {
+    ah += `<div class="cell counted">${v}</div>`;
+  });
+  arrayCells.innerHTML = ah;
+}
+
+function go(i){ if(i>=0&&i<steps.length){curStep=i;render(curStep);} }
+function nextStep(){ if(curStep<steps.length-1) go(curStep+1); else if(isPlaying) stopPlay(); }
+function prevStep(){ if(curStep>0) go(curStep-1); }
+function togglePlay(){ isPlaying ? stopPlay() : startPlay(); }
+function startPlay(){
+  if(curStep>=steps.length-1) go(0);
+  isPlaying=true; playBtn.textContent='⏸ 暂停'; playBtn.classList.add('playing');
+  interval=setInterval(()=>{if(curStep>=steps.length-1)stopPlay();else nextStep();},1600);
+}
+function stopPlay(){
+  isPlaying=false; playBtn.textContent='▶ 自动播放'; playBtn.classList.remove('playing');
+  if(interval){clearInterval(interval);interval=null;}
+}
+function resetViz(){stopPlay();go(0);}
+
+nextBtn.onclick=nextStep; prevBtn.onclick=prevStep;
+playBtn.onclick=togglePlay; resetBtn.onclick=resetViz;
+document.onkeydown=e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+  else if(e.key===' '){e.preventDefault();togglePlay();}
+};
+go(0);
+})();
+</script>
+</body>
+</html>

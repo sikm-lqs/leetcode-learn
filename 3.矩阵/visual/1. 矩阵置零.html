@@ -95,6 +95,14 @@ th{background:#F1F5F9;font-weight:600}
 .viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
 .viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
 footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 @media(max-width:640px){header h1{font-size:26px}.card{padding:16px 18px}.mx-cell{width:42px;height:40px;font-size:14px}.mx-row-label span{width:42px}}
 </style>
 </head>
@@ -111,12 +119,13 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h2>📋 目录</h2>
   <a href="#understand">1. 题目理解</a>
   <a href="#idea">2. 核心思路：用首行首列做标记</a>
-  <a href="#viz">3. 交互可视化演示</a>
-  <a href="#walkthrough">4. 详细过程模拟</a>
-  <a href="#code">5. 代码逐段解释</a>
-  <a href="#complexity">6. 复杂度分析</a>
-  <a href="#pitfalls">7. 常见易错点</a>
-  <a href="#summary">8. 总结</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
 </section>
 
 <section class="card" id="understand">
@@ -171,6 +180,38 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <div class="note purple">
     <strong>核心洞察：</strong>第一行/列既「参与标记」又「本身可能被清零」，存在职责冲突。解决办法是先记录它们自身的状态，把它们的清零推迟到最后单独处理。
   </div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象，先看骨架再看细节。</p>
+  <pre class="pseudo"><code><span class="var">m</span>, <span class="var">n</span> = <span class="var">matrix</span> 的行数、列数
+
+<span class="zh">检查首行是否有 0</span>        <span class="cm"># first_row_zero = any(matrix[0][j] == 0)</span>
+<span class="zh">检查首列是否有 0</span>        <span class="cm"># first_col_zero = any(matrix[i][0] == 0)</span>
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">[1, m)</span>:
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="zh">[1, n)</span>:
+        <span class="kw">if</span> <span class="zh">当前格子是 0</span>:          <span class="cm"># matrix[i][j] == 0</span>
+            <span class="zh">行首置 0 打标记</span>          <span class="cm"># matrix[i][0] = 0</span>
+            <span class="zh">列首置 0 打标记</span>          <span class="cm"># matrix[0][j] = 0</span>
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">[1, m)</span>:
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="zh">[1, n)</span>:
+        <span class="kw">if</span> <span class="zh">行首或列首是 0</span>:       <span class="cm"># matrix[i][0] == 0 or matrix[0][j] == 0</span>
+            <span class="zh">当前格子置 0</span>            <span class="cm"># matrix[i][j] = 0</span>
+
+<span class="kw">if</span> <span class="var">first_row_zero</span>:
+    <span class="zh">首行全部置 0</span>
+<span class="kw">if</span> <span class="var">first_col_zero</span>:
+    <span class="zh">首列全部置 0</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">「先记录→再标记→后清零→最后处理首行首列」四步走：首行首列既当标记数组，又需单独记录自身状态，解决职责冲突。</div>
 </section>
 
 <section class="card" id="viz">

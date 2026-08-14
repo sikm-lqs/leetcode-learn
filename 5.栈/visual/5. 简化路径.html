@@ -176,7 +176,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <pre class="pseudo"><code><span class="var">stack</span> = []
 
 <span class="kw">for</span> <span class="var">name</span> <span class="kw">in</span> <span class="zh">按'/'分割路径</span>:
-    <span class="kw">if</span> <span class="zh">空串或'. '</span>:               <span class="cm"># name == "" or name == "."</span>
+    <span class="kw">if</span> <span class="zh">空串或'.'</span>:               <span class="cm"># name == "" or name == "."</span>
         <span class="kw">continue</span>                   <span class="zh">忽略，停留在当前目录</span>
     <span class="kw">elif</span> <span class="var">name</span> == <span class="num">".."</span>:             <span class="zh">返回上一级</span>
         <span class="kw">if</span> <span class="var">stack</span>:                    <span class="cm"># 栈非空才能返回</span>

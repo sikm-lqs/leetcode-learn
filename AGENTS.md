@@ -63,3 +63,98 @@
    - 代码放在 ` ```python ` 代码块中，保证可运行
    - 思路需注明时间/空间复杂度
    - 亮点描述核心洞察，不是复述思路
+
+## 生成交互式 HTML 讲解
+
+本仓库已绑定 `leetcode-viz` skill，可为每一道 LeetCode 题生成精美的交互式 HTML 讲解页面。
+
+### 触发方式
+
+当你说以下任意一句时，会触发这个 skill：
+- "为第 X 题生成 HTML 解释"
+- "可视化第 X 题"
+- "生成 HTML 讲解"
+- "把这个题做成 HTML 页面"
+- "按最长连续序列的格式生成 XXX 的 HTML"
+
+### 输出
+
+生成的文件保存到对应章节的 `visual/` 目录下，例如：
+
+```
+1. 数组/
+├── leetcode.ipynb
+└── visual/
+    ├── 两数之和.html
+    ├── 移动零.html
+    └── ...
+```
+
+### 设计风格
+
+蓝橙混合风格（蓝色主色 + 暖橙色 Anthropic 强调），包含：
+- 10 个章节的完整讲解（题目理解 → 核心思路 → 伪代码骨架 → 交互可视化 → 过程模拟 → 代码解释 → 复杂度 → 易错点 → 总结）
+- 可步进的交互式算法演示（上一步/下一步/自动播放/重置）
+- 彩色编码单元格表示算法状态
+
+### 注意
+
+- HTML 为单文件自包含（所有样式和 JS 内嵌），可直接在浏览器打开
+- 交互演示部分需要针对每道题的算法类型设计不同的可视化策略（见 skill 文件）
+
+## 伪代码骨架章节（每个 HTML 必含）
+
+每个可视化 HTML 在「核心思路」与「交互可视化」之间必须有一节 **伪代码骨架**，作为「思路文字」与「真实代码」之间的抽象层——比文字思路更精确，比真实代码更去噪。
+
+### 位置与编号
+
+- 作为第 **3** 章（紧跟「核心思路」），其 id 为 `pseudo`
+- 后续所有章节编号 +1；TOC 中插入对应一行 `<a href="#pseudo">3. 伪代码骨架</a>`，其后编号顺延
+
+### 文风（风格 1：代码骨架 + 中文动宾 + 注释公式）
+
+- **控制流与变量**用代码表达：`while`/`if`/`else`/`for`/`return`，变量名沿用代码里的真实变量名
+- **操作**用中文动宾短句概括，如「更新左最大值」「计算左边贡献」「左指针右移」
+- **精确公式**放在行尾 `#` 注释里，如 `# ans += leftMax - h[left]`
+- 去掉 `self`、类型注解、`List[int]` 等样板，只保留算法骨架
+- HTML 中 `<` 必须写成 `&lt;`
+
+### 着色（token 颜色）
+
+伪代码用 `<pre class="pseudo"><code>` 包裹，每个 token 用 `<span>` 着色：
+
+| 类别 | class | 颜色 | 示例 |
+|---|---|---|---|
+| 关键字 | `kw` | #C792EA（紫） | while / if / return |
+| 变量 | `var` | #82AAFF（蓝） | left / ans / leftMax |
+| 中文操作 | `zh` | #C3E88D（绿，加粗） | 更新左最大值 |
+| 注释公式 | `cm` | #7C8DB5（灰，斜体） | # ans += ... |
+| 数字 | `num` | #F78C6C（橙） | 0 / 1 |
+
+需要在 `</style>` 前加入以下 CSS（若已存在则跳过）：
+
+    .pseudo .kw{color:#C792EA}
+    .pseudo .var{color:#82AAFF}
+    .pseudo .zh{color:#C3E88D;font-weight:600}
+    .pseudo .cm{color:#7C8DB5;font-style:italic}
+    .pseudo .num{color:#F78C6C}
+    .pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+    .pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+    .pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+### 章节结构
+
+    <section class="card" id="pseudo">
+      <h2>3. 伪代码骨架</h2>
+      <p>引导句：说明这一层抽象的作用（控制流/变量用代码、操作用中文短句、公式放注释）</p>
+      <pre class="pseudo"><code>...该题伪代码（风格 1 + 着色）...</code></pre>
+      <div class="pseudo-legend">
+        <span><i style="background:#C792EA"></i>关键字</span>
+        <span><i style="background:#82AAFF"></i>变量</span>
+        <span><i style="background:#C3E88D"></i>中文操作</span>
+        <span><i style="background:#7C8DB5"></i>注释公式</span>
+      </div>
+      <div class="note blue">一句话点睛（关键判断、对称性或边界）</div>
+    </section>
+
+参考实现见 `1. 数组/visual/11. 接雨水.html` 的第 3 章。
