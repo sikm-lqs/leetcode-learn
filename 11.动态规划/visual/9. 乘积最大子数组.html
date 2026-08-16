@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9. 乘积最大子数组 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.viz-cells{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin:12px 0}
+.k-cell{min-width:48px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F1F5F9;border:2px solid #CBD5E1;border-radius:10px;font-family:Consolas,Monaco,monospace;font-weight:700;font-size:16px;transition:all .25s;position:relative}
+.k-cell .idx{font-size:10px;color:var(--text-light);font-weight:400}
+.k-cell.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-3px)}
+.k-cell.done{opacity:.6}
+.viz-track{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin:14px 0}
+.track-box{flex:1;min-width:200px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;text-align:center}
+.track-box .tlabel{font-size:12px;color:var(--text-light);margin-bottom:4px}
+.track-box .tval{font-family:Consolas,Monaco,monospace;font-size:22px;font-weight:700}
+.track-box.max .tval{color:var(--accent-green)}
+.track-box.min .tval{color:var(--accent-red)}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.choice-panel{flex:1;min-width:260px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.choice-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.choice-row{display:flex;justify-content:space-between;padding:6px 10px;border-radius:6px;font-family:Consolas,Monaco,monospace;font-size:13px;margin:4px 0}
+.choice-row:nth-child(odd){background:#F8FAFC}
+.choice-row.pickmax{background:var(--accent-green-soft);color:#0F7A3D;font-weight:700}
+.choice-row.pickmin{background:var(--accent-red-soft);color:#B91C1C;font-weight:700}
+.choice-row.pickmax .tag::after{content:' ← max';font-size:11px;font-weight:700}
+.choice-row.pickmin .tag::after{content:' ← min';font-size:11px;font-weight:700}
+.stats-panel{flex:1;min-width:180px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-ans{color:var(--accent-green)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 152 · 中等</div>
+  <h1>9. 乘积最大子数组</h1>
+  <p class="subtitle">最大/最小双状态：负数会翻转乾坤（负负得正）。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：为什么需要两条状态</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给你一个整数数组 <code>nums</code>，找出数组中<strong>乘积最大</strong>的非空连续子数组，并返回该子数组所对应的乘积。只包含一个元素的子数组，其乘积就是该元素值。</p>
+  <h3>示例</h3>
+  <pre><code>输入：nums = [2, 3, -2, 4]
+输出：6
+解释：子数组 [2, 3] 有最大乘积 6。
+
+输入：nums = [-2, 0, -1]
+输出：0
+解释：[-2, -1] 不是连续子数组，结果为 0（取子数组 [0]）。
+
+输入：nums = [-2, 3, -4]
+输出：24
+解释：整个数组 [-2, 3, -4] 的乘积 24 最大。</code></pre>
+  <div class="note yellow">与「最大子数组和」的关键区别：乘积中负数会把大变小、小变大——只维护最大值会在「负负得正」时错过答案。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：为什么需要两条状态</h2>
+  <ol>
+    <li><strong>双状态定义</strong>：
+      <ul>
+        <li><code>max_dp[i]</code> = 以 nums[i] 结尾的连续子数组的<strong>最大</strong>乘积</li>
+        <li><code>min_dp[i]</code> = 以 nums[i] 结尾的连续子数组的<strong>最小</strong>乘积</li>
+      </ul>
+    </li>
+    <li><strong>三选一转移</strong>（两个状态同时算）：
+      <div class="formula">max_dp[i] = max(nums[i], max_dp[i−1]·nums[i], min_dp[i−1]·nums[i])<br>min_dp[i] = min(nums[i], max_dp[i−1]·nums[i], min_dp[i−1]·nums[i])</div>
+    </li>
+    <li><strong>答案</strong>：ans = max(ans, max_dp[i])，全程维护</li>
+  </ol>
+  <div class="note blue">直觉：当前的「最小乘积」（很可能是大负数）遇到负数元素就翻转为「最大乘积」的候选——最小值是最大值的<strong>后备弹药</strong>，所以两条状态必须一起滚动。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="var">max_dp</span>[<span class="num">0</span>] <span class="kw">=</span> <span class="var">min_dp</span>[<span class="num">0</span>] <span class="kw">=</span> <span class="var">nums</span>[<span class="num">0</span>]
+<span class="var">ans</span> <span class="kw">=</span> <span class="var">nums</span>[<span class="num">0</span>]
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">range(1, n)</span>:
+    <span class="zh">三选一算最大</span>              <span class="cm"># max(nums[i], max_dp[i-1]*nums[i], min_dp[i-1]*nums[i])</span>
+    <span class="zh">三选一算最小</span>              <span class="cm"># min(同上三个候选)</span>
+    <span class="zh">更新全局答案</span>              <span class="cm"># ans = max(ans, max_dp[i])</span>
+<span class="kw">return</span> <span class="var">ans</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">注意必须用临时变量保存 prev_max/prev_min（或先算 max 后算 min 时小心覆盖）——滚动版里这一步最容易写错。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 nums = [-2, 3, -4] 的双状态计算（负负得正的经典案例）。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 输入：nums = [-2, 3, -4]（答案 24 = 整个数组的乘积）</div>
+    <div class="viz-cells" id="kCells"></div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前元素</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>max 候选胜出</span>
+      <span><i style="background:var(--accent-red-soft);border:2px solid var(--accent-red)"></i>min 候选胜出</span>
+    </div>
+    <div class="viz-track">
+      <div class="track-box max"><div class="tlabel">max_dp[i]（以 i 结尾的最大乘积）</div><div class="tval" id="trackMax">—</div></div>
+      <div class="track-box min"><div class="tlabel">min_dp[i]（以 i 结尾的最小乘积）</div><div class="tval" id="trackMin">—</div></div>
+    </div>
+    <div class="viz-panel">
+      <div class="choice-panel">
+        <h4>三个候选（i 位置）</h4>
+        <div id="choiceBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">全局答案 ans<b class="s-ans" id="statAns">—</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table>
+    <tr><th>i</th><th>nums[i]</th><th>候选：自己 / max·x / min·x</th><th>max_dp[i]</th><th>min_dp[i]</th><th>ans</th></tr>
+    <tr><td>0</td><td>-2</td><td>初始化</td><td>-2</td><td>-2</td><td>-2</td></tr>
+    <tr><td>1</td><td>3</td><td>3 / (−2)·3=−6 / (−2)·3=−6</td><td>3</td><td>-6</td><td>3</td></tr>
+    <tr><td>2</td><td>-4</td><td>−4 / 3·(−4)=−12 / (−6)·(−4)=<strong>24</strong></td><td>24</td><td>-12</td><td>24</td></tr>
+  </table>
+  <div class="note purple">看 i = 2：min_dp[1] = −6（当时的「最差」）乘上负数 −4 直接翻转为 24——这就是必须同时维护最小值的原因。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:                        <span style="color:#6B7280"># 数组版</span>
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">maxProduct</span>(self, nums: List[<span style="color:#CA8A04">int</span>]) -&gt; <span style="color:#CA8A04">int</span>:
+        n = <span style="color:#D4744C">len</span>(nums)
+        max_dp = [<span style="color:#CA8A04">0</span>] * n
+        min_dp = [<span style="color:#CA8A04">0</span>] * n
+        max_dp[<span style="color:#CA8A04">0</span>] = min_dp[<span style="color:#CA8A04">0</span>] = nums[<span style="color:#CA8A04">0</span>]
+        ans = nums[<span style="color:#CA8A04">0</span>]
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">1</span>, n):
+            max_dp[i] = <span style="color:#D4744C">max</span>(nums[i], max_dp[i-<span style="color:#CA8A04">1</span>] * nums[i], min_dp[i-<span style="color:#CA8A04">1</span>] * nums[i])
+            min_dp[i] = <span style="color:#D4744C">min</span>(nums[i], max_dp[i-<span style="color:#CA8A04">1</span>] * nums[i], min_dp[i-<span style="color:#CA8A04">1</span>] * nums[i])
+            ans = <span style="color:#D4744C">max</span>(ans, max_dp[i])
+        <span style="color:#6B7280">return</span> ans
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution2</span>:                       <span style="color:#6B7280"># 滚动变量版（O(1) 空间）</span>
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">maxProduct</span>(self, nums: List[<span style="color:#CA8A04">int</span>]) -&gt; <span style="color:#CA8A04">int</span>:
+        max_product = min_product = ans = nums[<span style="color:#CA8A04">0</span>]
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">1</span>, <span style="color:#D4744C">len</span>(nums)):
+            prev_max, prev_min = max_product, min_product   <span style="color:#6B7280"># 先保存旧值！</span>
+            max_product = <span style="color:#D4744C">max</span>(nums[i], prev_max * nums[i], prev_min * nums[i])
+            min_product = <span style="color:#D4744C">min</span>(nums[i], prev_max * nums[i], prev_min * nums[i])
+            ans = <span style="color:#D4744C">max</span>(ans, max_product)
+        <span style="color:#6B7280">return</span> ans</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>双状态初始化</strong>：max_dp[0] = min_dp[0] = nums[0]（单元素既是最大也是最小）</li>
+    <li><strong>三候选</strong>：自己开头、接前最大、接前最小——正数元素接最大，负数元素接最小</li>
+    <li><strong>滚动版易错点</strong>：必须先把 prev_max/prev_min 存下来，否则算 min 时 max 已被覆盖</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n)</td><td>一趟扫描，每步常数次乘法与比较</td></tr>
+    <tr><td>空间</td><td>O(n) / O(1)</td><td>数组版 O(n)；滚动变量版 O(1)</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>只维护最大值</strong>：[−2, 3, −4] 会在最后一步错过 24——负负得正的翻转必须靠 min 状态接住。</div>
+  <div class="note yellow"><strong>滚动覆盖</strong>：先更新 max_product 再用「新的」max_product 算 min_product，会读到被覆盖的值；务必先存 prev。</div>
+  <div class="note yellow"><strong>ans 初始化为 0</strong>：全负数组（如 [−2]）答案应为 −2，初始化必须用 nums[0]。</div>
+  <div class="note red"><strong>与「最大子数组和」套同一模板</strong>：和问题负数只会拖累（max 二选一即可）；乘积问题负数可能翻盘，必须升维到双状态。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>升维</strong>：一维状态不够（负数翻转）→ 同时维护 max/min 两条状态</li>
+    <li><strong>转移</strong>：三选一——自己、接前最大、接前最小</li>
+    <li><strong>范式</strong>：「状态不够就加维度」是 DP 的通用加强手段</li>
+  </ul>
+  <div class="note green">口诀：乘积最大双状态，最大最小一起滚；负数翻转乾坤变，最小值是后备军。</div>
+</section>
+</main>
+
+<footer>乘积最大子数组 · 算法学习页</footer>
+
+<script>
+(function(){
+const nums = [-2, 3, -4];
+
+function simulate(arr) {
+  const n = arr.length;
+  const steps = [];
+  const maxDp = new Array(n).fill(null);
+  const minDp = new Array(n).fill(null);
+  let ans = arr[0];
+  const snap = (desc, i, cands, pickMax, pickMin, final) => {
+    steps.push({desc: desc, i: i, cands: cands || [], pickMax: pickMax, pickMin: pickMin, maxDp: maxDp.slice(), minDp: minDp.slice(), ans: ans, final: !!final});
+  };
+
+  maxDp[0] = arr[0]; minDp[0] = arr[0];
+  snap('初始化：max_dp[0] = min_dp[0] = nums[0] = ' + arr[0] + '（单元素既是最大也是最小），ans = ' + ans, 0, [], -1, -1);
+
+  for (let i = 1; i < n; i++) {
+    const x = arr[i];
+    const c1 = x;
+    const c2 = maxDp[i - 1] * x;
+    const c3 = minDp[i - 1] * x;
+    const candidates = [
+      {label: '自己：nums[' + i + '] = ' + x, val: c1},
+      {label: '接 max：max_dp[' + (i - 1) + ']·' + x + ' = ' + maxDp[i - 1] + '·' + x + ' = ' + c2, val: c2},
+      {label: '接 min：min_dp[' + (i - 1) + ']·' + x + ' = ' + minDp[i - 1] + '·' + x + ' = ' + c3, val: c3}
+    ];
+    maxDp[i] = Math.max(c1, c2, c3);
+    minDp[i] = Math.min(c1, c2, c3);
+    const pm = candidates.findIndex(c => c.val === maxDp[i]);
+    const pn = candidates.findIndex(c => c.val === minDp[i]);
+    const oldAns = ans;
+    ans = Math.max(ans, maxDp[i]);
+    const flip = (maxDp[i] === c3 && x < 0) ? ' ⚡ 负数翻转：接的是最小值！' : '';
+    snap('i = ' + i + '，nums[' + i + '] = ' + x + '：三候选 ' + c1 + ' / ' + c2 + ' / ' + c3 + '。max_dp[' + i + '] = ' + maxDp[i] + flip + '，min_dp[' + i + '] = ' + minDp[i] + (ans > oldAns ? '。ans 提升 → ' + ans + ' 🎯' : '。ans 保持 ' + ans), i, candidates, pm, pn);
+  }
+  snap('✅ 完成：最大乘积 = ' + ans + '（[-2, 3, -4] 整段相乘，负负得正）', n - 1, [], -1, -1, true);
+  return steps;
+}
+
+const steps = simulate(nums);
+let cur = 0, playing = false, timer = null;
+
+const kCells = document.getElementById('kCells');
+const trackMax = document.getElementById('trackMax');
+const trackMin = document.getElementById('trackMin');
+const choiceBox = document.getElementById('choiceBox');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+
+  let h = '';
+  nums.forEach((v, i) => {
+    let cls = '';
+    if (i === st.i) cls = 'cur';
+    else if (st.i >= 0 && i < st.i) cls = 'done';
+    h += '<div class="k-cell ' + cls + '">' + v + '<span class="idx">' + i + '</span></div>';
+  });
+  kCells.innerHTML = h;
+
+  trackMax.textContent = st.maxDp[st.i] !== null && st.i >= 0 ? st.maxDp[st.i] : '—';
+  trackMin.textContent = st.minDp[st.i] !== null && st.i >= 0 ? st.minDp[st.i] : '—';
+
+  let ch = '';
+  if (st.cands.length === 0) {
+    ch = '<div style="font-size:13px;color:var(--text-light);padding:8px">' + (st.final ? '✅ 计算完成' : '初始化双状态…') + '</div>';
+  } else {
+    st.cands.forEach((c, idx) => {
+      let cls = '';
+      if (idx === st.pickMax) cls = 'pickmax';
+      else if (idx === st.pickMin) cls = 'pickmin';
+      ch += '<div class="choice-row ' + cls + '"><span class="tag">' + c.label + '</span></div>';
+    });
+  }
+  choiceBox.innerHTML = ch;
+
+  statAns.textContent = st.ans;
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1900);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>

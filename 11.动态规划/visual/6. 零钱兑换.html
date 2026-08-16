@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6. 零钱兑换 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.dp-table{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin:14px 0}
+.dp-cell{width:44px;border-radius:10px;border:2px solid #CBD5E1;background:#F1F5F9;overflow:hidden;text-align:center;padding:3px 0;transition:all .3s}
+.dp-cell .dnum{font-size:10px;color:var(--text-light)}
+.dp-cell .dval{font-family:Consolas,Monaco,monospace;font-weight:700;font-size:16px}
+.dp-cell .dval.inf{color:#CBD5E1;font-size:12px}
+.dp-cell.done{border-color:var(--accent-purple);background:var(--accent-purple-soft)}
+.dp-cell.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-4px);box-shadow:0 4px 12px rgba(212,116,76,.25)}
+.dp-cell.src{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.choice-panel{flex:1;min-width:260px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.choice-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.choice-row{display:flex;justify-content:space-between;padding:6px 10px;border-radius:6px;font-family:Consolas,Monaco,monospace;font-size:13px;margin:4px 0}
+.choice-row:nth-child(odd){background:#F8FAFC}
+.choice-row.pick{background:var(--accent-green-soft);color:#0F7A3D;font-weight:700}
+.choice-row.pick .tag::after{content:' ✓ 最优';font-size:11px;font-weight:700}
+.choice-row.off{opacity:.4}
+.stats-panel{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-cur{color:var(--accent-purple)}
+.stat-box .s-ans{color:var(--accent-green)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}.dp-cell{width:40px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 322 · 中等</div>
+  <h1>6. 零钱兑换</h1>
+  <p class="subtitle">完全背包原型：枚举最后一枚硬币，min 转移 + 哨兵判不可达。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：枚举最后一枚硬币</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给你一个整数数组 <code>coins</code> 表示不同面额的硬币，以及一个整数 <code>amount</code> 表示总金额。计算凑成总金额所需的<strong>最少硬币个数</strong>；如果没有任何硬币组合能组成总金额，返回 <code>-1</code>。每种硬币的数量是<strong>无限</strong>的。</p>
+  <h3>示例</h3>
+  <pre><code>输入：coins = [1, 2, 5], amount = 11
+输出：3
+解释：11 = 5 + 5 + 1
+
+输入：coins = [2], amount = 3
+输出：-1
+
+输入：coins = [1], amount = 0
+输出：0</code></pre>
+  <div class="note yellow">「每种硬币无限」是完全背包的标志；若每种只能用一次，就是 0-1 背包（转移时需倒序枚举金额）。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：枚举最后一枚硬币</h2>
+  <ol>
+    <li><strong>状态定义</strong>：<code>dp[i]</code> = 组成金额 i 的最少硬币个数</li>
+    <li><strong>初始化</strong>：全部设为 <code>amount+1</code>（哨兵无穷大），<code>dp[0] = 0</code>（金额 0 用 0 枚）</li>
+    <li><strong>状态转移</strong>：对每个金额 i，枚举最后使用的一枚硬币 coin（coin ≤ i）：
+      <div class="formula">dp[i] = min(dp[i], dp[i − coin] + 1)</div>
+    </li>
+    <li><strong>不可达判断</strong>：结束时若 <code>dp[amount]</code> 仍等于哨兵值，说明凑不出，返回 -1</li>
+  </ol>
+  <div class="note blue">与「完全平方数」完全同构：把硬币面额换成 1, 4, 9, 16… 就是上一题。两题共用一个模板，只是「物品集合」不同。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="var">dp</span> = [<span class="var">amount</span>+<span class="num">1</span>] * (<span class="var">amount</span>+<span class="num">1</span>)   <span class="cm"># 哨兵无穷大</span>
+<span class="var">dp</span>[<span class="num">0</span>] = <span class="num">0</span>
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">range(1, amount+1)</span>:
+    <span class="kw">for</span> <span class="var">coin</span> <span class="kw">in</span> <span class="var">coins</span>:
+        <span class="kw">if</span> <span class="var">coin</span> <span class="kw">&lt;=</span> <span class="var">i</span>:
+            <span class="zh">尝试最后用这枚</span>       <span class="cm"># dp[i] = min(dp[i], dp[i-coin] + 1)</span>
+
+<span class="kw">return</span> <span class="var">dp</span>[<span class="var">amount</span>]   <span class="cm"># 仍为哨兵值则 -1</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">amount+1 是安全的「无穷大」：金额 amount 最多用 amount 枚 1 元硬币，真实答案 ≤ amount。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 coins = [1, 2, 5]，amount = 11 的 dp 计算过程。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 coins = [1, 2, 5]，amount = 11</div>
+    <div class="dp-table" id="dpTable"></div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前金额 i</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>引用的 dp[i−coin]</span>
+      <span><i style="background:var(--accent-purple-soft);border:2px solid var(--accent-purple)"></i>已确定</span>
+      <span><i style="background:#F1F5F9;border:2px solid #CBD5E1"></i>未计算（∞）</span>
+    </div>
+    <div class="viz-panel">
+      <div class="choice-panel">
+        <h4>候选硬币（coin ≤ i）</h4>
+        <div id="choiceBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">当前 dp[i]<b class="s-cur" id="statDp">—</b></div>
+        <div class="stat-box">答案 dp[11]<b class="s-ans" id="statAns">—</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table>
+    <tr><th>i</th><th>候选：dp[i−coin]+1</th><th>dp[i]</th><th>最优组成</th></tr>
+    <tr><td>1</td><td>coin1: dp[0]+1=1</td><td>1</td><td>1</td></tr>
+    <tr><td>2</td><td>coin1: dp[1]+1=2；coin2: dp[0]+1=1</td><td>1</td><td>2</td></tr>
+    <tr><td>3</td><td>coin1: 2；coin2: dp[1]+1=2</td><td>2</td><td>1+2</td></tr>
+    <tr><td>5</td><td>coin1: 3；coin2: 3；coin5: dp[0]+1=1</td><td>1</td><td>5</td></tr>
+    <tr><td>6</td><td>coin1: 2；coin2: 3；coin5: dp[1]+1=2</td><td>2</td><td>5+1</td></tr>
+    <tr><td>10</td><td>coin1: 4；coin2: 4；coin5: dp[5]+1=2</td><td>2</td><td>5+5</td></tr>
+    <tr><td>11</td><td>coin1: dp[10]+1=3；coin2: 4；coin5: dp[6]+1=3</td><td>3</td><td>5+5+1 ✅</td></tr>
+  </table>
+  <div class="note purple">dp[11]：coin1 引用 dp[10]=2、coin5 引用 dp[6]=2，两者都给出 3——min 任选其一，答案 3（5+5+1）。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">coinChange</span>(self, coins: List[<span style="color:#CA8A04">int</span>], amount: <span style="color:#CA8A04">int</span>) -&gt; <span style="color:#CA8A04">int</span>:
+        dp = [amount + <span style="color:#CA8A04">1</span>] * (amount + <span style="color:#CA8A04">1</span>)  <span style="color:#6B7280"># 哨兵：amount+1 视为无穷大</span>
+        dp[<span style="color:#CA8A04">0</span>] = <span style="color:#CA8A04">0</span>                     <span style="color:#6B7280"># 金额 0 用 0 枚硬币</span>
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">1</span>, amount + <span style="color:#CA8A04">1</span>):
+            <span style="color:#6B7280">for</span> coin <span style="color:#6B7280">in</span> coins:
+                <span style="color:#6B7280">if</span> coin &lt;= i:                 <span style="color:#6B7280"># 硬币面额不能超过当前金额</span>
+                    dp[i] = <span style="color:#D4744C">min</span>(dp[i], dp[i - coin] + <span style="color:#CA8A04">1</span>)
+        <span style="color:#6B7280">return</span> dp[amount] <span style="color:#6B7280">if</span> dp[amount] != amount + <span style="color:#CA8A04">1</span> <span style="color:#6B7280">else</span> -<span style="color:#CA8A04">1</span></code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>双重循环</strong>：外层金额、内层硬币——顺序对完全背包无影响（也可交换）</li>
+    <li><strong>coin &lt;= i 过滤</strong>：面额超过当前金额的硬币不可能作为「最后一枚」</li>
+    <li><strong>结尾判 -1</strong>：dp[amount] 保持哨兵值说明无解（如 coins=[2], amount=3）</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(amount × len(coins))</td><td>每个金额枚举所有硬币</td></tr>
+    <tr><td>空间</td><td>O(amount)</td><td>dp 数组</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>贪心（每次取最大面额）错误</strong>：coins = [1, 3, 4], amount = 6，贪心得 4+1+1（3 枚），最优是 3+3（2 枚）。</div>
+  <div class="note yellow"><strong>忘记处理不可达</strong>：直接返回 dp[amount] 会把哨兵值当答案；必须检查是否仍为 amount+1。</div>
+  <div class="note yellow"><strong>BFS 也可解</strong>：金额是节点、硬币是边，最少硬币数 = 最短路；但 DP 更通用（可扩展到方案计数）。</div>
+  <div class="note red"><strong>与「零钱兑换 II（组合数）」混淆</strong>：本题求最少件数用 min；求组合数用加法 dp[i] += dp[i-coin]，且循环顺序有讲究。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>模型</strong>：完全背包最少件数——「最后一枚是谁」驱动 min 转移</li>
+    <li><strong>不可达</strong>：哨兵值 amount+1 兼做 -1 判断</li>
+    <li><strong>同构题</strong>：完全平方数 = 零钱兑换（coins = 平方数集合）</li>
+  </ul>
+  <div class="note green">口诀：金额外层硬币内，最后一枚取最小；哨兵上界判无解，dp 零处是锚点。</div>
+</section>
+</main>
+
+<footer>零钱兑换 · 算法学习页</footer>
+
+<script>
+(function(){
+const COINS = [1, 2, 5];
+const AMOUNT = 11;
+
+function simulate(coins, amount) {
+  const steps = [];
+  const INF = amount + 1;
+  const dp = new Array(amount + 1).fill(INF);
+  dp[0] = 0;
+  const snap = (desc, i, srcIdx, cands, final) => {
+    steps.push({desc: desc, i: i, src: srcIdx, cands: cands || [], dp: dp.slice(), final: !!final});
+  };
+  snap('初始：dp[0] = 0（金额 0 用 0 枚硬币），其余均为 ∞（哨兵 ' + INF + '）。coins = [' + coins.join(', ') + ']', 0, -1, []);
+
+  for (let i = 1; i <= amount; i++) {
+    const cands = [];
+    let best = INF, bestCoin = -1;
+    for (const coin of coins) {
+      if (coin <= i) {
+        const c = dp[i - coin] + 1;
+        cands.push({coin: coin, ref: i - coin, refVal: dp[i - coin], cand: c, off: false});
+        if (c < best) { best = c; bestCoin = coin; }
+      } else {
+        cands.push({coin: coin, ref: -1, refVal: null, cand: null, off: true});
+      }
+    }
+    dp[i] = best;
+    snap('计算 dp[' + i + ']：' + cands.filter(c => !c.off).map(c => 'coin' + c.coin + ' → dp[' + c.ref + ']+1 = ' + c.cand).join('；') + '。最优选 coin' + bestCoin + ' → dp[' + i + '] = ' + best, i, i - bestCoin, cands);
+  }
+  snap('✅ 完成：凑出 ' + amount + ' 最少需要 ' + dp[amount] + ' 枚硬币（如 5+5+1）', amount, -1, [], true);
+  return steps;
+}
+
+const steps = simulate(COINS, AMOUNT);
+let cur = 0, playing = false, timer = null;
+
+const dpTable = document.getElementById('dpTable');
+const choiceBox = document.getElementById('choiceBox');
+const statDp = document.getElementById('statDp');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+  let h = '';
+  for (let i = 0; i <= AMOUNT; i++) {
+    let cls = '';
+    if (st.dp[i] !== AMOUNT + 1) cls = 'done';
+    if (i === st.src) cls = 'src';
+    if (i === st.i) cls = 'cur';
+    const v = st.dp[i] === AMOUNT + 1 ? '∞' : st.dp[i];
+    h += '<div class="dp-cell ' + cls + '"><div class="dnum">' + i + '</div><div class="dval' + (st.dp[i] === AMOUNT + 1 ? ' inf' : '') + '">' + v + '</div></div>';
+  }
+  dpTable.innerHTML = h;
+
+  let ch = '';
+  if (st.cands.length === 0) {
+    ch = '<div style="font-size:13px;color:var(--text-light);padding:8px">' + (st.final ? '✅ 计算完成' : '准备开始…') + '</div>';
+  } else {
+    const avail = st.cands.filter(c => !c.off);
+    const bestVal = Math.min.apply(null, avail.map(c => c.cand));
+    st.cands.forEach(c => {
+      if (c.off) {
+        ch += '<div class="choice-row off"><span class="tag">coin' + c.coin + '：面额超过 ' + st.i + '，跳过</span></div>';
+      } else {
+        ch += '<div class="choice-row' + (c.cand === bestVal ? ' pick' : '') + '"><span class="tag">coin' + c.coin + '：dp[' + c.ref + '] + 1 = ' + c.refVal + ' + 1 = ' + c.cand + '</span></div>';
+      }
+    });
+  }
+  choiceBox.innerHTML = ch;
+
+  statDp.textContent = st.i >= 1 && st.dp[st.i] !== AMOUNT + 1 ? st.dp[st.i] : '—';
+  statAns.textContent = st.dp[AMOUNT] !== AMOUNT + 1 ? st.dp[AMOUNT] : '—';
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1300);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>

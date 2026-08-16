@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7. 单词拆分 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.ch-cells{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:14px 0}
+.ch-cell{width:34px;height:42px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F1F5F9;border:2px solid #CBD5E1;border-radius:8px;font-family:Consolas,Monaco,monospace;font-weight:700;font-size:16px;transition:all .25s}
+.ch-cell .cidx{font-size:9px;color:var(--text-light);font-weight:400}
+.ch-cell.inword{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.ch-cell.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-3px)}
+.ch-cell.scanned{opacity:.5}
+.dp-row{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:10px 0 16px}
+.dp-cell{width:34px;border-radius:8px;border:2px solid #CBD5E1;background:#F1F5F9;overflow:hidden;text-align:center;padding:2px 0;transition:all .3s}
+.dp-cell .dnum{font-size:9px;color:var(--text-light)}
+.dp-cell .dval{font-family:Consolas,Monaco,monospace;font-weight:700;font-size:13px}
+.dp-cell.true{border-color:var(--accent-green);background:var(--accent-green-soft);color:#0F7A3D}
+.dp-cell.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-3px)}
+.dp-cell.src{border-color:var(--primary);background:var(--primary-soft)}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.choice-panel{flex:1;min-width:260px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.choice-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.choice-row{display:flex;justify-content:space-between;padding:6px 10px;border-radius:6px;font-family:Consolas,Monaco,monospace;font-size:13px;margin:4px 0}
+.choice-row:nth-child(odd){background:#F8FAFC}
+.choice-row.hit{background:var(--accent-green-soft);color:#0F7A3D;font-weight:700}
+.stats-panel{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:15px}
+.stat-box .s-cur{color:var(--warm)}
+.stat-box .s-ans{color:var(--accent-green)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 139 · 中等</div>
+  <h1>7. 单词拆分</h1>
+  <p class="subtitle">前缀可达性接力：dp[j] 且 s[j:i] 在字典中 → dp[i]。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：枚举最后一个单词</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给你一个字符串 <code>s</code> 和一个字符串列表 <code>wordDict</code> 作为字典。如果可以利用字典中出现的一个或多个单词<strong>拼接出 s</strong> 则返回 true。不要求字典中的单词全部使用，且单词可以重复使用。</p>
+  <h3>示例</h3>
+  <pre><code>输入：s = "leetcode", wordDict = ["leet", "code"]
+输出：true
+解释："leetcode" 可由 "leet" 和 "code" 拼接成。
+
+输入：s = "catsandog", wordDict = ["cats", "dog", "sand", "and", "cat"]
+输出：false</code></pre>
+  <div class="note yellow">拆分必须恰好覆盖整个字符串，不能多也不能少；单词可重复使用（如 "applepenapple"）。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：枚举最后一个单词</h2>
+  <ol>
+    <li><strong>状态定义</strong>：<code>dp[i]</code> = s 的前 i 个字符（s[0:i]）能否由字典单词组成；<code>dp[0] = True</code>（空串天然可拼）</li>
+    <li><strong>状态转移</strong>：枚举「最后一个单词」的起点 j（0 ≤ j &lt; i）：
+      <div class="formula">dp[i] = dp[j] 且 s[j:i] ∈ wordDict（任一 j 成立即可）</div>
+    </li>
+    <li><strong>剪枝</strong>：找到一个成立的 j 立即 <code>break</code>；字典转 set 加速查询</li>
+    <li><strong>答案</strong>：<code>dp[n]</code></li>
+  </ol>
+  <div class="note blue">与「最长递增子序列」同构——都在问「最后一个部件是谁」：LIS 枚举倒数第二个元素，本题枚举最后一个单词的起点，dp[j] 是前缀合法性的接力棒。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="var">words</span> = <span class="zh">字典转集合</span>            <span class="cm"># words = set(wordDict)</span>
+<span class="var">dp</span> = [<span class="zh">False</span>] * (<span class="var">n</span>+<span class="num">1</span>)
+<span class="var">dp</span>[<span class="num">0</span>] = <span class="zh">True</span>                <span class="cm"># 空串可拼</span>
+
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">range(1, n+1)</span>:
+    <span class="kw">for</span> <span class="var">j</span> <span class="kw">in</span> <span class="zh">range(i)</span>:
+        <span class="kw">if</span> <span class="var">dp</span>[<span class="var">j</span>] <span class="kw">and</span> <span class="var">s</span>[<span class="var">j</span>:<span class="var">i</span>] <span class="kw">in</span> <span class="var">words</span>:
+            <span class="var">dp</span>[<span class="var">i</span>] = <span class="zh">True</span>; <span class="kw">break</span>   <span class="cm"># 找到一个即可</span>
+<span class="kw">return</span> <span class="var">dp</span>[<span class="var">n</span>]</code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">dp[j] 是「接力棒」：只有前 j 个字符本身可拼，最后一个单词才是有效的增量——两条件缺一不可。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 s = "leetcode"，wordDict = ["leet", "code"] 的求解过程。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 s = "leetcode"，words = {"leet", "code"}</div>
+    <div class="ch-cells" id="chCells"></div>
+    <div class="dp-row" id="dpRow"></div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前 i</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>命中单词 s[j:i]</span>
+      <span><i style="background:var(--primary-soft);border:2px solid var(--primary)"></i>dp[j] = True（接力点）</span>
+    </div>
+    <div class="viz-panel">
+      <div class="choice-panel">
+        <h4>枚举最后一个单词的起点 j</h4>
+        <div id="choiceBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">当前 dp[i]<b class="s-cur" id="statDp">—</b></div>
+        <div class="stat-box">最终 dp[8]<b class="s-ans" id="statAns">—</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table>
+    <tr><th>i</th><th>前缀 s[0:i]</th><th>各 j 检查（dp[j] 且 s[j:i] ∈ words）</th><th>dp[i]</th></tr>
+    <tr><td>1</td><td>"l"</td><td>j=0："l" 不在字典</td><td>False</td></tr>
+    <tr><td>2</td><td>"le"</td><td>j=0："le" 不在；j=1：dp[1]=False</td><td>False</td></tr>
+    <tr><td>3</td><td>"lee"</td><td>j=0/1/2：均不成立</td><td>False</td></tr>
+    <tr><td>4</td><td>"leet"</td><td>j=0：dp[0]=True 且 "leet" ∈ 字典 ✓</td><td>True</td></tr>
+    <tr><td>5</td><td>"leetc"</td><td>j=0…"c"；j=4：dp[4]=True 但 "c" 不在</td><td>False</td></tr>
+    <tr><td>6~7</td><td>"leetco…" </td><td>均不成立</td><td>False</td></tr>
+    <tr><td>8</td><td>"leetcode"</td><td>j=4：dp[4]=True 且 "code" ∈ 字典 ✓</td><td>True ✅</td></tr>
+  </table>
+  <div class="note purple">dp[4] = True 是关键接力点：它让 j=4 时「前缀可拼 + 剩余是单词」两条件同时成立，dp[8] 随之点亮。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">wordBreak</span>(self, s: <span style="color:#CA8A04">str</span>, wordDict: <span style="color:#CA8A04">list</span>[<span style="color:#CA8A04">str</span>]) -&gt; <span style="color:#CA8A04">bool</span>:
+        words = <span style="color:#D4744C">set</span>(wordDict)      <span style="color:#6B7280"># 集合查询 O(1)</span>
+        n = <span style="color:#D4744C">len</span>(s)
+        dp = [<span style="color:#CA8A04">False</span>] * (n + <span style="color:#CA8A04">1</span>)
+        dp[<span style="color:#CA8A04">0</span>] = <span style="color:#CA8A04">True</span>               <span style="color:#6B7280"># 空字符串视为已成功拆分</span>
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">1</span>, n + <span style="color:#CA8A04">1</span>):
+            <span style="color:#6B7280">for</span> j <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(i):      <span style="color:#6B7280"># 枚举最后一个单词的起点</span>
+                <span style="color:#6B7280">if</span> dp[j] <span style="color:#6B7280">and</span> s[j:i] <span style="color:#6B7280">in</span> words:
+                    dp[i] = <span style="color:#CA8A04">True</span>
+                    <span style="color:#6B7280">break</span>            <span style="color:#6B7280"># 找到即可，剪枝</span>
+        <span style="color:#6B7280">return</span> dp[n]</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>dp 尺寸 n+1</strong>：下标 i 表示「前 i 个字符」，dp[0] 对应空串</li>
+    <li><strong>两条件短路求值</strong>：先查 dp[j]（O(1)）再切片查字典，避免无谓的字符串构造</li>
+    <li><strong>break 剪枝</strong>：布尔问题找到一个证明即可停止</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n²)</td><td>双重循环；切片与集合查询另计 O(词长)</td></tr>
+    <tr><td>空间</td><td>O(n + Σ词长)</td><td>dp 数组 + 字典集合</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>忘记 dp[0] = True</strong>：整条接力链的起点，漏掉则所有 dp 恒为 False。</div>
+  <div class="note yellow"><strong>只用字典匹配不考虑前缀</strong>：只判断 s[j:i] ∈ words 而不管 dp[j]，会把「后半能拼、前半拼不出」的错误情况判真。</div>
+  <div class="note yellow"><strong>忘记 break</strong>：不影响正确性，但最坏情况下多做无用的切片与查询。</div>
+  <div class="note red"><strong>与「单词拆分 II（返回所有句子）」混淆</strong>：本题只问可行性；返回方案需回溯枚举，复杂度更高。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>状态</strong>：dp[i] = 前缀 s[0:i] 是否可拼，dp[0] 是接力起点</li>
+    <li><strong>转移</strong>：枚举最后一个单词起点 j，dp[j] ∧ s[j:i]∈字典</li>
+    <li><strong>技巧</strong>：set 查询 + break 剪枝</li>
+  </ul>
+  <div class="note green">口诀：前缀可拼是接力，最后单词找起点；两条件同真才点亮，空串起点别忘记。</div>
+</section>
+</main>
+
+<footer>单词拆分 · 算法学习页</footer>
+
+<script>
+(function(){
+const S = "leetcode";
+const WORDS = new Set(["leet", "code"]);
+
+function simulate(s, words) {
+  const n = s.length;
+  const steps = [];
+  const dp = new Array(n + 1).fill(false);
+  dp[0] = true;
+  const snap = (desc, i, j, seg, hit, final) => {
+    steps.push({desc: desc, i: i, j: j, seg: seg, hit: hit, dp: dp.slice(), final: !!final});
+  };
+  snap('初始：dp[0] = True（空串可拼），其余为 False。字典 words = {"leet", "code"}', 0, -1, null, false);
+
+  for (let i = 1; i <= n; i++) {
+    let found = false;
+    let tries = [];
+    for (let j = 0; j < i; j++) {
+      const seg = s.slice(j, i);
+      const ok = dp[j] && words.has(seg);
+      tries.push({j: j, seg: seg, dpj: dp[j], ok: ok});
+      if (ok) {
+        dp[i] = true;
+        snap('i = ' + i + '（前缀 "' + s.slice(0, i) + '"）：j = ' + j + ' 时 dp[' + j + '] = ' + dp[j] + ' 且 s[' + j + ':' + i + '] = "' + seg + '" 在字典中 ✓ → dp[' + i + '] = True', i, j, [j, i - 1], true);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      const detail = tries.map(t => 'j=' + t.j + '(' + (t.dpj ? '前缀✓' : '前缀✗') + ', "' + t.seg + '"' + (words.has(t.seg) ? '∈' : '∉') + ')').join('、');
+      snap('i = ' + i + '（前缀 "' + s.slice(0, i) + '"）：所有 j 都不成立——' + detail + ' → dp[' + i + '] = False', i, -1, null, false);
+    }
+  }
+  snap('✅ 完成：dp[' + n + '] = ' + dp[n] + '，即 "' + s + '" ' + (dp[n] ? '可以由字典单词拼出（leet + code）' : '不能拼出'), n, -1, null, dp[n], true);
+  return steps;
+}
+
+const steps = simulate(S, WORDS);
+let cur = 0, playing = false, timer = null;
+
+const chCells = document.getElementById('chCells');
+const dpRow = document.getElementById('dpRow');
+const choiceBox = document.getElementById('choiceBox');
+const statDp = document.getElementById('statDp');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+  const n = S.length;
+
+  let h = '';
+  for (let idx = 0; idx < n; idx++) {
+    let cls = '';
+    if (st.seg && idx >= st.seg[0] && idx <= st.seg[1] && st.hit) cls = 'inword';
+    h += '<div class="ch-cell ' + cls + '">' + S[idx] + '<span class="cidx">' + idx + '</span></div>';
+  }
+  chCells.innerHTML = h;
+
+  let rh = '';
+  for (let idx = 0; idx <= n; idx++) {
+    let cls = st.dp[idx] ? 'true' : '';
+    if (idx === st.j && st.j >= 0) cls = 'src';
+    if (idx === st.i) cls = 'cur';
+    rh += '<div class="dp-cell ' + cls + '"><div class="dnum">' + idx + '</div><div class="dval">' + (st.dp[idx] ? 'T' : 'F') + '</div></div>';
+  }
+  dpRow.innerHTML = rh;
+
+  let ch = '';
+  if (st.final) {
+    ch = '<div style="font-size:13px;color:var(--text-light);padding:8px">✅ 计算完成</div>';
+  } else if (st.hit) {
+    ch = '<div class="choice-row hit"><span class="tag">j=' + st.j + '：dp[' + st.j + ']=True ∧ "' + S.slice(st.j, st.i) + '" ∈ words ✓</span></div>';
+  } else {
+    ch = '<div style="font-size:13px;color:var(--text-light);padding:8px">所有 j 尝试失败，dp[' + st.i + '] = False</div>';
+  }
+  choiceBox.innerHTML = ch;
+
+  statDp.textContent = st.i >= 1 ? (st.dp[st.i] ? 'True' : 'False') : '—';
+  statAns.textContent = st.dp[n] ? 'True' : 'False';
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1700);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>
