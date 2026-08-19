@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6. 合并二叉树 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.svg-wrap{display:flex;justify-content:center;gap:30px;margin:10px 0;flex-wrap:wrap}
+.tree-svg{max-width:100%;height:auto}
+.tree-label{text-align:center;font-size:13px;font-weight:700;margin-top:6px}
+.tedge{stroke:#94A3B8;stroke-width:2;fill:none}
+.tnode circle{fill:#F1F5F9;stroke:#94A3B8;stroke-width:2.5;transition:all .35s}
+.tnode text{font-family:Consolas,Monaco,monospace;font-size:13px;font-weight:700;fill:#1F2937;text-anchor:middle;dominant-baseline:central}
+.tnode.t1 circle{fill:var(--primary-soft);stroke:var(--primary)}
+.tnode.t2 circle{fill:var(--warm-soft);stroke:var(--warm)}
+.tnode.t1.cur circle{stroke-width:4;filter:drop-shadow(0 3px 8px rgba(59,125,216,.4))}
+.tnode.t2.cur circle{stroke-width:4;filter:drop-shadow(0 3px 8px rgba(212,116,76,.4))}
+.tnode.done circle{fill:var(--accent-green-soft);stroke:var(--accent-green)}
+.tnode.ghost circle{fill:#FAFBFC;stroke:#D8DEE6;stroke-dasharray:4 3}
+.tnode.ghost text{fill:#B6BFCC}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.calc-panel{flex:1.2;min-width:280px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.calc-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.calc-row{padding:8px 12px;border-radius:8px;font-family:Consolas,Monaco,monospace;font-size:13px;margin:4px 0;background:#F8FAFC}
+.calc-row.hit{background:var(--accent-green-soft);color:#0F7A3D;font-weight:700}
+.calc-row.give{background:var(--primary-soft);color:#1E40AF;font-weight:700}
+.calc-row.pending{opacity:.45}
+.stats-panel{flex:1;min-width:160px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-merge{color:var(--accent-green)}
+.stat-box .s-ans{color:var(--accent-purple)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 617 · 简单</div>
+  <h1>6. 合并二叉树</h1>
+  <p class="subtitle">双树同走：都有则相加，缺位整棵挂接。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：同步递归两棵树</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给你两棵二叉树 root1 和 root2。将一棵覆盖到另一棵之上时一些节点会重叠。合并规则：重叠节点值<strong>相加</strong>；不为 null 的节点直接作为新树的节点。返回合并后的二叉树（必须从两棵树的根节点开始合并）。</p>
+  <h3>示例</h3>
+  <pre><code>输入：root1 = [1, 3, 2, 5]，root2 = [2, 1, 3, null, 4, null, 7]
+输出：[3, 4, 5, 5, 4, null, 7]
+
+输入：root1 = [1]，root2 = [1, 2]
+输出：[2, 2]</code></pre>
+  <div class="note yellow">「覆盖」的直觉：两棵树逐位置对齐，同一位置都有节点就叠成一个（值相加），只有一边有就原样保留。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：同步递归两棵树</h2>
+  <ol>
+    <li><strong>双参数递归</strong>：mergeTrees(root1, root2) 同时走在两棵树的<strong>同一位置</strong></li>
+    <li><strong>缺位剪枝</strong>：
+      <ul>
+        <li>root1 为空 → 整棵返回 root2（root2 的子树原样挂上，不再递归）</li>
+        <li>root2 为空 → 整棵返回 root1</li>
+      </ul>
+    </li>
+    <li><strong>都有节点</strong>：值相加（本题在 root1 上原地合并：root1.val += root2.val）</li>
+    <li><strong>接回</strong>：递归合并左右孩子并赋值给 root1.left / root1.right——保证父层结构正确</li>
+  </ol>
+  <div class="note blue">缺位返回是「天然剪枝」：一侧子树为空时，另一侧整棵子树无需再走——时间复杂度由较浅的树决定 O(min(m, n))。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="kw">def</span> <span class="zh">合并</span>(<span class="var">t1</span>, <span class="var">t2</span>):
+    <span class="kw">if</span> <span class="var">t1</span> <span class="zh">为空</span>: <span class="kw">return</span> <span class="var">t2</span>          <span class="cm"># 缺位整棵挂接</span>
+    <span class="kw">if</span> <span class="var">t2</span> <span class="zh">为空</span>: <span class="kw">return</span> <span class="var">t1</span>
+
+    <span class="var">t1</span>.<span class="var">val</span> += <span class="var">t2</span>.<span class="var">val</span>                <span class="cm"># 重叠：值相加（原地合并）</span>
+
+    <span class="var">t1</span>.<span class="var">left</span> <span class="kw">=</span> <span class="zh">合并</span>(<span class="var">t1</span>.<span class="var">left</span>, <span class="var">t2</span>.<span class="var">left</span>)    <span class="cm"># 递归左孩子</span>
+    <span class="var">t1</span>.<span class="var">right</span> <span class="kw">=</span> <span class="zh">合并</span>(<span class="var">t1</span>.<span class="var">right</span>, <span class="var">t2</span>.<span class="var">right</span>)  <span class="cm"># 递归右孩子</span>
+    <span class="kw">return</span> <span class="var">t1</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">与「翻转二叉树」的签名同型（修改并返回），只是参数从一个节点变成两个节点——递归参数个数随「同步走几棵树」增加。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 root1 = [1,3,2,5] 与 root2 = [2,1,3,null,4,null,7] 的合并全过程。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 左=树1（蓝），中=树2（橙），右=合并结果（绿）；虚线圆=空位</div>
+    <div class="svg-wrap">
+      <div>
+        <svg class="tree-svg" width="240" height="230" viewBox="0 0 240 230" id="svgT1"></svg>
+        <div class="tree-label" style="color:var(--primary)">root1</div>
+      </div>
+      <div>
+        <svg class="tree-svg" width="240" height="230" viewBox="0 0 240 230" id="svgT2"></svg>
+        <div class="tree-label" style="color:var(--warm)">root2</div>
+      </div>
+      <div>
+        <svg class="tree-svg" width="240" height="230" viewBox="0 0 240 230" id="svgR"></svg>
+        <div class="tree-label" style="color:var(--accent-green)">合并结果（在 root1 上原地）</div>
+      </div>
+    </div>
+    <div class="viz-legend">
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>已合并</span>
+      <span><i style="background:var(--primary-soft);border:2px solid var(--primary)"></i>当前 t1 位置</span>
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前 t2 位置</span>
+    </div>
+    <div class="viz-panel">
+      <div class="calc-panel">
+        <h4>当前位置动作</h4>
+        <div id="calcBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">已合并节点<b class="s-merge" id="statMerge">0</b></div>
+        <div class="stat-box">结果层序<b class="s-ans" id="statAns">—</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="vizDesc-wrap"><div class="viz-desc" id="vizDesc"></div></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table>
+    <tr><th>位置 (t1, t2)</th><th>情况</th><th>动作</th></tr>
+    <tr><td>(1, 2)</td><td>都有</td><td>值相加 1+2=3，递归左右</td></tr>
+    <tr><td>(3, 1)</td><td>都有</td><td>3+1=4，递归左右</td></tr>
+    <tr><td>(5, null)</td><td>t2 空</td><td>整棵返回 t1 的 5 → 挂到结果左边</td></tr>
+    <tr><td>(null, 4)</td><td>t1 空</td><td>整棵返回 t2 的 4 → 挂到结果右边</td></tr>
+    <tr><td>(2, 3)</td><td>都有</td><td>2+3=5，递归左右</td></tr>
+    <tr><td>(null, null)</td><td>都空</td><td>返回 None</td></tr>
+    <tr><td>(null, 7)</td><td>t1 空</td><td>整棵返回 7</td></tr>
+  </table>
+  <div class="note purple">最终层序 [3, 4, 5, 5, 4, null, 7]：位置一一对应——重叠处相加、单侧存在原样保留、都空还是空。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">mergeTrees</span>(self, root1, root2):
+        <span style="color:#6B7280"># 递归思想：同时看两棵树当前位置的节点：
+        # 都有就相加，只有一个就用那个，然后继续处理左右孩子</span>
+
+        <span style="color:#6B7280"># 1. 只有一棵树存在，直接返回另一棵</span>
+        <span style="color:#6B7280">if</span> root1 <span style="color:#6B7280">is</span> <span style="color:#CA8A04">None</span>:
+            <span style="color:#6B7280">return</span> root2
+
+        <span style="color:#6B7280">if</span> root2 <span style="color:#6B7280">is</span> <span style="color:#CA8A04">None</span>:
+            <span style="color:#6B7280">return</span> root1
+
+        <span style="color:#6B7280"># 2. 两个节点都存在，值相加</span>
+        root1.val += root2.val
+
+        <span style="color:#6B7280"># 3. 继续合并左子树和右子树</span>
+        root1.left = self.<span style="color:#3B7DD8">mergeTrees</span>(root1.left, root2.left)
+        root1.right = self.<span style="color:#3B7DD8">mergeTrees</span>(root1.right, root2.right)
+
+        <span style="color:#6B7280">return</span> root1</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>两条缺位判断</strong>：任一为空就返回另一个（都空时返回 None）——不需要单独写「都空」分支</li>
+    <li><strong>原地合并</strong>：复用 root1 的节点，省内存；若要求不破坏输入可 new TreeNode(root1.val + root2.val)</li>
+    <li><strong>接回赋值</strong>：root1.left = merge(...)——返回值必须接住，否则缺位子树挂不上</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(min(m, n))</td><td>较短树先被走完，此后整棵挂接不再递归</td></tr>
+    <tr><td>空间</td><td>O(min(m, n))</td><td>递归栈深度 = 较浅树的高度</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>缺位时新建节点</strong>：一空就 TreeNode(另一边.val) 只复制了当前节点，孩子丢失——必须返回整棵子树引用。</div>
+  <div class="note yellow"><strong>忘接返回值</strong>：只调用 merge(root1.left, ...) 不赋值，缺位子树没有被挂上，结果树残缺。</div>
+  <div class="note yellow"><strong>边界：两树皆空</strong>：root1 为空返回 root2（也是 None），无需第三个判断。</div>
+  <div class="note red"><strong>原地修改副作用</strong>：root1 被改写（含缺位处直接挂 root2 的节点）——本地测试勿复用旧树对象。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>模型</strong>：两树按相同位置同步递归，重叠相加、缺位挂接</li>
+    <li><strong>剪枝</strong>：一侧为空立即返回另一侧整棵子树</li>
+    <li><strong>范式</strong>：双树同走 + 修改并返回，与对称二叉树同属「多参数树递归」</li>
+  </ul>
+  <div class="note green">口诀：两树同走看空位，谁空就把谁的对家回；都有节点值相加，接好孩子再返回。</div>
+</section>
+</main>
+
+<footer>合并二叉树 · 算法学习页</footer>
+
+<script>
+(function(){
+// 树1 [1,3,2,5]：id 布局固定
+const T1 = {
+  1: {val: 1, l: 2, r: 3},
+  2: {val: 3, l: 4, r: null},
+  3: {val: 2, l: null, r: null},
+  4: {val: 5, l: null, r: null}
+};
+// 树2 [2,1,3,null,4,null,7]
+const T2 = {
+  1: {val: 2, l: 2, r: 3},
+  2: {val: 1, l: null, r: 4},
+  3: {val: 3, l: null, r: 4},
+  4: {val: 4, l: null, r: null},
+  5: {val: 7, l: null, r: null}
+};
+// 位置（各自 240x230 画布）
+const P1 = {1: [120, 40], 2: [70, 125], 3: [180, 125], 4: [40, 205]};
+const P2 = {1: [120, 40], 2: [70, 125], 3: [180, 125], 4: [140, 205], 5: [210, 205]};
+
+function clone(t) {
+  const c = {};
+  for (const k of Object.keys(t)) c[k] = {val: t[k].val, l: t[k].l, r: t[k].r};
+  return c;
+}
+
+function simulate() {
+  const steps = [];
+  const t1 = clone(T1), t2 = T2;   // t1 是合并结果（原地）
+  let merged = 0;
+  const snap = (desc, p1, p2, event) => {
+    const r1 = {};
+    for (const k of Object.keys(t1)) r1[k] = {val: t1[k].val, l: t1[k].l, r: t1[k].r};
+    steps.push({desc: desc, tree1: r1, p1: p1, p2: p2, merged: merged, event: event || ''});
+  };
+
+  function merge(id1, id2) {
+    if (id1 === null && id2 === null) { snap('两边都为空 → 返回 None', null, null, 'both-null'); return null; }
+    if (id1 === null) {
+      merged++;
+      snap('t1 位置为空，t2 有节点 ' + t2[id2].val + ' → 整棵挂接 t2 的子树（节点 ' + t2[id2].val + ' 及其全部孩子直接成为结果的一部分）', null, id2, 'give2');
+      return id2;
+    }
+    if (id2 === null) {
+      merged++;
+      snap('t2 位置为空，t1 有节点 ' + t1[id1].val + ' → 保留 t1 的整棵子树（节点 ' + t1[id1].val + ' 原样保留）', id1, null, 'give1');
+      return id1;
+    }
+    t1[id1].val += t2[id2].val;
+    merged++;
+    snap('两树都有节点：' + (t1[id1].val - t2[id2].val) + ' + ' + t2[id2].val + ' = ' + t1[id1].val + '，值相加（原地合并到 root1）。继续递归左孩子', id1, id2, 'add');
+    t1[id1].l = merge(t1[id1].l, t2[id2].l);
+    t1[id1].r = merge(t1[id1].r, t2[id2].r);
+    snap('节点 ' + t1[id1].val + ' 的左右孩子都处理完，返回它', id1, id2, 'done');
+    return id1;
+  }
+
+  snap('初始：root1 = [1,3,2,5]，root2 = [2,1,3,null,4,null,7]。合并结果将在 root1 上原地生成', null, null, 'init');
+  merge(1, 1);
+  snap('✅ 合并完成：结果层序 = [3, 4, 5, 5, 4, None, 7]', null, null, 'final');
+  return steps;
+}
+
+const steps = simulate();
+let cur = 0, playing = false, timer = null;
+
+const svgT1 = document.getElementById('svgT1');
+const svgT2 = document.getElementById('svgT2');
+const svgR = document.getElementById('svgR');
+const calcBox = document.getElementById('calcBox');
+const statMerge = document.getElementById('statMerge');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function drawTree(svg, nodes, pos, clsPrefix, curIds, doneIds, ghostIds) {
+  let h = '';
+  for (const k of Object.keys(nodes).map(Number)) {
+    const n = nodes[k];
+    for (const c of [n.l, n.r]) {
+      if (c !== null && nodes[c]) {
+        const a = pos[k], b = pos[c];
+        h += '<line class="tedge" x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '"/>';
+      }
+    }
+  }
+  for (const k of Object.keys(nodes).map(Number)) {
+    const p = pos[k];
+    let cls = 'tnode ' + clsPrefix;
+    if (doneIds && doneIds.includes(k)) cls += ' done';
+    if (curIds && curIds.includes(k)) cls += ' cur';
+    h += '<g class="' + cls + '"><circle cx="' + p[0] + '" cy="' + p[1] + '" r="19"/>'
+        + '<text x="' + p[0] + '" y="' + p[1] + '">' + nodes[k].val + '</text></g>';
+  }
+  // ghost（当前位置空）
+  if (ghostIds) {
+    for (const gp of ghostIds) {
+      h += '<g class="tnode ghost"><circle cx="' + gp[0] + '" cy="' + gp[1] + '" r="19"/>'
+          + '<text x="' + gp[0] + '" y="' + gp[1] + '">∅</text></g>';
+    }
+  }
+  svg.innerHTML = h;
+}
+
+function levelOrderMerged(tree) {
+  // 合并结果的层序（树1 + 挂接的树2 节点）；直接在 t1 克隆上做
+  const res = [];
+  const q = [1];
+  while (q.length) {
+    const id = q.shift();
+    if (id === null) { res.push(null); continue; }
+    if (tree[id]) {
+      res.push(tree[id].val);
+      q.push(tree[id].l, tree[id].r);
+    } else {
+      res.push(null);
+    }
+  }
+  while (res.length && res[res.length - 1] === null) res.pop();
+  return res;
+}
+
+function render(k) {
+  const st = steps[k];
+
+  // 树1（兼合并结果）
+  const done1 = [];
+  // 结果的完成态：merged 节点都在 t1 视角里难以精确标，简单以当前高亮呈现
+  drawTree(svgT1, st.tree1, P1, 't1', st.p1 !== null ? [st.p1] : [], [], st.p1 === null ? [P1[1]] : []);
+  drawTree(svgT2, T2, P2, 't2', st.p2 !== null ? [st.p2] : [], [], st.p2 === null ? [P2[1]] : []);
+
+  // 结果树：以 tree1 克隆 + tree2 挂接部分绘制（把 tree2 中被挂接的 id 映射进结果布局）
+  // 简化：直接在中央树2画布绘制合并结果 —— 重用 t2 布局，把 tree1 的合并值覆盖上去
+  const resNodes = {};
+  for (const kk of Object.keys(T2)) resNodes[kk] = {val: T2[kk].val, l: T2[kk].l, r: T2[kk].r};
+  // 覆盖：t1 存在的节点位置用合并后的值；挂接逻辑：结果结构 = tree1 结构，把 T2 缺位挂上
+  // 由于 t1 原地合并保存了结构（t1[id].l 可能指向 T2 的 id），值已经写进 st.tree1
+  // 结果布局：树1的布局 + 树2独有节点的位置
+  const resPos = Object.assign({}, P1, {4: [140, 205], 5: [210, 205]});  // 4 被 t2 挂到位置(2,右) 用新坐标
+  // 重新构造结果树结构：tree1 克隆，其中 l/r 若指向 T2 的节点（值已挂接）
+  const resTree = {};
+  for (const kk of Object.keys(st.tree1)) resTree[kk] = {val: st.tree1[kk].val, l: st.tree1[kk].l, r: st.tree1[kk].r};
+  // 树1 中 id=4 原是 5（左下），若 tree1[2].r 从 null 变为 4（挂 T2 的 4），值仍是合并前 T2 值
+  if (resTree[2] && resTree[2].r !== null && resTree[2].r === 4 && resTree[4] === undefined) {
+    resTree[4] = {val: T2[4].val, l: null, r: null};
+  }
+  drawTree(svgR, resTree, resPos, 't1', [], Object.keys(resTree).map(Number), []);
+
+  let ch = '';
+  const e = st.event;
+  if (e === 'init') ch = '<div class="calc-row pending">从两棵树的根开始同步递归…</div>';
+  else if (e === 'add') ch = '<div class="calc-row hit">都有节点 → 值相加</div><div class="calc-row pending">→ 递归左右孩子</div>';
+  else if (e === 'give1') ch = '<div class="calc-row give">t2 空 → 整棵保留 t1 子树</div>';
+  else if (e === 'give2') ch = '<div class="calc-row give">t1 空 → 整棵挂接 t2 子树</div>';
+  else if (e === 'both-null') ch = '<div class="calc-row pending">都为空 → None</div>';
+  else if (e === 'final') ch = '<div class="calc-row hit">合并完成 ✅</div>';
+  else ch = '<div class="calc-row pending">递归 / 回溯中…</div>';
+  calcBox.innerHTML = ch;
+
+  statMerge.textContent = st.merged;
+  const lo = levelOrderMerged(st.tree1);
+  statAns.textContent = e === 'final' ? '[' + lo.join(',') + ']' : '…';
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1500);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>

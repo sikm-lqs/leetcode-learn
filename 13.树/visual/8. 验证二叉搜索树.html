@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8. 验证二叉搜索树 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:10px}
+.tab-bar{display:flex;justify-content:center;gap:8px;margin:6px 0 14px;flex-wrap:wrap}
+.tab-btn{border:1px solid var(--border);background:var(--card);color:var(--text-light);padding:7px 20px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:600}
+.tab-btn:hover{border-color:var(--primary);color:var(--primary)}
+.tab-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 3px 10px rgba(59,125,216,.3)}
+.tab-btn.active.warm-tab{background:var(--warm);border-color:var(--warm);box-shadow:0 3px 10px rgba(212,116,76,.3)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+.svg-wrap{display:flex;justify-content:center;margin:10px 0}
+.tree-svg{max-width:100%;height:auto}
+.tedge{stroke:#94A3B8;stroke-width:2;fill:none}
+.tnode circle{fill:#F1F5F9;stroke:#94A3B8;stroke-width:2.5;transition:all .35s}
+.tnode text{font-family:Consolas,Monaco,monospace;font-size:14px;font-weight:700;fill:#1F2937;text-anchor:middle;dominant-baseline:central}
+.tnode .range{font-size:9px;fill:#7C3AED;font-weight:700;text-anchor:middle}
+.tnode .ord{font-size:9px;fill:#16A34A;font-weight:700;text-anchor:middle}
+.tnode.cur circle{fill:var(--warm-soft);stroke:var(--warm);stroke-width:4}
+.tnode.passed circle{fill:var(--accent-green-soft);stroke:var(--accent-green)}
+.tnode.violate circle{fill:var(--accent-red-soft);stroke:var(--accent-red);stroke-width:4}
+.tnode.visited circle{fill:var(--accent-green-soft);stroke:var(--accent-green)}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.dec-panel{flex:1.2;min-width:280px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.dec-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.dec-row{padding:8px 12px;border-radius:8px;font-family:Consolas,Monaco,monospace;font-size:13px;margin:4px 0;background:#F8FAFC}
+.dec-row.hit{background:var(--accent-green-soft);color:#0F7A3D;font-weight:700}
+.dec-row.bad{background:var(--accent-red-soft);color:#B91C1C;font-weight:700}
+.dec-row.pending{opacity:.45}
+.nums-row{display:flex;flex-wrap:wrap;gap:6px;min-height:40px;align-items:center}
+.num-item{background:var(--accent-green-soft);border:1px solid var(--accent-green);color:#0F7A3D;border-radius:8px;min-width:34px;text-align:center;padding:4px 8px;font-family:Consolas,Monaco,monospace;font-size:14px;font-weight:700;position:relative}
+.num-item .ord{position:absolute;top:-9px;right:-4px;background:var(--accent-green);color:#fff;font-size:9px;border-radius:7px;padding:0 5px;font-weight:700}
+.num-item.bad{background:var(--accent-red-soft);border-color:var(--accent-red);color:#B91C1C}
+.num-hint{font-size:12px;color:var(--text-light)}
+.stats-panel{flex:1;min-width:160px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:15px}
+.stat-box .s-range{color:var(--accent-purple)}
+.stat-box .s-ans{color:var(--accent-green)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 98 · 中等</div>
+  <h1>8. 验证二叉搜索树</h1>
+  <p class="subtitle">双解法：上下界随路径收紧 × 中序遍历严格递增。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：两种等价视角</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给你一个二叉树的根节点 root，判断其是否是一个<strong>有效的二叉搜索树</strong>。有效 BST 定义：</p>
+  <ul>
+    <li>节点的左子树只包含<strong>严格小于</strong>当前节点的数</li>
+    <li>节点的右子树只包含<strong>严格大于</strong>当前节点的数</li>
+    <li>所有左子树和右子树自身必须也是二叉搜索树</li>
+  </ul>
+  <h3>示例</h3>
+  <pre><code>输入：root = [2, 1, 3]
+输出：true
+
+输入：root = [5, 1, 4, null, null, 3, 6]
+输出：false
+解释：节点 4 在根 5 的右子树中，但 4 &lt; 5。</code></pre>
+  <div class="note yellow">注意「左子树<strong>全部</strong>小于根」「右子树<strong>全部</strong>大于根」——是整棵子树的所有节点，不只是直接孩子。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：两种等价视角</h2>
+  <h3>解法一：区间沿路径收紧（上下界法）</h3>
+  <ol>
+    <li><strong>陷阱</strong>：只比较「父与子」不够。反例 <code>[5,4,6,null,null,3,7]</code>：4&lt;5 ✓、6&gt;5 ✓、3&lt;6 ✓、7&gt;6 ✓，但节点 3 在根 5 的右子树里且 3 &lt; 5——违反的是<strong>祖先</strong>约束</li>
+    <li><strong>解法</strong>：递归函数 <code>dfs(node, lower, upper)</code> 携带开区间下降——当前节点必须严格落在 <code>(lower, upper)</code> 内</li>
+    <li><strong>收紧规则</strong>：进左子树 upper = node.val；进右子树 lower = node.val；初始 <code>(-∞, +∞)</code></li>
+  </ol>
+  <div class="formula">dfs(node, lower, upper)：lower &lt; node.val &lt; upper</div>
+  <h3>解法二：中序遍历严格递增</h3>
+  <ol>
+    <li><strong>BST 性质</strong>：中序遍历（左 → 中 → 右）得到的序列<strong>恰好严格升序</strong></li>
+    <li><strong>做法</strong>：中序收集所有值到数组 nums，再检查相邻关系 <code>nums[i] &gt; nums[i-1]</code>——一旦出现 ≤ 即违规</li>
+  </ol>
+  <div class="note blue">两解法本质同源：区间法验证「每个节点面对所有祖先的约束」，中序法验证「所有约束的宏观结果（升序性）」——合法 BST ⟺ 两种检查都通过。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="cm"># ── 解法一：上下界 ──</span>
+<span class="kw">def</span> <span class="zh">校验</span>(<span class="var">node</span>, <span class="var">lower</span>, <span class="var">upper</span>):
+    <span class="kw">if</span> <span class="var">node</span> <span class="zh">为空</span>: <span class="kw">return</span> <span class="zh">True</span>
+    <span class="kw">if</span> <span class="var">node</span>.<span class="var">val</span> <span class="zh">不在开区间内</span>: <span class="kw">return</span> <span class="zh">False</span>   <span class="cm"># val &lt;= lower or val &gt;= upper</span>
+    <span class="zh">递归左子树（上界收紧）</span>                  <span class="cm"># dfs(node.left, lower, node.val)</span>
+    <span class="zh">递归右子树（下界收紧）</span>                  <span class="cm"># dfs(node.right, node.val, upper)</span>
+
+<span class="zh">校验</span>(<span class="var">root</span>, -∞, +∞)
+
+<span class="cm"># ── 解法二：中序递增 ──</span>
+<span class="var">nums</span> = []
+<span class="zh">中序遍历收集</span>(<span class="var">root</span>)                         <span class="cm"># 左 → append(val) → 右</span>
+<span class="kw">for</span> <span class="var">i</span> <span class="kw">in</span> <span class="zh">range(1, len)</span>:
+    <span class="kw">if</span> <span class="var">nums</span>[<span class="var">i</span>] <span class="kw">&lt;=</span> <span class="var">nums</span>[<span class="var">i</span>-<span class="num">1</span>]: <span class="kw">return</span> <span class="zh">False</span>   <span class="cm"># 相等也算违规</span>
+<span class="kw">return</span> <span class="zh">True</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">两种检查都用「严格」比较（≤ / ≥ 判违规）——BST 不允许相等值。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，分别用两种解法验证 [5, 1, 4, null, null, 3, 6]（官方反例，节点 3 违规）。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 双解法对照演示</div>
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabBtnRange">解法一：上下界收紧</button>
+      <button class="tab-btn warm-tab" id="tabBtnInorder">解法二：中序遍历递增</button>
+    </div>
+
+    <div class="tab-pane active" id="paneRange">
+      <div class="viz-title" style="font-size:13px;color:var(--text-light)">节点下方紫字 = 该节点携带的合法区间 (lower, upper)</div>
+      <div class="svg-wrap">
+        <svg class="tree-svg" width="480" height="250" viewBox="0 0 480 250" id="treeSvgRange"></svg>
+      </div>
+      <div class="viz-legend">
+        <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前节点</span>
+        <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>已通过</span>
+        <span><i style="background:var(--accent-red-soft);border:2px solid var(--accent-red)"></i>违规</span>
+      </div>
+      <div class="viz-panel">
+        <div class="dec-panel">
+          <h4>当前节点判定（区间法）</h4>
+          <div id="decBoxRange"></div>
+        </div>
+        <div class="stats-panel">
+          <div class="stat-box">当前区间<b class="s-range" id="statRange">(−∞, +∞)</b></div>
+          <div class="stat-box">最终结论<b class="s-ans" id="statAnsRange">…</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="paneInorder">
+      <div class="viz-title" style="font-size:13px;color:var(--text-light)">节点下方绿字角标 = 中序访问顺序（左 → 中 → 右）</div>
+      <div class="svg-wrap">
+        <svg class="tree-svg" width="480" height="250" viewBox="0 0 480 250" id="treeSvgIn"></svg>
+      </div>
+      <div class="viz-legend">
+        <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前访问</span>
+        <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>已入数组</span>
+        <span><i style="background:var(--accent-red-soft);border:2px solid var(--accent-red)"></i>违规点</span>
+      </div>
+      <div class="viz-panel">
+        <div class="dec-panel">
+          <h4>中序数组 nums（每入一个新值与前一值比较）</h4>
+          <div class="nums-row" id="numsBox"></div>
+          <div id="decBoxIn" style="margin-top:10px"></div>
+        </div>
+        <div class="stats-panel">
+          <div class="stat-box">当前比较<b class="s-range" id="statCmp">—</b></div>
+          <div class="stat-box">最终结论<b class="s-ans" id="statAnsIn">…</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <h3>反例 [5, 1, 4, null, null, 3, 6]——解法一（区间法）</h3>
+  <table>
+    <tr><th>节点</th><th>区间 (lower, upper)</th><th>判定</th></tr>
+    <tr><td>5（根）</td><td>(−∞, +∞)</td><td>✓ 通过；左子树上界 → 5，右子树下界 → 5</td></tr>
+    <tr><td>1</td><td>(−∞, 5)</td><td>1 &lt; 5 ✓；孩子为空，返回 True</td></tr>
+    <tr><td>4</td><td>(5, +∞)</td><td>4 &gt; 5 ✓（4 在右子树必须 &gt; 5，恰好通过）；上界 → 4</td></tr>
+    <tr><td>3</td><td>(5, 4)</td><td><strong>5 &lt; 3 不成立 → 区间为空，违规！</strong> ✗</td></tr>
+  </table>
+  <h3>同一棵树——解法二（中序法）</h3>
+  <table>
+    <tr><th>访问序</th><th>节点</th><th>nums 变化</th><th>相邻检查</th></tr>
+    <tr><td>#1</td><td>1（最左）</td><td>[1]</td><td>—（首个）</td></tr>
+    <tr><td>#2</td><td>5（根）</td><td>[1, 5]</td><td>5 &gt; 1 ✓</td></tr>
+    <tr><td>#3</td><td>3</td><td>[1, 5, 3]</td><td><strong>3 ≤ 5 ✗ 违规！</strong></td></tr>
+    <tr><td>#4</td><td>4</td><td>（短路，实际解法会继续收完再检查）</td><td>—</td></tr>
+    <tr><td>#5</td><td>6</td><td>—</td><td>—</td></tr>
+  </table>
+  <div class="note purple">中序序列 [1, 5, 3, 4, 6] 中 3 掉在 5 后面——升序性被打破的位置正是区间法里违规的同一个节点。两种视角殊途同归。</div>
+  <h3>更隐蔽的反例 [5, 4, 6, null, null, 3, 7]（每个节点与父比较都合法）</h3>
+  <table>
+    <tr><th>节点</th><th>区间法</th><th>中序法</th></tr>
+    <tr><td>3</td><td>(5, 6)：3 ≤ 5 → 违规（祖先 5 的下界仍生效）</td><td>中序 [4, 5, 3, 6, 7]：3 ≤ 5 → 违规</td></tr>
+  </table>
+  <div class="note red">这是「只比较父子」写法的坟场——3 与直接父 6 比较完全合法，违规的是更早的祖先 5。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <h3>解法一：上下界递归</h3>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">isValidBST</span>(self, root) -&gt; <span style="color:#CA8A04">bool</span>:
+        <span style="color:#6B7280"># 不能只考虑父亲节点，还要考虑祖先节点</span>
+        <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">dfs</span>(root, lower, upper):
+            <span style="color:#6B7280">if</span> root <span style="color:#6B7280">is</span> <span style="color:#CA8A04">None</span>:
+                <span style="color:#6B7280">return</span> <span style="color:#CA8A04">True</span>
+            <span style="color:#6B7280"># 当前节点必须要在 lower-upper 之间</span>
+            <span style="color:#6B7280">if</span> root.val &lt;= lower <span style="color:#6B7280">or</span> root.val &gt;= upper:
+                <span style="color:#6B7280">return</span> <span style="color:#CA8A04">False</span>
+            <span style="color:#6B7280"># 左子树（上界收紧为 root.val）</span>
+            left = <span style="color:#3B7DD8">dfs</span>(root.left, lower, root.val)
+            right = <span style="color:#3B7DD8">dfs</span>(root.right, root.val, upper)
+            <span style="color:#6B7280">return</span> left <span style="color:#6B7280">and</span> right
+
+        <span style="color:#6B7280">return</span> <span style="color:#3B7DD8">dfs</span>(root, <span style="color:#D4744C">float</span>(<span style="color:#CA8A04">"-inf"</span>), <span style="color:#D4744C">float</span>(<span style="color:#CA8A04">"inf"</span>))</code></pre>
+  <h3>解法二：中序遍历 → 数组 → 检查递增</h3>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution2</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">isValidBST</span>(self, root) -&gt; <span style="color:#CA8A04">bool</span>:
+        <span style="color:#6B7280"># 中序遍历：左子树 -&gt; root -&gt; 右子树</span>
+        <span style="color:#6B7280"># 将中序遍历保存到数组，然后检查</span>
+        nums = []
+
+        <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">inorder</span>(node):
+            <span style="color:#6B7280">if</span> <span style="color:#6B7280">not</span> node:
+                <span style="color:#6B7280">return</span>
+            <span style="color:#3B7DD8">inorder</span>(node.left)      <span style="color:#6B7280"># 1.遍历左子树</span>
+            nums.append(node.val)    <span style="color:#6B7280"># 2. 当前值</span>
+            <span style="color:#3B7DD8">inorder</span>(node.right)     <span style="color:#6B7280"># 3. 右子树</span>
+
+        <span style="color:#3B7DD8">inorder</span>(root)
+
+        <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">1</span>, <span style="color:#D4744C">len</span>(nums)):
+            <span style="color:#6B7280">if</span> nums[i] &lt;= nums[i-<span style="color:#CA8A04">1</span>]:     <span style="color:#6B7280"># 相等也算违规</span>
+                <span style="color:#6B7280">return</span> <span style="color:#CA8A04">False</span>
+        <span style="color:#6B7280">return</span> <span style="color:#CA8A04">True</span></code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>解法一关键</strong>：<code>val &lt;= lower or val &gt;= upper</code> 开区间判断——等于边界也算违规；±∞ 初始化让根不受约束</li>
+    <li><strong>解法二关键</strong>：<code>nums[i] &lt;= nums[i-1]</code>——严格递增要求把相等也判死（[1,1] 不是 BST）</li>
+    <li><strong>可省略数组</strong>：遍历中只记前驱值 prev，遇到 <code>val &lt;= prev</code> 立即 False——空间降到 O(h)</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th>解法</th><th>时间</th><th>空间</th></tr>
+    <tr><td>上下界递归</td><td>O(n)</td><td>O(h)（递归栈）</td></tr>
+    <tr><td>中序遍历数组</td><td>O(n)</td><td>O(n)（数组 + 栈；改 prev 变量可到 O(h)）</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>只比较父与子</strong>：最经典的错误。反例 [5,4,6,null,null,3,7] 每对父子都合法，但 3 违反祖先 5 的下界——区间法或中序法都能抓住它。</div>
+  <div class="note yellow"><strong>允许等于</strong>：区间法写成 val &lt; lower、中序法写成 nums[i] &lt; nums[i-1] 都会把「相等」放过去；BST 要求严格。</div>
+  <div class="note yellow"><strong>用 int 边界初始化</strong>：如 lower=INT_MIN——节点值恰为 INT_MIN 时误判；用 float ±inf 或 None 哨兵更稳。</div>
+  <div class="note red"><strong>中序后忘记检查 / 只查了一遍</strong>：收集完必须完整扫一遍相邻对；空数组与单元素直接 True。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>本质</strong>：BST 合法性是「路径约束」问题——每个节点受全部祖先制约</li>
+    <li><strong>双解法对照</strong>：
+      <table style="margin-top:6px">
+        <tr><th></th><th>上下界法</th><th>中序法</th></tr>
+        <tr><td>视角</td><td>微观：逐节点验证祖先约束</td><td>宏观：验证整体升序性</td></tr>
+        <tr><td>短路</td><td>违规即返回</td><td>先收完再查（prev 版可边走边查）</td></tr>
+        <tr><td>空间</td><td>O(h)</td><td>O(n) / O(h)（prev 版）</td></tr>
+      </table>
+    </li>
+    <li><strong>延伸</strong>：中序升序性是 BST 一切题目的钥匙（第 K 小、验证、恢复 BST……）</li>
+  </ul>
+  <div class="note green">口诀：父子比较不够看，祖先约束区间传；或者中序收一遍，严格递增才算 BST。</div>
+</section>
+</main>
+
+<footer>验证二叉搜索树 · 算法学习页</footer>
+
+<script>
+(function(){
+// 反例树 [5,1,4,null,null,3,6]
+const NODES = {
+  1: {val: 5, x: 240, y: 40, l: 2, r: 3},
+  2: {val: 1, x: 120, y: 130, l: null, r: null},
+  3: {val: 4, x: 360, y: 130, l: null, r: 5},
+  5: {val: 3, x: 280, y: 215, l: null, r: null},
+  6: {val: 6, x: 430, y: 215, l: null, r: null}
+};
+const EDGES = [[1,2],[1,3],[3,5],[3,6]];
+
+function fmt(x) { return x === -Infinity ? '−∞' : (x === Infinity ? '+∞' : x); }
+
+// ============ 解法一：上下界 ============
+function simulateRange() {
+  const steps = [];
+  const state = {};
+  const rangeOf = {};
+  const snap = (desc, cur, verdict, range) => {
+    steps.push({desc: desc, cur: cur, verdict: verdict, range: range, state: Object.assign({}, state), ranges: JSON.parse(JSON.stringify(rangeOf))});
+  };
+
+  snap('初始：调用 dfs(root, −∞, +∞)——根节点不受任何约束', 1, 'enter', [-Infinity, Infinity]);
+
+  function dfs(id, lower, upper) {
+    if (id === null) {
+      snap('到达 None：空树合法，返回 True', null, 'null', [lower, upper]);
+      return true;
+    }
+    const node = NODES[id];
+    rangeOf[id] = [lower, upper];
+    if (node.val <= lower || node.val >= upper) {
+      state[id] = 'violate';
+      snap('节点 ' + node.val + '：区间 (' + fmt(lower) + ', ' + fmt(upper) + ')，' + node.val + ' 不在其中 → <strong>违规！</strong>返回 False', id, 'violate', [lower, upper]);
+      return false;
+    }
+    snap('节点 ' + node.val + '：区间 (' + fmt(lower) + ', ' + fmt(upper) + ') ✓ 通过。递归左子树（上界收紧为 ' + node.val + '）', id, 'pass-left', [lower, upper]);
+    const left = dfs(node.l, lower, node.val);
+    if (!left) {
+      snap('左子树返回 False → and 短路，节点 ' + node.val + ' 所在子树不合法', id, 'short-circuit', [lower, upper]);
+      return false;
+    }
+    snap('节点 ' + node.val + '：左子树 ✓。递归右子树（下界收紧为 ' + node.val + '）', id, 'pass-right', [lower, upper]);
+    const right = dfs(node.r, node.val, upper);
+    const ok = left && right;
+    if (ok) { state[id] = 'passed'; }
+    snap('节点 ' + node.val + '：右子树 ' + (right ? '✓' : '✗') + ' → 两边' + (ok ? '都通过，返回 True' : '不全通过，返回 False'), id, ok ? 'both-ok' : 'right-fail', [lower, upper]);
+    return ok;
+  }
+
+  const result = dfs(1, -Infinity, Infinity);
+  snap('✅ 区间法校验完成：' + (result ? '是合法 BST，返回 True' : '不是 BST，返回 False'), null, result ? 'final-true' : 'final-false', null);
+  return steps;
+}
+
+// ============ 解法二：中序遍历 ============
+function simulateInorder() {
+  const steps = [];
+  const nums = [];
+  const visitOrder = {};   // id -> 第几个访问
+  const state = {};
+  let failed = false;
+  const snap = (desc, cur, verdict, cmp) => {
+    steps.push({desc: desc, cur: cur, verdict: verdict, nums: nums.slice(), visitOrder: Object.assign({}, visitOrder), state: Object.assign({}, state), cmp: cmp || null});
+  };
+
+  snap('初始：中序遍历（左 → 中 → 右）收集所有值到 nums，再检查相邻严格递增', null, 'init');
+
+  function inorder(id) {
+    if (id === null) {
+      snap('到达 None，返回', null, 'null');
+      return;
+    }
+    const node = NODES[id];
+    snap('进入节点 ' + node.val + '：先递归它的左子树', id, 'enter-left');
+    inorder(node.l);
+    const n = nums.length + 1;
+    visitOrder[id] = n;
+    nums.push(node.val);
+    let cmpTxt = null;
+    if (nums.length >= 2) {
+      const prev = nums[nums.length - 2];
+      const ok = node.val > prev;
+      cmpTxt = node.val + ' vs ' + prev + ' → ' + (ok ? '&gt; ✓' : '≤ ✗');
+      if (!ok) { failed = true; state[id] = 'violate'; }
+      else { state[id] = 'visited'; }
+    } else {
+      state[id] = 'visited';
+    }
+    snap('回溯到节点 ' + node.val + '：<strong>访问它</strong>（中序第 ' + n + ' 个），nums = [' + nums.join(', ') + ']' + (cmpTxt ? '，相邻检查：' + cmpTxt : '（首个元素，无需比较）') + (failed ? '——<strong>升序被打破！</strong>' : ''), id, failed ? 'violate' : 'visit', cmpTxt);
+    inorder(node.r);
+  }
+
+  inorder(1);
+
+  snap('遍历完成：中序序列 = [' + nums.join(', ') + ']。检查相邻对……', null, 'collect-done');
+  let bad = false;
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i] <= nums[i - 1]) {
+      bad = true;
+      snap('nums[' + i + '] = ' + nums[i] + ' ≤ nums[' + (i - 1) + '] = ' + nums[i - 1] + ' → <strong>不是严格递增，违规！</strong>返回 False', null, 'check-fail', nums[i] + ' vs ' + nums[i - 1]);
+      break;
+    }
+  }
+  if (!bad) {
+    snap('✅ 所有相邻对严格递增 → 是合法 BST，返回 True', null, 'final-true');
+  } else {
+    snap('✅ 中序法校验完成：不是 BST，返回 False（与区间法结论一致）', null, 'final-false');
+  }
+  return steps;
+}
+
+const stepsRange = simulateRange();
+const stepsInorder = simulateInorder();
+let tab = 'range';
+const progress = {range: 0, inorder: 0};
+let playing = false, timer = null;
+
+// DOM
+const tabBtnRange = document.getElementById('tabBtnRange');
+const tabBtnInorder = document.getElementById('tabBtnInorder');
+const paneRange = document.getElementById('paneRange');
+const paneInorder = document.getElementById('paneInorder');
+const treeSvgRange = document.getElementById('treeSvgRange');
+const treeSvgIn = document.getElementById('treeSvgIn');
+const decBoxRange = document.getElementById('decBoxRange');
+const decBoxIn = document.getElementById('decBoxIn');
+const numsBox = document.getElementById('numsBox');
+const statRange = document.getElementById('statRange');
+const statAnsRange = document.getElementById('statAnsRange');
+const statCmp = document.getElementById('statCmp');
+const statAnsIn = document.getElementById('statAnsIn');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function switchTab(t) {
+  tab = t;
+  tabBtnRange.classList.toggle('active', t === 'range');
+  tabBtnInorder.classList.toggle('active', t === 'inorder');
+  paneRange.classList.toggle('active', t === 'range');
+  paneInorder.classList.toggle('active', t === 'inorder');
+  stopPlay();
+  render();
+}
+tabBtnRange.onclick = () => switchTab('range');
+tabBtnInorder.onclick = () => switchTab('inorder');
+
+function drawTreeSvg(svg, clsFn, labelFn) {
+  let h = '';
+  for (const [a, b] of EDGES) {
+    h += '<line class="tedge" x1="' + NODES[a].x + '" y1="' + NODES[a].y + '" x2="' + NODES[b].x + '" y2="' + NODES[b].y + '"/>';
+  }
+  for (const idS of Object.keys(NODES).map(Number)) {
+    const n = NODES[idS];
+    const extra = labelFn(idS, n);
+    h += '<g class="tnode ' + clsFn(idS) + '"><circle cx="' + n.x + '" cy="' + n.y + '" r="21"/>'
+        + '<text x="' + n.x + '" y="' + n.y + '">' + n.val + '</text>' + extra + '</g>';
+  }
+  svg.innerHTML = h;
+}
+
+function renderRange() {
+  const k = progress.range;
+  const st = stepsRange[k];
+  drawTreeSvg(treeSvgRange,
+    id => {
+      let cls = '';
+      if (st.state[id] === 'passed') cls = 'passed';
+      if (st.state[id] === 'violate') cls = 'violate';
+      if (st.cur === id) cls = 'cur';
+      return cls;
+    },
+    id => {
+      const rg = st.ranges[id];
+      return rg ? '<text class="range" x="' + NODES[id].x + '" y="' + (NODES[id].y + 36) + '">(' + fmt(rg[0]) + ', ' + fmt(rg[1]) + ')</text>' : '';
+    }
+  );
+
+  let dh = '';
+  const V = st.verdict;
+  if (V === 'null') dh = '<div class="dec-row pending">node is None → 返回 True</div>';
+  else if (V === 'violate') dh = '<div class="dec-row bad">val ≤ lower 或 val ≥ upper → 返回 False ✗</div>';
+  else if (V === 'pass-left') dh = '<div class="dec-row hit">' + fmt(st.range[0]) + ' &lt; val &lt; ' + fmt(st.range[1]) + ' ✓</div><div class="dec-row pending">→ 递归左子树（upper ← val）</div>';
+  else if (V === 'pass-right') dh = '<div class="dec-row hit">左子树 ✓</div><div class="dec-row pending">→ 递归右子树（lower ← val）</div>';
+  else if (V === 'both-ok') dh = '<div class="dec-row hit">左 ✓ 右 ✓ → 返回 True</div>';
+  else if (V === 'right-fail') dh = '<div class="dec-row bad">右子树 ✗ → 返回 False</div>';
+  else if (V === 'short-circuit') dh = '<div class="dec-row bad">左子树 ✗ → and 短路返回 False</div>';
+  else if (V === 'final-true') dh = '<div class="dec-row hit">最终结论：合法 BST</div>';
+  else if (V === 'final-false') dh = '<div class="dec-row bad">最终结论：不是 BST</div>';
+  else dh = '<div class="dec-row pending">准备开始…</div>';
+  decBoxRange.innerHTML = dh;
+
+  statRange.textContent = st.range ? '(' + fmt(st.range[0]) + ', ' + fmt(st.range[1]) + ')' : '—';
+  statAnsRange.textContent = (V === 'final-true') ? 'True' : (V === 'final-false') ? 'False' : '…';
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + stepsRange.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === stepsRange.length - 1;
+}
+
+function renderInorder() {
+  const k = progress.inorder;
+  const st = stepsInorder[k];
+  drawTreeSvg(treeSvgIn,
+    id => {
+      let cls = '';
+      if (st.state[id] === 'visited') cls = 'visited';
+      if (st.state[id] === 'violate') cls = 'violate';
+      if (st.cur === id) cls = 'cur';
+      return cls;
+    },
+    id => {
+      const ord = st.visitOrder[id];
+      return ord ? '<text class="ord" x="' + NODES[id].x + '" y="' + (NODES[id].y + 36) + '">#' + ord + '</text>' : '';
+    }
+  );
+
+  let nh = '';
+  if (st.nums.length === 0) nh = '<span class="num-hint">（空）</span>';
+  st.nums.forEach((v, i) => {
+    const isBad = st.verdict === 'violate' && i === st.nums.length - 1 && st.state[st.cur] === 'violate';
+    const ord = '<span class="ord">' + (i + 1) + '</span>';
+    nh += '<span class="num-item' + (isBad ? ' bad' : '') + '">' + v + ord + '</span>';
+  });
+  numsBox.innerHTML = nh;
+
+  let dh = '';
+  const V = st.verdict;
+  if (V === 'init') dh = '<div class="dec-row pending">准备开始中序遍历…</div>';
+  else if (V === 'null') dh = '<div class="dec-row pending">node is None，返回</div>';
+  else if (V === 'enter-left') dh = '<div class="dec-row pending">进入节点：先递归左子树</div>';
+  else if (V === 'visit') dh = '<div class="dec-row hit">访问：append 到 nums' + (st.cmp ? '，检查 ' + st.cmp : '') + '</div>';
+  else if (V === 'violate') dh = '<div class="dec-row bad">' + st.cmp + ' → 升序被打破 ✗</div>';
+  else if (V === 'collect-done') dh = '<div class="dec-row pending">收集中序序列完毕，开始检查相邻对…</div>';
+  else if (V === 'check-fail') dh = '<div class="dec-row bad">nums[i] ≤ nums[i-1] → 返回 False ✗</div>';
+  else if (V === 'final-true') dh = '<div class="dec-row hit">所有相邻对严格递增 → True</div>';
+  else if (V === 'final-false') dh = '<div class="dec-row bad">最终结论：不是 BST（False）</div>';
+  decBoxIn.innerHTML = dh;
+
+  statCmp.textContent = st.cmp ? st.cmp.replace(/&gt;/g, '>') : '—';
+  statAnsIn.textContent = (V === 'final-true') ? 'True' : (V === 'final-false') ? 'False' : '…';
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + stepsInorder.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === stepsInorder.length - 1;
+}
+
+function render() { tab === 'range' ? renderRange() : renderInorder(); }
+function go(k) {
+  const steps = tab === 'range' ? stepsRange : stepsInorder;
+  if (k >= 0 && k < steps.length) { progress[tab] = k; render(); }
+}
+function nextStep() {
+  const steps = tab === 'range' ? stepsRange : stepsInorder;
+  if (progress[tab] < steps.length - 1) go(progress[tab] + 1); else stopPlay();
+}
+function prevStep() { go(progress[tab] - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  const steps = tab === 'range' ? stepsRange : stepsInorder;
+  if (progress[tab] >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (progress[tab] >= steps.length - 1) stopPlay(); else nextStep(); }, 1600);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render();
+})();
+</script>
+</body>
+</html>

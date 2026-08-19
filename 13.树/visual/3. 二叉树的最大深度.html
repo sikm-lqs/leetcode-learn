@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3. 二叉树的最大深度 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.svg-wrap{display:flex;justify-content:center;margin:10px 0}
+.tree-svg{max-width:100%;height:auto}
+.tedge{stroke:#94A3B8;stroke-width:2;fill:none}
+.tnode circle{fill:#F1F5F9;stroke:#94A3B8;stroke-width:2.5;transition:all .35s}
+.tnode text{font-family:Consolas,Monaco,monospace;font-size:14px;font-weight:700;fill:#1F2937;text-anchor:middle;dominant-baseline:central}
+.tnode .dep{font-size:10px;fill:#7C3AED;font-weight:700;text-anchor:middle}
+.tnode.cur circle{fill:var(--warm-soft);stroke:var(--warm);stroke-width:4}
+.tnode.done circle{fill:var(--accent-purple-soft);stroke:var(--accent-purple)}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.calc-panel{flex:1.2;min-width:280px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.calc-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.calc-row{padding:8px 12px;border-radius:8px;font-family:Consolas,Monaco,monospace;font-size:13px;margin:4px 0;background:#F8FAFC}
+.calc-row.hit{background:var(--accent-green-soft);color:#0F7A3D;font-weight:700}
+.calc-row.pending{opacity:.45}
+.stats-panel{flex:1;min-width:160px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-cur{color:var(--warm)}
+.stat-box .s-ans{color:var(--accent-green)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 104 · 简单</div>
+  <h1>3. 二叉树的最大深度</h1>
+  <p class="subtitle">分解问题式递归：max(左深, 右深) + 1，答案自底向上汇合。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：子树答案的汇合</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定一个二叉树 root，返回其<strong>最大深度</strong>：从根节点到最远叶子节点的最长路径上的<strong>节点数</strong>。</p>
+  <h3>示例</h3>
+  <pre><code>输入：root = [3, 9, 20, null, null, 15, 7]
+        3
+       / \
+      9  20
+         / \
+        15  7
+输出：3
+解释：最长路径 3 → 20 → 15（或 7），含 3 个节点。
+
+输入：root = [1, null, 2]
+输出：2</code></pre>
+  <div class="note yellow">深度数的是「节点数」不是「边数」——空树深度为 0，单节点深度为 1。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：子树答案的汇合</h2>
+  <ol>
+    <li><strong>递归定义</strong>：整棵树的最大深度 = max(左子树深度, 右子树深度) + 1（+1 是根自己）</li>
+    <li><strong>终止条件</strong>：<code>root is None</code> 返回 0——空树没有节点</li>
+    <li><strong>信任子问题</strong>：不关心子树内部长什么样，只等左右两边的返回值，取大加一上交</li>
+  </ol>
+  <div class="formula">depth(node) = max(depth(node.left), depth(node.right)) + 1</div>
+  <div class="note blue">这是「分解问题」式递归（自底向上）：先递归到底，答案在<strong>回溯途中</strong>逐层组装——与前序「进入时做事」的「传递信息」式（自顶向下）相对。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="kw">def</span> <span class="zh">最大深度</span>(<span class="var">node</span>):
+    <span class="kw">if</span> <span class="var">node</span> <span class="zh">为空</span>:
+        <span class="kw">return</span> <span class="num">0</span>                        <span class="cm"># 空树深度 0（终止条件）</span>
+
+    <span class="var">left_depth</span> <span class="kw">=</span> <span class="zh">最大深度</span>(<span class="var">node</span>.<span class="var">left</span>)     <span class="cm"># 递归左子树</span>
+    <span class="var">right_depth</span> <span class="kw">=</span> <span class="zh">最大深度</span>(<span class="var">node</span>.<span class="var">right</span>)   <span class="cm"># 递归右子树</span>
+
+    <span class="kw">return</span> <span class="zh">max(左右) + 1</span>              <span class="cm"># max(left_depth, right_depth) + 1</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">三步曲范本：函数含义（返回该树深度）→ 终止（None → 0）→ 单层逻辑（max + 1）。几乎所有「树形 DP」题都从这个骨架生长出来。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 [3, 9, 20, null, null, 15, 7] 的深度计算：递归下降 → 回溯时节点标注自身深度。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 节点下方紫色数字 = 已计算出的子树深度</div>
+    <div class="svg-wrap">
+      <svg class="tree-svg" width="440" height="230" viewBox="0 0 440 230" id="treeSvg"></svg>
+    </div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前节点</span>
+      <span><i style="background:var(--accent-purple-soft);border:2px solid var(--accent-purple)"></i>深度已算出</span>
+      <span><i style="background:#F1F5F9;border:2px solid #94A3B8"></i>未计算</span>
+    </div>
+    <div class="viz-panel">
+      <div class="calc-panel">
+        <h4>当前节点的计算（回溯时发生）</h4>
+        <div id="calcBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">已算出深度节点<b class="s-cur" id="statDone">0</b></div>
+        <div class="stat-box">最终答案<b class="s-ans" id="statAns">—</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table>
+    <tr><th>阶段</th><th>节点</th><th>计算</th><th>返回</th></tr>
+    <tr><td>下降</td><td>3 → 9 → None</td><td>9 的左子树空</td><td>0</td></tr>
+    <tr><td>回溯 9</td><td>9</td><td>max(0, 0) + 1</td><td>1</td></tr>
+    <tr><td>下降</td><td>3 → 20 → 15 → None</td><td>15 是叶子</td><td>—</td></tr>
+    <tr><td>回溯 15 / 7</td><td>15、7</td><td>各 max(0, 0) + 1</td><td>1</td></tr>
+    <tr><td>回溯 20</td><td>20</td><td>max(1, 1) + 1</td><td>2</td></tr>
+    <tr><td>回溯 3</td><td>3（根）</td><td>max(1, 2) + 1</td><td>3 ✅</td></tr>
+  </table>
+  <div class="note purple">注意根节点的答案来自右子树（20 深度 2）而非左子树（9 深度 1）——max 自动选更深的一边，这就是「答案汇合」。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">maxDepth</span>(self, root) -&gt; <span style="color:#CA8A04">int</span>:
+        <span style="color:#6B7280"># max(左子树深度, 右子树深度) + 1，递归思想</span>
+
+        <span style="color:#6B7280"># 空树 depth = 0</span>
+        <span style="color:#6B7280">if</span> root <span style="color:#6B7280">is</span> <span style="color:#CA8A04">None</span>:
+            <span style="color:#6B7280">return</span> <span style="color:#CA8A04">0</span>
+
+        <span style="color:#6B7280"># 计算左/右子树的最大深度</span>
+        left_depth = self.<span style="color:#3B7DD8">maxDepth</span>(root.left)
+        right_depth = self.<span style="color:#3B7DD8">maxDepth</span>(root.right)
+
+        <span style="color:#6B7280"># 当前树的最大深度为左右更深的 +1</span>
+        <span style="color:#6B7280">return</span> <span style="color:#D4744C">max</span>(left_depth, right_depth) + <span style="color:#CA8A04">1</span></code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>self.maxDepth 复用</strong>：方法自己调用自己，左右子树是规模更小的同构问题</li>
+    <li><strong>终止返回 0</strong>：空树贡献 0 个节点，+1 的基准点</li>
+    <li><strong>先递归后计算</strong>：两行递归在前、max 在后——计算发生在回溯途中（后序位置）</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n)</td><td>每个节点访问一次</td></tr>
+    <tr><td>空间</td><td>O(h)</td><td>递归栈深度 = 树高；平衡 O(log n)，链状 O(n)</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>终止条件返回 1</strong>：空树深度是 0 不是 1，返回 1 会给每条路径虚加一层。</div>
+  <div class="note yellow"><strong>忘 +1</strong>：max(左, 右) 不加 1 会漏掉当前节点自身，整棵树少算一层。</div>
+  <div class="note yellow"><strong>深度 vs 高度混用</strong>：本题「最大深度」从根往下数 =「高度」从下往上数，数值相同；但「最小深度」（111 题）两者就不同了。</div>
+  <div class="note red"><strong>与层序 BFS 混淆</strong>：迭代法需要队列逐层计数；递归法三行即止，两者答案一致但实现完全不同。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>骨架</strong>：判空返 0 → 递归左右 → max + 1</li>
+    <li><strong>思维</strong>：分解问题（自底向上），答案在回溯中汇合</li>
+    <li><strong>延伸</strong>：直径、平衡树、路径和……都是在这副骨架上加变量</li>
+  </ul>
+  <div class="note green">口诀：空树归零是根基，左右深度递归取；取大再加根一个，自底向上层层传。</div>
+</section>
+</main>
+
+<footer>二叉树的最大深度 · 算法学习页</footer>
+
+<script>
+(function(){
+// 树 [3,9,20,null,null,15,7]
+const NODES = [
+  {id: 1, val: 3, x: 220, y: 40, l: 2, r: 3},
+  {id: 2, val: 9, x: 120, y: 120, l: null, r: null},
+  {id: 3, val: 20, x: 320, y: 120, l: 4, r: 5},
+  {id: 4, val: 15, x: 250, y: 200, l: null, r: null},
+  {id: 5, val: 7, x: 390, y: 200, l: null, r: null}
+];
+const EDGES = [[1,2],[1,3],[3,4],[3,5]];
+
+function simulate() {
+  const steps = [];
+  const depth = {};   // id -> 深度
+  const snap = (desc, cur, calc) => {
+    steps.push({desc: desc, cur: cur, depth: Object.assign({}, depth), calc: calc || null});
+  };
+
+  function dfs(id) {
+    if (id === null) {
+      snap('到达 None：空树深度为 0，返回 0', null, {node: null});
+      return 0;
+    }
+    const node = NODES.find(n => n.id === id);
+    snap('进入节点 ' + node.val + '：先递归计算它的左子树深度', id, null);
+    const left = dfs(node.l);
+    snap('节点 ' + node.val + '：左子树深度 = ' + left + '。继续递归右子树', id, {node: node.val, left: left, right: null});
+    const right = dfs(node.r);
+    depth[id] = Math.max(left, right) + 1;
+    snap('节点 ' + node.val + '：右子树深度 = ' + right + '。汇合——max(' + left + ', ' + right + ') + 1 = ' + depth[id] + '，上交给父节点', id, {node: node.val, left: left, right: right});
+    return depth[id];
+  }
+
+  snap('初始：所有节点深度未知。调用 maxDepth(root)，开始递归下降', null, null);
+  const ans = dfs(1);
+  snap('✅ 递归完成：整棵树的最大深度 = ' + ans, null, null);
+  return steps;
+}
+
+const steps = simulate();
+let cur = 0, playing = false, timer = null;
+
+const treeSvg = document.getElementById('treeSvg');
+const calcBox = document.getElementById('calcBox');
+const statDone = document.getElementById('statDone');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+  let h = '';
+  for (const [a, b] of EDGES) {
+    const na = NODES.find(n => n.id === a), nb = NODES.find(n => n.id === b);
+    h += '<line class="tedge" x1="' + na.x + '" y1="' + na.y + '" x2="' + nb.x + '" y2="' + nb.y + '"/>';
+  }
+  for (const n of NODES) {
+    let cls = 'tnode';
+    if (st.depth[n.id] !== undefined) cls += ' done';
+    if (st.cur === n.id) cls += ' cur';
+    const dep = st.depth[n.id] !== undefined ? '<text class="dep" x="' + n.x + '" y="' + (n.y + 34) + '">深度 ' + st.depth[n.id] + '</text>' : '';
+    h += '<g class="' + cls + '"><circle cx="' + n.x + '" cy="' + n.y + '" r="21"/>'
+        + '<text x="' + n.x + '" y="' + n.y + '">' + n.val + '</text>' + dep + '</g>';
+  }
+  treeSvg.innerHTML = h;
+
+  let ch = '';
+  if (st.calc === null) {
+    ch = '<div class="calc-row pending">' + (st.cur === null ? '（下降 / 收尾阶段）' : '递归进行中…') + '</div>';
+  } else if (st.calc.node === null) {
+    ch = '<div class="calc-row pending">None → 返回 0</div>';
+  } else if (st.calc.right === null) {
+    ch = '<div class="calc-row">节点 ' + st.calc.node + '：left_depth = ' + st.calc.left + '</div>'
+        + '<div class="calc-row pending">right_depth = 计算中…</div>';
+  } else {
+    ch = '<div class="calc-row">节点 ' + st.calc.node + '：left = ' + st.calc.left + '，right = ' + st.calc.right + '</div>'
+        + '<div class="calc-row hit">depth = max(' + st.calc.left + ', ' + st.calc.right + ') + 1 = ' + (Math.max(st.calc.left, st.calc.right) + 1) + '</div>';
+  }
+  calcBox.innerHTML = ch;
+
+  statDone.textContent = Object.keys(st.depth).length;
+  const finalD = st.depth[1];
+  statAns.textContent = finalD !== undefined ? finalD : '—';
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1400);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>

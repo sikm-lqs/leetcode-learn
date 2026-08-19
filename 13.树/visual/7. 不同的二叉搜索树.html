@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7. 不同的二叉搜索树 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.dp-table{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:14px 0}
+.dp-cell{width:54px;border-radius:10px;border:2px solid #CBD5E1;background:#F1F5F9;overflow:hidden;text-align:center;padding:3px 0;transition:all .3s}
+.dp-cell .dnum{font-size:10px;color:var(--text-light)}
+.dp-cell .dval{font-family:Consolas,Monaco,monospace;font-weight:700;font-size:16px}
+.dp-cell .dval.empty{color:#CBD5E1}
+.dp-cell.done{border-color:var(--accent-purple);background:var(--accent-purple-soft)}
+.dp-cell.cur{border-color:var(--warm);background:var(--warm-soft);transform:translateY(-4px);box-shadow:0 4px 12px rgba(212,116,76,.25)}
+.dp-cell.srcL{border-color:var(--primary);background:var(--primary-soft)}
+.dp-cell.srcR{border-color:var(--accent-green);background:var(--accent-green-soft)}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.choice-panel{flex:1.2;min-width:280px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.choice-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.choice-row{display:flex;justify-content:space-between;padding:6px 10px;border-radius:6px;font-family:Consolas,Monaco,monospace;font-size:13px;margin:4px 0}
+.choice-row:nth-child(odd){background:#F8FAFC}
+.choice-row.cur-root{background:var(--warm-soft);color:#B4531F;font-weight:700;box-shadow:inset 3px 0 0 var(--warm)}
+.stats-panel{flex:1;min-width:180px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-acc{color:var(--warm)}
+.stat-box .s-ans{color:var(--accent-green)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}.dp-cell{width:46px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 96 · 中等</div>
+  <h1>7. 不同的二叉搜索树</h1>
+  <p class="subtitle">枚举根拆左右，乘积求和：卡特兰数的树形来历。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：枚举根 + 乘法原理</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给你一个整数 n，求恰由 n 个节点组成且节点值从 1 到 n 互不相同的<strong>二叉搜索树（BST）</strong>有多少种。</p>
+  <h3>示例</h3>
+  <pre><code>输入：n = 3
+输出：5
+解释：节点 {1, 2, 3} 共可组成 5 种结构的 BST。
+
+输入：n = 1
+输出：1</code></pre>
+  <div class="note yellow">BST 性质：左子树所有值 &lt; 根 &lt; 右子树所有值——一旦选定根，哪些值归左、哪些归右就完全确定。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：枚举根 + 乘法原理</h2>
+  <ol>
+    <li><strong>枚举根</strong>：值 root 做根时，左子树只能由 1..root−1（共 root−1 个节点）组成，右子树由 root+1..nodes（共 nodes−root 个节点）组成</li>
+    <li><strong>关键洞察</strong>：BST 的结构种数<strong>只与节点个数有关</strong>，与具体是哪些值无关（1..k 与任意 k 个有序数的结构数相同）</li>
+    <li><strong>乘法原理</strong>：root 做根的方案数 = 左子树种数 × 右子树种数 = dp[root−1] × dp[nodes−root]</li>
+    <li><strong>加法原理</strong>：对所有可能的根求和：
+      <div class="formula">dp[nodes] = Σ dp[root−1] × dp[nodes−root]，root = 1..nodes</div>
+    </li>
+    <li><strong>边界</strong>：dp[0] = 1（空树算一种方案）</li>
+  </ol>
+  <div class="note blue">这正是卡特兰数递推：1, 1, 2, 5, 14, 42…（dp[0]=1, dp[1]=1, dp[2]=2, dp[3]=5, dp[4]=14）。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="var">dp</span> = [<span class="num">0</span>] * (<span class="var">n</span>+<span class="num">1</span>)
+<span class="var">dp</span>[<span class="num">0</span>] = <span class="num">1</span>        <span class="cm"># 空树一种</span>
+
+<span class="kw">for</span> <span class="var">nodes</span> <span class="kw">in</span> <span class="zh">range(1, n+1)</span>:        <span class="cm"># 目标节点总数</span>
+    <span class="kw">for</span> <span class="var">root</span> <span class="kw">in</span> <span class="zh">range(1, nodes+1)</span>:    <span class="cm"># 枚举根的取值</span>
+        <span class="var">left</span> <span class="kw">=</span> <span class="var">root</span> - <span class="num">1</span>          <span class="cm"># 左子树节点数</span>
+        <span class="var">right</span> <span class="kw">=</span> <span class="var">nodes</span> - <span class="var">root</span>      <span class="cm"># 右子树节点数</span>
+        <span class="zh">乘积累加</span>                  <span class="cm"># dp[nodes] += dp[left] * dp[right]</span>
+
+<span class="kw">return</span> <span class="var">dp</span>[<span class="var">n</span>]</code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">双循环含义：外层「算多大规模的答案」，内层「这一规模下根是谁」——每个根贡献一个乘积，加起来就是总种数。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 n = 4 时 dp 表的逐格计算（枚举根 → 乘积累加）。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 dp[k] = k 个节点组成的 BST 种数（最终 dp[4] = 14）</div>
+    <div class="dp-table" id="dpTable"></div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前 nodes</span>
+      <span><i style="background:var(--primary-soft);border:2px solid var(--primary)"></i>dp[left]（左子树）</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>dp[right]（右子树）</span>
+      <span><i style="background:var(--accent-purple-soft);border:2px solid var(--accent-purple)"></i>已确定</span>
+    </div>
+    <div class="viz-panel">
+      <div class="choice-panel">
+        <h4>枚举根（当前 nodes 的所有划分）</h4>
+        <div id="choiceBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">当前累加值<b class="s-acc" id="statAcc">0</b></div>
+        <div class="stat-box">答案 dp[4]<b class="s-ans" id="statAns">—</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <h3>n = 3 的 5 棵 BST（按根分类）</h3>
+  <table>
+    <tr><th>根</th><th>左子树（1..root−1）</th><th>右子树（root+1..3）</th><th>方案</th><th>数量</th></tr>
+    <tr><td>1</td><td>∅（1 种）</td><td>{2,3}（2 种）</td><td>1→(2→3 右链) 等</td><td>1 × 2 = 2</td></tr>
+    <tr><td>2</td><td>{1}（1 种）</td><td>{3}（1 种）</td><td>1←2→3</td><td>1 × 1 = 1</td></tr>
+    <tr><td>3</td><td>{1,2}（2 种）</td><td>∅（1 种）</td><td>(1→2 右链)→3 等</td><td>2 × 1 = 2</td></tr>
+    <tr><td colspan="4" style="text-align:right"><strong>合计 dp[3]</strong></td><td><strong>5</strong> ✅</td></tr>
+  </table>
+  <h3>dp 表推进（n = 4）</h3>
+  <table>
+    <tr><th>nodes</th><th>计算</th><th>dp[nodes]</th></tr>
+    <tr><td>0</td><td>空树锚点</td><td>1</td></tr>
+    <tr><td>1</td><td>dp[0]·dp[0] = 1</td><td>1</td></tr>
+    <tr><td>2</td><td>dp[0]·dp[1] + dp[1]·dp[0] = 1+1</td><td>2</td></tr>
+    <tr><td>3</td><td>1·2 + 1·1 + 2·1</td><td>5</td></tr>
+    <tr><td>4</td><td>1·5 + 1·2 + 2·1 + 5·1</td><td>14 ✅</td></tr>
+  </table>
+  <div class="note purple">观察 dp[4] 的四项：root=1 时右子树要装 {2,3,4} 三 个节点（2、3、4 的结构与 1、2、3 完全同构）——「种数只依赖个数」是整个转移成立的前提。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">from</span> functools <span style="color:#6B7280">import</span> cache
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:                      <span style="color:#6B7280"># DP 版</span>
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">numTrees</span>(self, n: <span style="color:#CA8A04">int</span>) -&gt; <span style="color:#CA8A04">int</span>:
+        dp = [<span style="color:#CA8A04">0</span>] * (n + <span style="color:#CA8A04">1</span>)
+        dp[<span style="color:#CA8A04">0</span>] = <span style="color:#CA8A04">1</span>                      <span style="color:#6B7280"># 空树一种</span>
+        <span style="color:#6B7280">for</span> nodes <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">1</span>, n + <span style="color:#CA8A04">1</span>):
+            <span style="color:#6B7280">for</span> root <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">1</span>, nodes + <span style="color:#CA8A04">1</span>):
+                left = root - <span style="color:#CA8A04">1</span>          <span style="color:#6B7280"># 左子树节点数</span>
+                right = nodes - root      <span style="color:#6B7280"># 右子树节点数</span>
+                dp[nodes] += dp[left] * dp[right]
+        <span style="color:#6B7280">return</span> dp[n]
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution2</span>:                     <span style="color:#6B7280"># 递归 + 记忆化版</span>
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">numTrees</span>(self, n: <span style="color:#CA8A04">int</span>) -&gt; <span style="color:#CA8A04">int</span>:
+        @cache
+        <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">dfs</span>(n):
+            <span style="color:#6B7280">if</span> n &lt;= <span style="color:#CA8A04">1</span>:               <span style="color:#6B7280"># 0 或 1 个节点都只有一种</span>
+                <span style="color:#6B7280">return</span> <span style="color:#CA8A04">1</span>
+            ans = <span style="color:#CA8A04">0</span>
+            <span style="color:#6B7280">for</span> root <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">1</span>, n + <span style="color:#CA8A04">1</span>):
+                ans += dfs(root - <span style="color:#CA8A04">1</span>) * dfs(n - root)
+            <span style="color:#6B7280">return</span> ans
+        <span style="color:#6B7280">return</span> <span style="color:#3B7DD8">dfs</span>(n)</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>dp[0] = 1 的含义</strong>：空树是一种合法方案——它是「根在最左/最右时另一侧子树为空」的乘法单位元</li>
+    <li><strong>left/root 的来源</strong>：值 root 做根，比它小的 root−1 个值全在左，比它大的 nodes−root 个全在右</li>
+    <li><strong>两版等价</strong>：@cache 记忆化递归 = 自顶向下做同一张 dp 表；边界 n ≤ 1 合并了 dp[0]、dp[1] 两个锚点</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n²)</td><td>外层 n 种规模 × 内层最多 n 个根</td></tr>
+    <tr><td>空间</td><td>O(n)</td><td>dp 数组（递归版另有 O(n) 栈 + cache）</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>dp[0] 初始化为 0</strong>：所有乘积全为 0，整个表算崩——空树必须算一种（乘法单位元）。</div>
+  <div class="note yellow"><strong>枚举根的范围写错</strong>：root 从 1 到 nodes（含端点），漏掉 root=nodes 会丢「根为最大值」的方案。</div>
+  <div class="note yellow"><strong>递归不记忆化</strong>：dfs 指数爆炸（同一规模反复展开）；@cache 或手写 memo 是必需品。</div>
+  <div class="note red"><strong>混淆「结构」与「值」</strong>：误以为要枚举值的具体分配——BST 性质已保证分配唯一，状态只需节点个数。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>转化</strong>：n 个节点的 BST 种数 = 卡特兰数 C(n) = Σ C(i)·C(n−1−i)</li>
+    <li><strong>两个洞察</strong>：枚举根拆左右（加法原理）× 左右独立（乘法原理）；种数只依赖节点个数</li>
+    <li><strong>延伸</strong>：括号方案数、出栈序列数、凸多边形三角剖分——都是这个递推的化身</li>
+  </ul>
+  <div class="note green">口诀：定根拆出左右树，乘积原理各自数；种数只看节点数，求和便是卡特兰。</div>
+</section>
+</main>
+
+<footer>不同的二叉搜索树 · 算法学习页</footer>
+
+<script>
+(function(){
+const N = 4;
+
+function simulate(n) {
+  const steps = [];
+  const dp = new Array(n + 1).fill(null);
+  dp[0] = 1;
+  const snap = (desc, nodes, rootIdx, acc, phase) => {
+    steps.push({desc: desc, nodes: nodes, rootIdx: rootIdx, acc: acc, dp: dp.slice(), phase: phase || ''});
+  };
+
+  snap('初始：dp[0] = 1（空树算一种方案，是乘法的单位元）。从小到大计算 dp[1..n]', 0, -1, 0, 'init');
+
+  for (let nodes = 1; nodes <= n; nodes++) {
+    dp[nodes] = 0;
+    snap('计算 dp[' + nodes + ']：枚举根 root = 1..' + nodes + '，每个根贡献 dp[root-1] × dp[nodes-root]', nodes, -1, 0, 'begin');
+    for (let root = 1; root <= nodes; root++) {
+      const left = root - 1, right = nodes - root;
+      const prod = dp[left] * dp[right];
+      dp[nodes] += prod;
+      snap('root = ' + root + '：左子树 ' + left + ' 个节点（dp[' + left + '] = ' + dp[left] + '），右子树 ' + right + ' 个节点（dp[' + right + '] = ' + dp[right] + '）→ ' + dp[left] + ' × ' + dp[right] + ' = ' + prod + '，累加得 ' + dp[nodes], nodes, root, dp[nodes], 'root');
+    }
+    snap('dp[' + nodes + '] = ' + dp[nodes] + ' 确定 ✦（所有根的方案数已加完）', nodes, -1, dp[nodes], 'done');
+  }
+  snap('✅ 完成：n = ' + n + ' 个节点共可组成 ' + dp[n] + ' 种不同的二叉搜索树', n, -1, dp[n], 'final');
+  return steps;
+}
+
+const steps = simulate(N);
+let cur = 0, playing = false, timer = null;
+
+const dpTable = document.getElementById('dpTable');
+const choiceBox = document.getElementById('choiceBox');
+const statAcc = document.getElementById('statAcc');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+
+  // 当前 root 对应的 left/right
+  let leftIdx = -1, rightIdx = -1;
+  if (st.rootIdx >= 1 && st.nodes >= 1) {
+    leftIdx = st.rootIdx - 1;
+    rightIdx = st.nodes - st.rootIdx;
+  }
+
+  let h = '';
+  for (let i = 0; i <= N; i++) {
+    let cls = '';
+    if (st.dp[i] !== null) cls = 'done';
+    if (i === st.nodes && st.phase !== 'init' && st.phase !== 'final') cls = 'cur';
+    if (i === leftIdx) cls = 'srcL';
+    if (i === rightIdx) cls = 'srcR';
+    const v = st.dp[i] !== null ? st.dp[i] : '?';
+    h += '<div class="dp-cell ' + cls + '"><div class="dnum">dp[' + i + ']</div><div class="dval' + (st.dp[i] === null ? ' empty' : '') + '">' + v + '</div></div>';
+  }
+  dpTable.innerHTML = h;
+
+  // 候选面板：当前 nodes 的所有根
+  let ch = '';
+  if (st.phase === 'init') {
+    ch = '<div class="choice-row">准备开始，dp[0] = 1 已就位</div>';
+  } else if (st.phase === 'final') {
+    ch = '<div class="choice-row cur-root">dp[' + N + '] = ' + st.dp[N] + ' —— 最终答案</div>';
+  } else if (st.phase === 'begin' || st.phase === 'done') {
+    ch = '<div class="choice-row">nodes = ' + st.nodes + '：枚举 root = 1..' + st.nodes + '</div>';
+  } else {
+    for (let root = 1; root <= st.nodes; root++) {
+      const l = root - 1, r = st.nodes - root;
+      ch += '<div class="choice-row' + (root === st.rootIdx ? ' cur-root' : '') + '">'
+          + '<span>root = ' + root + '</span>'
+          + '<span>dp[' + l + ']×dp[' + r + '] = ' + steps[k].dp[l] * steps[k].dp[r] + '</span>'
+          + '</div>';
+    }
+  }
+  choiceBox.innerHTML = ch;
+
+  statAcc.textContent = st.phase === 'root' ? st.acc : (st.phase === 'done' || st.phase === 'final' ? st.acc : '—');
+  statAns.textContent = st.dp[N] !== null ? st.dp[N] : '—';
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1500);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>

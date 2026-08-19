@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9. 二叉树的层序遍历 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.svg-wrap{display:flex;justify-content:center;margin:10px 0}
+.tree-svg{max-width:100%;height:auto}
+.tedge{stroke:#94A3B8;stroke-width:2;fill:none}
+.tnode circle{fill:#F1F5F9;stroke:#94A3B8;stroke-width:2.5;transition:all .35s}
+.tnode text{font-family:Consolas,Monaco,monospace;font-size:14px;font-weight:700;fill:#1F2937;text-anchor:middle;dominant-baseline:central}
+.tnode.cur circle{fill:var(--warm-soft);stroke:var(--warm);stroke-width:4}
+.tnode.inq circle{fill:var(--primary-soft);stroke:var(--primary)}
+.tnode.done circle{fill:var(--accent-green-soft);stroke:var(--accent-green)}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.queue-panel{flex:1.2;min-width:260px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.queue-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.q-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:40px}
+.q-item{background:var(--primary-soft);border:1px solid var(--primary);color:var(--primary);border-radius:8px;padding:3px 12px;font-family:Consolas,Monaco,monospace;font-size:12px;font-weight:700}
+.q-item.popping{background:var(--warm-soft);border-color:var(--warm);color:var(--warm);animation:pop .4s ease}
+@keyframes pop{from{transform:translateY(-6px);opacity:.4}to{transform:translateY(0);opacity:1}}
+.q-hint{font-size:12px;color:var(--text-light)}
+.res-panel{flex:1;min-width:220px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.res-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.res-rows{display:flex;flex-direction:column;gap:6px;min-height:40px}
+.res-level{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.res-tag{font-size:11px;color:var(--accent-green);font-weight:700;width:44px}
+.res-item{background:var(--accent-green-soft);border:1px solid var(--accent-green);color:#0F7A3D;border-radius:8px;min-width:30px;text-align:center;padding:3px 8px;font-family:Consolas,Monaco,monospace;font-size:13px;font-weight:700}
+.stats-panel{flex:1;min-width:150px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-layer{color:var(--accent-purple)}
+.stat-box .s-remain{color:var(--warm)}
+.stat-box .s-ans{color:var(--accent-green)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 102 · 中等</div>
+  <h1>9. 二叉树的层序遍历</h1>
+  <p class="subtitle">len(queue) 定格一层：BFS 分层模板的万能钥匙。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：一次取完一整层</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给你二叉树的根节点 root，返回其节点值的<strong>层序遍历</strong>（即逐层地，从左到右访问所有节点）。</p>
+  <h3>示例</h3>
+  <pre><code>输入：root = [3, 9, 20, null, null, 15, 7]
+        3
+       / \
+      9  20
+         / \
+        15  7
+输出：[[3], [9, 20], [15, 7]]
+
+输入：root = [1]
+输出：[[1]]
+
+输入：root = []
+输出：[]</code></pre>
+  <div class="note yellow">层序 ≠ 前中后序（它们沿一条链深入，属于 DFS）；层序按「离根的距离」一圈圈向外访问，天然需要<strong>队列</strong>。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：一次取完一整层</h2>
+  <ol>
+    <li><strong>根入队</strong>：队列初始化 <code>deque([root])</code>；空树提前返回 <code>[]</code></li>
+    <li><strong>层定格</strong>：每轮 while 开始时，<code>len(queue)</code> 恰好是当前层的节点总数——先把这个数「拍下来」</li>
+    <li><strong>整层出队</strong>：<code>for _ in range(len(queue))</code> 只循环定格次数：出队 → 记入 level → 左右孩子（非空才）入队。本轮新入队的孩子属于下一层，<strong>不影响本轮循环次数</strong></li>
+    <li><strong>收集</strong>：level 完整后加入 res，进入下一轮 while</li>
+  </ol>
+  <div class="formula">每轮开始：队列里 = 完整的一层 ⟹ len(queue) 就是层大小</div>
+  <div class="note blue">为什么这样恰好分层？出队 n 个旧节点会带入至多 2n 个新节点，但 for 的次数在循环开始时就固定了——新节点安静地排在队尾等下一轮，层次边界自动形成。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="kw">if</span> <span class="var">root</span> <span class="zh">为空</span>: <span class="kw">return</span> []
+<span class="var">queue</span> = [<span class="var">root</span>]; <span class="var">res</span> = []
+
+<span class="kw">while</span> <span class="var">queue</span> <span class="zh">非空</span>:
+    <span class="var">level</span> = []
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="zh">range(len(queue))</span>:        <span class="cm"># 定格当前层大小 n</span>
+        <span class="var">node</span> <span class="kw">=</span> <span class="zh">出队</span>
+        <span class="zh">记录值</span>                          <span class="cm"># level.append(node.val)</span>
+        <span class="zh">左右孩子非空则入队</span>             <span class="cm"># if node.left: queue.append(...)</span>
+    <span class="zh">收集本层</span>                        <span class="cm"># res.append(level)</span>
+
+<span class="kw">return</span> <span class="var">res</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">这套「while + for range(len(queue))」骨架是所有分层 BFS 题的公共模板——求每层最右值、锯齿遍历、最小深度等只改 level 的用法，框架一字不动。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 [3, 9, 20, null, null, 15, 7] 的分层 BFS：队列实时变化 + 结果逐层收集。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 树 [3,9,20,null,null,15,7]：蓝=队列中，橙=当前出队，绿=已入结果</div>
+    <div class="svg-wrap">
+      <svg class="tree-svg" width="440" height="230" viewBox="0 0 440 230" id="treeSvg"></svg>
+    </div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前出队</span>
+      <span><i style="background:var(--primary-soft);border:2px solid var(--primary)"></i>队列中</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>已入结果</span>
+    </div>
+    <div class="viz-panel">
+      <div class="queue-panel">
+        <h4>队列 queue（左出右进）</h4>
+        <div class="q-row" id="qBox"></div>
+      </div>
+      <div class="res-panel">
+        <h4>结果 res（逐层追加）</h4>
+        <div class="res-rows" id="resBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">当前层<b class="s-layer" id="statLayer">—</b></div>
+        <div class="stat-box">本层剩余<b class="s-remain" id="statRemain">—</b></div>
+        <div class="stat-box">res 层数<b class="s-ans" id="statAns">0</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table>
+    <tr><th>轮次</th><th>定格层大小</th><th>出队（记入 level）</th><th>孩子入队</th><th>循环结束后队列</th><th>res</th></tr>
+    <tr><td>1</td><td>1</td><td>3</td><td>9、20</td><td>[9, 20]</td><td>[[3]]</td></tr>
+    <tr><td>2</td><td>2</td><td>9（无孩子）、20</td><td>15、7（20 的）</td><td>[15, 7]</td><td>[[3], [9, 20]]</td></tr>
+    <tr><td>3</td><td>2</td><td>15、7</td><td>—（都是叶子）</td><td>[]</td><td>[[3], [9, 20], [15, 7]] ✅</td></tr>
+    <tr><td>4</td><td colspan="5">队列空，while 结束，返回 res</td></tr>
+  </table>
+  <div class="note purple">看第 2 轮：循环开始时 len(queue) = 2 被定格——期间 15、7 虽然入队，但本轮只出 2 个（9 和 20），孩子留给下一轮。这就是分层不串层的秘密。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">from</span> collections <span style="color:#6B7280">import</span> deque
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">levelOrder</span>(self, root) -&gt; List[List[<span style="color:#CA8A04">int</span>]]:
+        <span style="color:#6B7280">if</span> <span style="color:#6B7280">not</span> root:
+            <span style="color:#6B7280">return</span> []                      <span style="color:#6B7280"># 空树直接返回</span>
+
+        queue = deque([root])              <span style="color:#6B7280"># 1. root 放进队列</span>
+        res = []
+
+        <span style="color:#6B7280">while</span> queue:                       <span style="color:#6B7280"># 2. 队列非空</span>
+            level = []
+
+            <span style="color:#6B7280"># 当前层有多少节点（循环开始时定格）</span>
+            <span style="color:#6B7280">for</span> _ <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#D4744C">len</span>(queue)):    <span style="color:#6B7280"># 3. 取出整层</span>
+                node = queue.popleft()     <span style="color:#6B7280"># O(1) 出队</span>
+                level.append(node.val)
+
+                <span style="color:#6B7280">if</span> node.left:
+                    queue.append(node.left)
+                <span style="color:#6B7280">if</span> node.right:
+                    queue.append(node.right)
+
+            res.append(level)              <span style="color:#6B7280"># 4. level 加入 res</span>
+
+        <span style="color:#6B7280">return</span> res</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>deque + popleft</strong>：双端队列头部出队 O(1)；用 list 的 pop(0) 是 O(n)，会整体超时</li>
+    <li><strong>入队前判空</strong>：<code>if node.left</code> 挡住 None，队列里永远只有真实节点，省去出队后的判空</li>
+    <li><strong>len(queue) 的时机</strong>：写在 range() 里在 for 启动时求值一次——之后队列怎么变都不影响本轮次数</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n)</td><td>每个节点入队一次、出队一次</td></tr>
+    <tr><td>空间</td><td>O(w)</td><td>队列最多同时容纳最宽一层的节点（w ≤ n，平衡树 w ≈ n/2）</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>用 list.pop(0) 当队列</strong>：头部出队是 O(n)，总复杂度退化到 O(n²)；必须 deque.popleft()。</div>
+  <div class="note yellow"><strong>while 里逐个出队不分层</strong>：去掉内层 for 后得到的是一条「平铺序列」[3,9,20,15,7]，不是分层的嵌套列表。</div>
+  <div class="note yellow"><strong>把 len(queue) 写进 while 条件外反复求值</strong>：若用 while len(queue) > 0 逐个出队再手动判断层边界，逻辑复杂易错——定格 for 次数是最简写法。</div>
+  <div class="note red"><strong>空树崩溃</strong>：root 为 None 时不提前返回，deque([None]) 会在 node.val 处 AttributeError。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>模板</strong>：while 队列非空 → for range(len(queue)) 取整层 → 收集 level</li>
+    <li><strong>灵魂</strong>：循环开始时 len(queue) = 当前层大小，新入队的孩子属于下一层</li>
+    <li><strong>迁移</strong>：右视图（取 level[-1]）、锯齿（隔层反转 level）、最小深度（首叶子返回）全是这套骨架</li>
+  </ul>
+  <div class="note green">口诀：队列先装根，循环看层深；定格一层数，取完再收层。</div>
+</section>
+</main>
+
+<footer>二叉树的层序遍历 · 算法学习页</footer>
+
+<script>
+(function(){
+// 树 [3,9,20,null,null,15,7]
+const NODES = {
+  1: {val: 3, x: 220, y: 40, l: 2, r: 3},
+  2: {val: 9, x: 120, y: 130, l: null, r: null},
+  3: {val: 20, x: 320, y: 130, l: 4, r: 5},
+  4: {val: 15, x: 250, y: 210, l: null, r: null},
+  5: {val: 7, x: 390, y: 210, l: null, r: null}
+};
+const EDGES = [[1,2],[1,3],[3,4],[3,5]];
+
+function simulate() {
+  const steps = [];
+  const queue = [];   // id 数组（JS 数组 shift 对应 popleft）
+  const res = [];
+  const done = [];
+  let layer = 0;
+  const snap = (desc, cur, popping, remain, phase) => {
+    steps.push({desc: desc, cur: cur, popping: popping || null, queue: queue.slice(), res: res.map(l => l.slice()), done: done.slice(), layer: layer, remain: remain, phase: phase || ''});
+  };
+
+  snap('初始：队列放入根节点 3，res 为空', null, null, null, 'init');
+  queue.push(1);
+  layer = 1;
+
+  while (queue.length) {
+    const n = queue.length;
+    snap('第 ' + layer + ' 轮 while：队列里有 ' + n + ' 个节点——<strong>定格本层大小 = ' + n + '</strong>，准备整层取出', null, null, n, 'layer-start');
+    const level = [];
+    for (let i = 0; i < n; i++) {
+      const id = queue.shift();
+      level.push(NODES[id].val);
+      done.push(id);
+      const kids = [];
+      if (NODES[id].l !== null) { queue.push(NODES[id].l); kids.push(NODES[NODES[id].l].val); }
+      if (NODES[id].r !== null) { queue.push(NODES[id].r); kids.push(NODES[NODES[id].r].val); }
+      const kidTxt = kids.length ? '，其孩子 ' + kids.join('、') + ' 入队（属下一层）' : '（无孩子入队）';
+      snap('出队节点 ' + NODES[id].val + '：记入本层 level' + kidTxt + '。本层剩余 ' + (n - i - 1) + ' 个', id, id, n - i - 1, 'pop');
+    }
+    res.push(level);
+    snap('本层取完：level = [' + level.join(', ') + '] → 加入 res。队列剩余（下一层）：' + (queue.length ? queue.map(x => NODES[x].val).join(', ') : '（空）'), null, null, 0, 'layer-done');
+    layer++;
+  }
+  snap('✅ 队列空，遍历完成：res = ' + JSON.stringify(res), null, null, null, 'final');
+  return steps;
+}
+
+const steps = simulate();
+let cur = 0, playing = false, timer = null;
+
+const treeSvg = document.getElementById('treeSvg');
+const qBox = document.getElementById('qBox');
+const resBox = document.getElementById('resBox');
+const statLayer = document.getElementById('statLayer');
+const statRemain = document.getElementById('statRemain');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+
+  let h = '';
+  for (const [a, b] of EDGES) {
+    h += '<line class="tedge" x1="' + NODES[a].x + '" y1="' + NODES[a].y + '" x2="' + NODES[b].x + '" y2="' + NODES[b].y + '"/>';
+  }
+  for (const idS of Object.keys(NODES).map(Number)) {
+    let cls = '';
+    if (st.queue.includes(idS)) cls = 'inq';
+    if (st.done.includes(idS)) cls = 'done';
+    if (st.cur === idS) cls = 'cur';
+    h += '<g class="' + cls + '"><circle cx="' + NODES[idS].x + '" cy="' + NODES[idS].y + '" r="21"/>'
+        + '<text x="' + NODES[idS].x + '" y="' + NODES[idS].y + '">' + NODES[idS].val + '</text></g>';
+  }
+  treeSvg.innerHTML = h;
+
+  let qh = '';
+  if (st.queue.length === 0) qh = '<span class="q-hint">（队列为空）</span>';
+  st.queue.forEach(id => { qh += '<span class="q-item">节点 ' + NODES[id].val + '</span>'; });
+  if (st.queue.length) qh += '<span class="q-hint" style="margin-left:6px">← 队尾（新入队）</span>';
+  qBox.innerHTML = qh;
+
+  let rh = '';
+  if (st.res.length === 0) rh = '<span class="q-hint">（空）</span>';
+  st.res.forEach((level, i) => {
+    rh += '<div class="res-level"><span class="res-tag">第 ' + (i + 1) + ' 层</span>';
+    level.forEach(v => { rh += '<span class="res-item">' + v + '</span>'; });
+    rh += '</div>';
+  });
+  resBox.innerHTML = rh;
+
+  statLayer.textContent = st.layer >= 1 && st.phase !== 'final' ? '第 ' + st.layer + ' 层' : '—';
+  statRemain.textContent = st.remain !== null && st.remain !== undefined ? st.remain : '—';
+  statAns.textContent = st.res.length;
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1400);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>

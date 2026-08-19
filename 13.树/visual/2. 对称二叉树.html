@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2. 对称二叉树 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.svg-wrap{display:flex;justify-content:center;margin:10px 0}
+.tree-svg{max-width:100%;height:auto}
+.axis{stroke:#D4744C;stroke-width:1.5;stroke-dasharray:6 5;opacity:.6}
+.tedge{stroke:#94A3B8;stroke-width:2;fill:none}
+.tedge.pair{stroke:var(--accent-purple);stroke-width:3}
+.tnode circle{fill:#F1F5F9;stroke:#94A3B8;stroke-width:2.5;transition:all .35s}
+.tnode text{font-family:Consolas,Monaco,monospace;font-size:14px;font-weight:700;fill:#1F2937;text-anchor:middle;dominant-baseline:central}
+.tnode.visited circle{fill:var(--accent-green-soft);stroke:var(--accent-green)}
+.tnode.l-cur circle{fill:var(--warm-soft);stroke:var(--warm);stroke-width:4}
+.tnode.r-cur circle{fill:var(--primary-soft);stroke:var(--primary);stroke-width:4}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.dec-panel{flex:1.2;min-width:260px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.dec-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.dec-row{padding:8px 12px;border-radius:8px;font-family:Consolas,Monaco,monospace;font-size:13px;margin:4px 0;background:#F8FAFC}
+.dec-row.hit{background:var(--accent-green-soft);color:#0F7A3D;font-weight:700}
+.dec-row.bad{background:var(--accent-red-soft);color:#B91C1C}
+.stats-panel{flex:1;min-width:180px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-pair{color:var(--accent-purple)}
+.stat-box .s-ans{color:var(--accent-green)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 101 · 简单</div>
+  <h1>2. 对称二叉树</h1>
+  <p class="subtitle">双参数递归：镜像成对比较，外侧对外侧、内侧对内侧。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：镜像节点配对</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给你一个二叉树的根节点 root，检查它是否<strong>轴对称</strong>。</p>
+  <h3>示例</h3>
+  <pre><code>输入：root = [1, 2, 2, 3, 4, 4, 3]
+输出：true
+解释：沿根竖一条轴，左右子树互为镜像。
+
+输入：root = [1, 2, 2, null, 3, null, 3]
+输出：false
+解释：左子树的右孩子是 3，右子树的左孩子才是 3——位置对不上。</code></pre>
+  <div class="note yellow">对称的严格定义：左子树沿轴翻转后与右子树完全相同（结构与值都相同）。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：镜像节点配对</h2>
+  <ol>
+    <li><strong>配对</strong>：从根的左右孩子开始，每次比较<strong>一对</strong>镜像节点 check(left, right)</li>
+    <li><strong>四情况判定</strong>：
+      <ul>
+        <li>都为空 → True（两边都没东西，对称）</li>
+        <li>只有一个为空 → False（一边有一边没有，不对称）</li>
+        <li>值不等 → False</li>
+        <li>值相等 → 递归：<strong>外侧对</strong> check(l.left, r.right) <strong>内侧对</strong> check(l.right, r.left)，两者都成立才对称</li>
+      </ul>
+    </li>
+    <li><strong>合取</strong>：return check(外侧) and check(内侧)——短路求值，一假即假</li>
+  </ol>
+  <div class="note blue">关键视角转换：普通遍历比较的是「同一分支」的节点，这里比较的是「跨轴」的两条路径——左的最左对应右的最右（外侧），左的靠内对应右的靠内（内侧）。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="kw">def</span> <span class="zh">检查</span>(<span class="var">left</span>, <span class="var">right</span>):
+    <span class="kw">if</span> <span class="zh">都为空</span>: <span class="kw">return</span> <span class="zh">True</span>         <span class="cm"># left is None and right is None</span>
+    <span class="kw">if</span> <span class="zh">只有一个为空</span>: <span class="kw">return</span> <span class="zh">False</span>    <span class="cm"># left is None or right is None</span>
+    <span class="kw">if</span> <span class="zh">值不等</span>: <span class="kw">return</span> <span class="zh">False</span>           <span class="cm"># left.val != right.val</span>
+    <span class="zh">递归外侧对与内侧对</span>              <span class="cm"># check(l.left, r.right) and check(l.right, r.left)</span>
+
+<span class="kw">return</span> <span class="zh">检查</span>(<span class="var">root</span>.<span class="var">left</span>, <span class="var">root</span>.<span class="var">right</span>)</code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">注意两个 None 判断的顺序：先判「都空」再判「一空」——写反会把「都空」误判为 False。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 [1, 2, 2, 3, 4, 4, 3] 的镜像配对检查过程。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 树 [1,2,2,3,4,4,3]：橙=左成员，蓝=右成员，绿=已确认对称</div>
+    <div class="svg-wrap">
+      <svg class="tree-svg" width="520" height="220" viewBox="0 0 520 220" id="treeSvg"></svg>
+    </div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>配对的 left</span>
+      <span><i style="background:var(--primary-soft);border:2px solid var(--primary)"></i>配对的 right</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>已确认</span>
+      <span style="color:#D4744C">┄ 虚线 = 对称轴</span>
+    </div>
+    <div class="viz-panel">
+      <div class="dec-panel">
+        <h4>当前配对判定（check(left, right)）</h4>
+        <div id="decBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">已检查对数<b class="s-pair" id="statPair">0</b></div>
+        <div class="stat-box">判定结果<b class="s-ans" id="statAns">…</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table>
+    <tr><th>配对 (left, right)</th><th>判定过程</th><th>结论</th></tr>
+    <tr><td>(2, 2)</td><td>都非空，值相等 → 继续检查外侧对与内侧对</td><td>待递归</td></tr>
+    <tr><td>(3, 3) 外侧</td><td>左子树的左孩子 vs 右子树的右孩子：都非空，值相等；两者的孩子都为空 → True</td><td>✓</td></tr>
+    <tr><td>(4, 4) 内侧</td><td>左子树的右孩子 vs 右子树的左孩子：值相等；孩子都空 → True</td><td>✓</td></tr>
+    <tr><td>合取</td><td>True and True → 整棵树对称</td><td>True ✅</td></tr>
+  </table>
+  <div class="note purple">反例 [1,2,2,null,3,null,3]：内侧对是 (null, 3)——「只有一个为空」命中第二条判定直接 False，短路返回。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">isSymmetric</span>(self, root) -&gt; <span style="color:#CA8A04">bool</span>:
+        <span style="color:#6B7280"># 对称 = 根节点值相等 + 外侧对外侧 + 内侧对内侧。递归的思想</span>
+        <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">check</span>(left, right):
+            <span style="color:#6B7280"># 1.都为空</span>
+            <span style="color:#6B7280">if</span> left <span style="color:#6B7280">is</span> <span style="color:#CA8A04">None</span> <span style="color:#6B7280">and</span> right <span style="color:#6B7280">is</span> <span style="color:#CA8A04">None</span>:
+                <span style="color:#6B7280">return</span> <span style="color:#CA8A04">True</span>
+            <span style="color:#6B7280"># 2. 只有一个为空</span>
+            <span style="color:#6B7280">if</span> left <span style="color:#6B7280">is</span> <span style="color:#CA8A04">None</span> <span style="color:#6B7280">or</span> right <span style="color:#6B7280">is</span> <span style="color:#CA8A04">None</span>:
+                <span style="color:#6B7280">return</span> <span style="color:#CA8A04">False</span>
+            <span style="color:#6B7280"># 3.两个节点的val不同</span>
+            <span style="color:#6B7280">if</span> left.val != right.val:
+                <span style="color:#6B7280">return</span> <span style="color:#CA8A04">False</span>
+            <span style="color:#6B7280"># 4. 镜像比较</span>
+            <span style="color:#6B7280">return</span> <span style="color:#3B7DD8">check</span>(left.left, right.right) <span style="color:#6B7280">and</span> <span style="color:#3B7DD8">check</span>(left.right, right.left)
+
+        <span style="color:#6B7280">return</span> <span style="color:#3B7DD8">check</span>(root.left, root.right)</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>入口</strong>：check(root.left, root.right)——根本身不参与比较（轴从根穿过）</li>
+    <li><strong>四条判定顺序固定</strong>：都空 → 一空 → 值不等 → 递归；前两条是结构检查，第三条是值检查</li>
+    <li><strong>and 短路</strong>：外侧对失败时不再展开内侧对，直接向上传递 False</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n)</td><td>每个节点最多进入一次配对</td></tr>
+    <tr><td>空间</td><td>O(h)</td><td>递归栈深度 = 树高</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>两条 None 判定顺序颠倒</strong>：先判「一空」会把「都空」的对称情况判成 False。</div>
+  <div class="note yellow"><strong>配对方向搞错</strong>：正确是 l.left 对 r.right（外侧）、l.right 对 r.left（内侧）；写成 l.left 对 r.left 是比较「相同侧」而非镜像。</div>
+  <div class="note yellow"><strong>根节点参与比较</strong>：check(root, root) 也能工作但多一次无意义比较；标准入口是 check(root.left, root.right)。</div>
+  <div class="note red"><strong>只比较值不比较结构</strong>：两侧序列值相等但结构不同（一侧缺孩子）时，靠 None 判定兜底——漏掉会误判对称。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>模型</strong>：对称 = 每一对镜像节点（结构+值）都相等</li>
+    <li><strong>递归形态</strong>：双参数 check(l, r)，按四情况判定，外侧/内侧两路合取</li>
+    <li><strong>范式迁移</strong>：相同两树的「同构比较」「子树判断」都是这个骨架的变体</li>
+  </ul>
+  <div class="note green">口诀：双参配对判四情，都空真来一空假；值等再查内外侧，两路合取即对称。</div>
+</section>
+</main>
+
+<footer>对称二叉树 · 算法学习页</footer>
+
+<script>
+(function(){
+// 树 [1,2,2,3,4,4,3]：val 唯一，直接用 val 做 key
+const TREE = {
+  1: {val: 1, l: 2, r: 2},
+  2: {val: 2, l: 3, r: 4},
+  3: {val: 2, l: 4, r: 3},
+  4: {val: 3, l: null, r: null},
+  5: {val: 4, l: null, r: null},
+  6: {val: 4, l: null, r: null},
+  7: {val: 3, l: null, r: null}
+};
+// 节点 id（位置）：根=1，第二层 2,3，第三层 4,5,6,7
+const NODES = [
+  {id: 1, val: 1, x: 260, y: 40},
+  {id: 2, val: 2, x: 140, y: 120},
+  {id: 3, val: 2, x: 380, y: 120},
+  {id: 4, val: 3, x: 80,  y: 195},
+  {id: 5, val: 4, x: 200, y: 195},
+  {id: 6, val: 4, x: 320, y: 195},
+  {id: 7, val: 3, x: 440, y: 195}
+];
+const EDGES = [[1,2],[1,3],[2,4],[2,5],[3,6],[3,7]];
+// 结构树（用于模拟）：以 id 组织
+const ST = {
+  1: {val: 1, left: 2, right: 3},
+  2: {val: 2, left: 4, right: 5},
+  3: {val: 2, left: 6, right: 7},
+  4: {val: 3, left: null, right: null},
+  5: {val: 4, left: null, right: null},
+  6: {val: 4, left: null, right: null},
+  7: {val: 3, left: null, right: null}
+};
+
+function simulate() {
+  const steps = [];
+  let pairs = 0;
+  const snap = (desc, l, r, verdict, visitedList) => {
+    steps.push({desc: desc, l: l, r: r, verdict: verdict, pairs: pairs, visited: visitedList.slice()});
+  };
+  const ok = [];
+
+  function check(l, r) {
+    pairs++;
+    const ln = l === null ? null : ST[l];
+    const rn = r === null ? null : ST[r];
+    if (l === null && r === null) {
+      snap('check(None, None)：都为空 → 结构对称，返回 True', l, r, 'both-null', ok);
+      return true;
+    }
+    if (l === null || r === null) {
+      snap('check(' + (l === null ? 'None' : ST[l].val) + ', ' + (r === null ? 'None' : ST[r].val) + ')：只有一个为空 → 不对称，返回 False', l, r, 'one-null', ok);
+      return false;
+    }
+    if (ST[l].val !== ST[r].val) {
+      snap('check(' + ST[l].val + ', ' + ST[r].val + ')：值 ' + ST[l].val + ' ≠ ' + ST[r].val + ' → 不对称，返回 False', l, r, 'val-diff', ok);
+      return false;
+    }
+    ok.push(l, r);
+    snap('check(' + ST[l].val + ', ' + ST[r].val + ')：都非空且值相等 ✓ 这对镜像节点合格，继续检查它的外侧对与内侧对', l, r, 'recurse', ok);
+    const outer = check(ST[l].left, ST[r].right);
+    if (!outer) { snap('外侧对失败 → and 短路，当前配对返回 False', l, r, 'short-fail', ok); return false; }
+    const inner = check(ST[l].right, ST[r].left);
+    const res = outer && inner;
+    if (!inner) { snap('内侧对失败 → 当前配对返回 False', l, r, 'short-fail', ok); return false; }
+    snap('外侧对 ✓ 且 内侧对 ✓ → 当前配对 (' + ST[l].val + ',' + ST[r].val + ') 返回 True', l, r, 'both-ok', ok);
+    return res;
+  }
+
+  snap('初始：从根的左右孩子开始配对检查。根节点本身在对称轴上，不参与比较', null, null, 'init', []);
+  const result = check(ST[1].left, ST[1].right);
+  snap('✅ 递归结束：所有镜像配对都通过 → 整棵树' + (result ? '对称，返回 True' : '不对称，返回 False'), null, null, result ? 'final-true' : 'final-false', ok);
+  return steps;
+}
+
+const steps = simulate();
+let cur = 0, playing = false, timer = null;
+
+const treeSvg = document.getElementById('treeSvg');
+const decBox = document.getElementById('decBox');
+const statPair = document.getElementById('statPair');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+  const pos = {};
+  NODES.forEach(n => { pos[n.id] = n; });
+
+  let h = '<line class="axis" x1="260" y1="15" x2="260" y2="215"/>';
+  for (const [a, b] of EDGES) {
+    h += '<line class="tedge" x1="' + pos[a].x + '" y1="' + pos[a].y + '" x2="' + pos[b].x + '" y2="' + pos[b].y + '"/>';
+  }
+  for (const n of NODES) {
+    let cls = 'tnode';
+    if (st.visited.includes(n.id)) cls += ' visited';
+    if (st.l === n.id) cls += ' l-cur';
+    if (st.r === n.id) cls += ' r-cur';
+    h += '<g class="' + cls + '"><circle cx="' + n.x + '" cy="' + n.y + '" r="21"/>'
+        + '<text x="' + n.x + '" y="' + n.y + '">' + n.val + '</text></g>';
+  }
+  treeSvg.innerHTML = h;
+
+  let dh = '';
+  const V = st.verdict;
+  if (V === 'init') {
+    dh = '<div class="dec-row">准备配对 root.left 与 root.right…</div>';
+  } else if (V === 'final-true' || V === 'final-false') {
+    dh = '<div class="dec-row ' + (V === 'final-true' ? 'hit' : 'bad') + '">最终结论：' + (V === 'final-true' ? '对称 ✓' : '不对称 ✗') + '</div>';
+  } else if (V === 'both-null') {
+    dh = '<div class="dec-row hit">情况 1：都为空 → True</div>';
+  } else if (V === 'one-null') {
+    dh = '<div class="dec-row bad">情况 2：只有一个为空 → False</div>';
+  } else if (V === 'val-diff') {
+    dh = '<div class="dec-row bad">情况 3：值不等 → False</div>';
+  } else if (V === 'recurse') {
+    dh = '<div class="dec-row hit">情况 4：值相等 → 递归检查外侧对 + 内侧对</div>';
+  } else if (V === 'both-ok') {
+    dh = '<div class="dec-row hit">外侧 ✓ 内侧 ✓ → 本对返回 True</div>';
+  } else if (V === 'short-fail') {
+    dh = '<div class="dec-row bad">某一对失败 → and 短路返回 False</div>';
+  }
+  decBox.innerHTML = dh;
+
+  statPair.textContent = st.pairs;
+  statAns.textContent = (V === 'final-true') ? 'True' : (V === 'final-false' ? 'False' : '…');
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1600);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>

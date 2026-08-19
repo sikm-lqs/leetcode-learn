@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1. 二叉树的中序遍历 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.svg-wrap{display:flex;justify-content:center;margin:10px 0}
+.tree-svg{max-width:100%;height:auto}
+.tedge{stroke:#94A3B8;stroke-width:2;fill:none}
+.tnode circle{fill:#F1F5F9;stroke:#94A3B8;stroke-width:2.5;transition:all .35s}
+.tnode text{font-family:Consolas,Monaco,monospace;font-size:14px;font-weight:700;fill:#1F2937;text-anchor:middle;dominant-baseline:central}
+.tnode .order{font-size:10px;fill:#fff;font-weight:700}
+.tnode.visited circle{fill:var(--accent-green-soft);stroke:var(--accent-green)}
+.tnode.cur circle{fill:var(--warm-soft);stroke:var(--warm);stroke-width:4}
+.tnode.onstack circle{fill:var(--primary-soft);stroke:var(--primary)}
+.tnode .badge-c{visibility:hidden}
+.tnode.visited .badge-c{visibility:visible}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.stack-panel{flex:1;min-width:240px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.stack-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.stack-items{display:flex;flex-direction:column-reverse;gap:5px;min-height:40px}
+.s-item{background:var(--primary-soft);border:1px solid var(--primary);color:var(--primary);border-radius:8px;padding:3px 12px;font-family:Consolas,Monaco,monospace;font-size:12px;font-weight:700;text-align:center;max-width:120px;margin:0 auto}
+.result-panel{flex:1;min-width:240px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.result-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.res-row{display:flex;flex-wrap:wrap;gap:6px;min-height:34px;align-items:center}
+.r-item{background:var(--accent-green-soft);border:1px solid var(--accent-green);color:#0F7A3D;border-radius:8px;min-width:30px;text-align:center;padding:3px 8px;font-family:Consolas,Monaco,monospace;font-size:13px;font-weight:700}
+.r-hint{font-size:12px;color:var(--text-light)}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 94 · 简单</div>
+  <h1>1. 二叉树的中序遍历</h1>
+  <p class="subtitle">左 → 中 → 右：递归栈里最朴素的三行骨架。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：访问时机决定遍历名</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给定一个二叉树的根节点 <code>root</code>，返回它的<strong>中序遍历</strong>。</p>
+  <h3>示例</h3>
+  <pre><code>输入：root = [1, null, 2, 3]
+        1
+         \
+          2
+         /
+        3
+输出：[1, 3, 2]
+
+输入：root = []
+输出：[]</code></pre>
+  <div class="note yellow">层序列表 [1, null, 2, 3] 的含义：按层从左到右排列，null 是空占位——1 的左孩子空、右孩子是 2，2 的左孩子是 3。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：访问时机决定遍历名</h2>
+  <ol>
+    <li><strong>中序 = 左 → 中 → 右</strong>：先一路向左深入，走不动了（node 为 None）回溯时访问节点，再转向右子树</li>
+    <li><strong>递归三行骨架</strong>：递归左 → 访问根 → 递归右；<code>node is None</code> 是唯一终止条件</li>
+    <li><strong>结果收集</strong>：用外层列表 <code>result</code>，访问动作就是 <code>append(node.val)</code></li>
+  </ol>
+  <div class="note blue">为什么叫"中"序？——访问动作发生在「递归左之后、递归右之前」，即处于两次递归<strong>中间</strong>。把 append 挪到最前/最后就是前序/后序，其余代码一行不改。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="var">result</span> = []
+
+<span class="kw">def</span> <span class="zh">中序</span>(<span class="var">node</span>):
+    <span class="kw">if</span> <span class="var">node</span> <span class="zh">为空</span>:
+        <span class="kw">return</span>                    <span class="cm"># 递归终止</span>
+    <span class="zh">递归左子树</span>                   <span class="cm"># inorder(node.left)</span>
+    <span class="zh">访问当前节点</span>               <span class="cm"># result.append(node.val)</span>
+    <span class="zh">递归右子树</span>                   <span class="cm"># inorder(node.right)</span>
+
+<span class="zh">中序</span>(<span class="var">root</span>)
+<span class="kw">return</span> <span class="var">result</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">递归天然维护了一条「隐式栈」：进入节点压栈、节点为空弹栈——可视化演示将这条栈完整画出来。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 [1, null, 2, 3] 的中序遍历：递归栈变化 + 访问顺序编号 + 结果数组实时填充。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 二叉树：[1, null, 2, 3]</div>
+    <div class="svg-wrap">
+      <svg class="tree-svg" width="420" height="200" viewBox="0 0 420 200" id="treeSvg"></svg>
+    </div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>当前节点</span>
+      <span><i style="background:var(--primary-soft);border:2px solid var(--primary)"></i>递归栈中</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>已访问（角标=顺序）</span>
+    </div>
+    <div class="viz-panel">
+      <div class="stack-panel">
+        <h4>递归栈（底 → 顶）</h4>
+        <div class="stack-items" id="stackBox"></div>
+      </div>
+      <div class="result-panel">
+        <h4>结果 result（中序序列）</h4>
+        <div class="res-row" id="resBox"></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <table>
+    <tr><th>步骤</th><th>动作</th><th>递归栈</th><th>result</th></tr>
+    <tr><td>1</td><td>进入节点 1，压栈</td><td>[1]</td><td>[]</td></tr>
+    <tr><td>2</td><td>访问 1 的左子树 → None，返回</td><td>[1]</td><td>[]</td></tr>
+    <tr><td>3</td><td>回溯到 1：<strong>访问节点 1</strong></td><td>[1]</td><td>[1]</td></tr>
+    <tr><td>4</td><td>访问 1 的右子树 → 进入节点 2，压栈</td><td>[1, 2]</td><td>[1]</td></tr>
+    <tr><td>5</td><td>访问 2 的左子树 → 进入节点 3，压栈</td><td>[1, 2, 3]</td><td>[1]</td></tr>
+    <tr><td>6</td><td>3 的左子树 None；回溯到 3：<strong>访问节点 3</strong></td><td>[1, 2, 3]</td><td>[1, 3]</td></tr>
+    <tr><td>7</td><td>3 的右子树 None，3 完成弹栈；回溯到 2：<strong>访问节点 2</strong></td><td>[1, 2]</td><td>[1, 3, 2]</td></tr>
+    <tr><td>8</td><td>2 的右子树 None，全部弹栈完成</td><td>[]</td><td>[1, 3, 2] ✅</td></tr>
+  </table>
+  <div class="note purple">关键观察：节点 1 虽然是根，却是第一个被访问的——因为它没有左子树；节点 2 在其左孩子 3 之后才访问——这就是「左 → 中 → 右」。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">inorderTraversal</span>(self, root) -&gt; List[<span style="color:#CA8A04">int</span>]:
+        <span style="color:#6B7280"># 中序遍历：左 中间 右</span>
+        result = []
+
+        <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">inorder</span>(node):
+            <span style="color:#6B7280"># 递归终止条件</span>
+            <span style="color:#6B7280">if</span> node <span style="color:#6B7280">is</span> <span style="color:#CA8A04">None</span>:
+                <span style="color:#6B7280">return</span>
+            <span style="color:#3B7DD8">inorder</span>(node.left)       <span style="color:#6B7280"># 遍历左子树</span>
+            result.append(node.val)   <span style="color:#6B7280"># 访问当前节点</span>
+            <span style="color:#3B7DD8">inorder</span>(node.right)      <span style="color:#6B7280"># 遍历右子树</span>
+
+        <span style="color:#3B7DD8">inorder</span>(root)
+        <span style="color:#6B7280">return</span> result</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>闭包收集</strong>：result 定义在外层函数，递归内部直接 append——无需传参、无需返回值拼接</li>
+    <li><strong>终止条件</strong>：<code>node is None</code> 直接 return，None 不进入任何处理</li>
+    <li><strong>三行顺序</strong>：左递归 → 访问 → 右递归；调换三行顺序即得前序/后序</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(n)</td><td>每个节点进入递归一次、访问一次</td></tr>
+    <tr><td>空间</td><td>O(h)</td><td>递归栈深度 = 树高；平衡树 O(log n)，链状树 O(n)（输出数组不计入）</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>忘了终止条件</strong>：node 为 None 时不返回，取 node.left 直接 AttributeError。</div>
+  <div class="note yellow"><strong>访问顺序放错位置</strong>：append 放在两次递归之前是前序、之后是后序——只有夹在中间才是中序。</div>
+  <div class="note yellow"><strong>result 放进递归函数里</strong>：每次递归都新建列表，最后收集不到完整结果——应放外层闭包共享。</div>
+  <div class="note red"><strong>递归栈溢出</strong>：树退化成 10⁵ 长链时递归深度过大，Python 需调 setrecursionlimit 或改显式栈迭代。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>骨架</strong>：判空 → 左递归 → 访问 → 右递归，树题递归的最小模板</li>
+    <li><strong>中序特性</strong>：BST 的中序序列是升序（验证 BST / 第 K 小题的基础）</li>
+    <li><strong>迁移</strong>：改动「访问时机」一行即可得到前序/后序版本</li>
+  </ul>
+  <div class="note green">口诀：左尽回溯访自身，再向右去探一程；递归三行定顺序，中序夹在两递归。</div>
+</section>
+</main>
+
+<footer>二叉树的中序遍历 · 算法学习页</footer>
+
+<script>
+(function(){
+// 树结构：[1, null, 2, 3]
+const TREE = {val: 1, left: null, right: {val: 2, left: {val: 3, left: null, right: null}, right: null}};
+const POS = {1: [210, 50], 2: [300, 130], 3: [220, 180]};  // val -> [x, y]
+const EDGES = [[1, 2], [2, 3]];
+
+function simulate(root) {
+  const steps = [];
+  const stack = [];     // 递归栈（节点 val 数组）
+  const result = [];
+  const visitedOrder = {};
+  let order = 0;
+  const snap = (desc, cur, event) => {
+    steps.push({desc: desc, stack: stack.slice(), result: result.slice(), visited: Object.assign({}, visitedOrder), cur: cur === null ? null : cur.val, event: event});
+  };
+
+  function inorder(node, from) {
+    if (node === null) {
+      snap('到达 None，递归返回（弹栈回溯）', null, 'null');
+      return;
+    }
+    stack.push(node.val);
+    snap('进入节点 ' + node.val + '，压栈。先递归它的左子树', node, 'enter');
+    inorder(node.left);
+    order++;
+    visitedOrder[node.val] = order;
+    result.push(node.val);
+    snap('回溯到节点 ' + node.val + '：左子树处理完毕，<strong>访问它</strong>（第 ' + order + ' 个），加入 result', node, 'visit');
+    inorder(node.right);
+    stack.pop();
+    if (stack.length) {
+      snap('节点 ' + node.val + ' 的右子树处理完，弹栈。回到节点 ' + stack[stack.length - 1], null, 'pop');
+    } else {
+      snap('节点 ' + node.val + ' 处理完毕，弹栈。递归栈已空', null, 'pop');
+    }
+  }
+
+  snap('初始：递归栈为空，result 为空。调用 inorder(root)，开始遍历', null, 'init');
+  inorder(root);
+  snap('✅ 遍历完成：中序序列 = [' + result.join(', ') + ']', null, 'final');
+  return steps;
+}
+
+const steps = simulate(TREE);
+let cur = 0, playing = false, timer = null;
+
+const treeSvg = document.getElementById('treeSvg');
+const stackBox = document.getElementById('stackBox');
+const resBox = document.getElementById('resBox');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function render(k) {
+  const st = steps[k];
+
+  let h = '';
+  for (const [a, b] of EDGES) {
+    const [ax, ay] = POS[a], [bx, by] = POS[b];
+    h += '<line class="tedge" x1="' + ax + '" y1="' + ay + '" x2="' + bx + '" y2="' + by + '"/>';
+  }
+  for (const val of Object.keys(POS).map(Number)) {
+    const [x, y] = POS[val];
+    let cls = 'tnode';
+    if (st.stack.includes(val)) cls += ' onstack';
+    if (st.visited[val]) cls += ' visited';
+    if (st.cur === val) cls += ' cur';
+    const ord = st.visited[val] ? '<text class="order badge-c" x="' + (x + 20) + '" y="' + (y - 18) + '" fill="#16A34A" stroke="none">#' + st.visited[val] + '</text>' : '';
+    h += '<g class="' + cls + '">'
+        + '<circle cx="' + x + '" cy="' + y + '" r="22"/>'
+        + '<text x="' + x + '" y="' + y + '">' + val + '</text>'
+        + ord
+        + '</g>';
+  }
+  treeSvg.innerHTML = h;
+
+  let sh = '';
+  if (st.stack.length === 0) sh = '<span class="r-hint">（栈空）</span>';
+  st.stack.forEach(v => { sh += '<div class="s-item">节点 ' + v + '</div>'; });
+  stackBox.innerHTML = sh;
+
+  let rh = '';
+  if (st.result.length === 0) rh = '<span class="r-hint">（空）</span>';
+  st.result.forEach(v => { rh += '<span class="r-item">' + v + '</span>'; });
+  resBox.innerHTML = rh;
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1500);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>
