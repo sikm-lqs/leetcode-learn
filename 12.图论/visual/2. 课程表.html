@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2. 课程表 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.svg-wrap{display:flex;justify-content:center;margin:10px 0}
+.dag-svg{max-width:100%;height:auto}
+.node{cursor:default}
+.node rect{fill:#F1F5F9;stroke:#94A3B8;stroke-width:2;rx:10;transition:all .35s}
+.node text{font-family:Consolas,Monaco,monospace;font-size:13px;font-weight:700;fill:#1F2937;text-anchor:middle}
+.node .indeg{font-size:10px;fill:#6B7280;font-weight:400}
+.node.state-ready rect{fill:var(--warm-soft);stroke:var(--warm)}
+.node.state-queued rect{fill:var(--primary-soft);stroke:var(--primary)}
+.node.state-learned rect{fill:var(--accent-green-soft);stroke:var(--accent-green)}
+.node.state-learned text{fill:#0F7A3D}
+.node.cur rect{stroke-width:4;filter:drop-shadow(0 3px 8px rgba(212,116,76,.4))}
+.node.decflash rect{stroke:var(--accent-yellow);stroke-width:4}
+.edge{stroke:#94A3B8;stroke-width:2;fill:none;marker-end:url(#arrow);transition:all .3s}
+.edge.dim{stroke:#D8DEE6;stroke-width:1.5}
+.edge.flash{stroke:var(--accent-yellow);stroke-width:3.5}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.queue-panel{flex:1.2;min-width:240px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.queue-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.q-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:34px}
+.q-item{background:var(--primary-soft);border:1px solid var(--primary);color:var(--primary);border-radius:8px;padding:3px 12px;font-family:Consolas,Monaco,monospace;font-size:12px;font-weight:700}
+.q-hint{font-size:12px;color:var(--text-light)}
+.stats-panel{flex:1;min-width:180px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-q{color:var(--primary)}
+.stat-box .s-learned{color:var(--accent-green)}
+.progressbar{width:100%;height:10px;background:#E9EDF2;border-radius:6px;overflow:hidden}
+.progressbar .fill{height:100%;background:linear-gradient(90deg,#3B7DD8,#16A34A);border-radius:6px;transition:width .4s}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 207 · 中等</div>
+  <h1>2. 课程表</h1>
+  <p class="subtitle">Kahn 拓扑排序：入度归零即解锁，learned 计数判环。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：拓扑排序（Kahn / BFS）</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>这个学期必须选修 <code>numCourses</code> 门课程（编号 0 ~ numCourses-1）。<code>prerequisites[i] = [ai, bi]</code> 表示学习课程 ai 前必须先完成课程 bi。判断是否<strong>可能完成所有课程</strong>；可以返回 true，否则 false。</p>
+  <h3>示例</h3>
+  <pre><code>输入：numCourses = 2, prerequisites = [[1, 0]]
+输出：true
+解释：先学 0 再学 1，可行。
+
+输入：numCourses = 2, prerequisites = [[1, 0], [0, 1]]
+输出：false
+解释：0 依赖 1、1 又依赖 0，循环依赖，无解。</code></pre>
+  <div class="note yellow">本质问题：课程依赖构成有向图，问的是「图中是否存在环」——有环则顺序无从谈起。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：拓扑排序（Kahn / BFS）</h2>
+  <ol>
+    <li><strong>建图</strong>：有向边 <code>b → a</code>（先修 b 才能修 a），同时统计每门课的<strong>入度</strong>（先修课数量）</li>
+    <li><strong>初始入队</strong>：入度为 0 的课程没有未满足的先修要求，可以直接学习 → 全部入队</li>
+    <li><strong>BFS 学习</strong>：出队一门课即"学完"（learned +1）；它指向的每门后继课入度减 1——<strong>入度归零意味着先修要求全部满足</strong>，解锁入队</li>
+    <li><strong>判环</strong>：结束后 <code>learned == numCourses</code> 则全部修完（DAG）；否则有课程永远无法入队——它们处在环上</li>
+  </ol>
+  <div class="formula">learned == numCourses ⟺ 无环 ⟺ 可完成</div>
+  <div class="note blue">环上课程的入度永远无法归零（每个都在等环里的其他人先完成），BFS 自然"绕开"了它们——learned 计数差就是环的规模，无需显式找环。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="zh">建邻接表与入度</span>              <span class="cm"># graph[b].append(a); indegree[a] += 1</span>
+
+<span class="var">queue</span> = <span class="zh">所有入度为 0 的课程</span>     <span class="cm"># deque(i for i in range(n) if indegree[i] == 0)</span>
+<span class="var">learned</span> = <span class="num">0</span>
+
+<span class="kw">while</span> <span class="var">queue</span> <span class="zh">非空</span>:
+    <span class="var">course</span> <span class="kw">=</span> <span class="zh">出队</span>; <span class="var">learned</span> += <span class="num">1</span>
+    <span class="kw">for</span> <span class="var">next</span> <span class="kw">in</span> <span class="var">graph</span>[<span class="var">course</span>]:
+        <span class="zh">后继入度减一</span>              <span class="cm"># indegree[next] -= 1</span>
+        <span class="kw">if</span> <span class="zh">入度归零</span>:
+            <span class="zh">解锁入队</span>                  <span class="cm"># queue.append(next)</span>
+
+<span class="kw">return</span> <span class="var">learned</span> <span class="kw">==</span> <span class="var">numCourses</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">「入度归零即解锁」像流水线放行：一条边被处理一次、一个节点入队一次，全程 O(V+E)。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察 numCourses = 6，prerequisites = [[1,0],[2,0],[3,1],[4,1],[5,3]] 的拓扑排序全过程。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 依赖图：边 b → a（先修 b 才能修 a），节点右上角数字 = 当前入度</div>
+    <div class="svg-wrap">
+      <svg class="dag-svg" width="560" height="300" viewBox="0 0 560 300" id="dagSvg">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 Z" fill="#94A3B8"/>
+          </marker>
+        </defs>
+        <g id="edgeLayer"></g>
+        <g id="nodeLayer"></g>
+      </svg>
+    </div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>入度 0（可学）</span>
+      <span><i style="background:var(--primary-soft);border:2px solid var(--primary)"></i>队列中</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>已学会</span>
+      <span><i style="background:#F1F5F9;border:2px solid #94A3B8"></i>等待先修</span>
+    </div>
+    <div class="viz-panel">
+      <div class="queue-panel">
+        <h4>BFS 队列（先进先出）</h4>
+        <div class="q-row" id="qBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">队列长度<b class="s-q" id="statQ">0</b></div>
+        <div class="stat-box">learned / 6<b class="s-learned" id="statLearned">0 / 6</b></div>
+        <div class="progressbar"><div class="fill" id="progFill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <p>依赖：0 → {1, 2}，1 → {3, 4}，3 → 5（6 门课）</p>
+  <table>
+    <tr><th>阶段</th><th>事件</th><th>队列</th><th>learned</th></tr>
+    <tr><td>建图</td><td>入度：0:0，1:1，2:1，3:1，4:1，5:1</td><td>[0]</td><td>0</td></tr>
+    <tr><td>出队 0</td><td>学完 0 → 1、2 入度减为 0，解锁入队</td><td>[1, 2]</td><td>1</td></tr>
+    <tr><td>出队 1</td><td>学完 1 → 3、4 入度减为 0，解锁入队</td><td>[2, 3, 4]</td><td>2</td></tr>
+    <tr><td>出队 2</td><td>学完 2 → 无后继</td><td>[3, 4]</td><td>3</td></tr>
+    <tr><td>出队 3</td><td>学完 3 → 5 入度减为 0，解锁入队</td><td>[4, 5]</td><td>4</td></tr>
+    <tr><td>出队 4</td><td>学完 4 → 无后继</td><td>[5]</td><td>5</td></tr>
+    <tr><td>出队 5</td><td>学完 5 → 队列空</td><td>[]</td><td>6 ✅</td></tr>
+  </table>
+  <div class="note purple">learned = 6 = numCourses → 无环，返回 True。若是 [[1,0],[0,1]]：初始没有任何入度为 0 的课，队列为空，learned = 0 ≠ 2，立即判 False。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">from</span> collections <span style="color:#6B7280">import</span> deque
+<span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">canFinish</span>(self, numCourses: <span style="color:#CA8A04">int</span>, prerequisites: List[List[<span style="color:#CA8A04">int</span>]]) -&gt; <span style="color:#CA8A04">bool</span>:
+        graph = [[] <span style="color:#6B7280">for</span> _ <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(numCourses)]
+        indegree = [<span style="color:#CA8A04">0</span>] * numCourses
+
+        <span style="color:#6B7280">for</span> a, b <span style="color:#6B7280">in</span> prerequisites:      <span style="color:#6B7280"># b → a：先学 b 才能学 a</span>
+            graph[b].append(a)
+            indegree[a] += <span style="color:#CA8A04">1</span>
+
+        queue = deque(i <span style="color:#6B7280">for</span> i <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(numCourses) <span style="color:#6B7280">if</span> indegree[i] == <span style="color:#CA8A04">0</span>)
+
+        learned = <span style="color:#CA8A04">0</span>
+        <span style="color:#6B7280">while</span> queue:
+            course = queue.popleft()     <span style="color:#6B7280"># 学完一门</span>
+            learned += <span style="color:#CA8A04">1</span>
+            <span style="color:#6B7280">for</span> next_course <span style="color:#6B7280">in</span> graph[course]:
+                indegree[next_course] -= <span style="color:#CA8A04">1</span>   <span style="color:#6B7280"># 少一个先修要求</span>
+                <span style="color:#6B7280">if</span> indegree[next_course] == <span style="color:#CA8A04">0</span>:
+                    queue.append(next_course)  <span style="color:#6B7280"># 全部满足 → 解锁</span>
+        <span style="color:#6B7280">return</span> learned == numCourses</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>建图方向</strong>：[a, b] 表示 a 依赖 b，所以连 b → a；方向反了整张图的入度全错</li>
+    <li><strong>初始队列</strong>：生成器直接筛出所有入度 0 的课——它们是"无门槛课"</li>
+    <li><strong>解锁条件</strong>：入度减到<strong>恰好为 0</strong> 才入队（减一次查一次，不会重复入队）</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(V + E)</td><td>建图扫一遍边，BFS 每个节点出队一次、每条边处理一次</td></tr>
+    <tr><td>空间</td><td>O(V + E)</td><td>邻接表 + 入度数组 + 队列</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>建边方向写反</strong>：[a, b] 是"先 b 后 a"，应连 b → a 并给 a 的入度 +1；写成 a → b 时入度全反，判断恰好颠倒（本题因对称性可能侥幸，但课程表 II 必错）。</div>
+  <div class="note yellow"><strong>重复入队</strong>：入队条件必须是「减 1 后恰好等于 0」；若写成「小于等于 0 都入队」会重复计数。</div>
+  <div class="note yellow"><strong>用 visited 而非计数</strong>：拓扑排序不需要 visited——入度本身就是访问状态，learned 计数就是答案判据。</div>
+  <div class="note red"><strong>忽略重复边</strong>：prerequisites 若含重复对 [a,b]，入度会多加；一般题目保证无重边，但工程上可加防御。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>转化</strong>：课程依赖 → 有向图；能否修完 ⟺ 图无环</li>
+    <li><strong>Kahn 算法</strong>：入度 0 入队 → 出队学习 → 后继减入度 → 归零解锁</li>
+    <li><strong>通用范式</strong>：编译依赖、任务编排、构建顺序都是本题换皮</li>
+  </ul>
+  <div class="note green">口诀：依赖建图入度随，零度课程先入队；学完削减后继度，学满全部才算对。</div>
+</section>
+</main>
+
+<footer>课程表 · 算法学习页</footer>
+
+<script>
+(function(){
+const N = 6;
+const EDGES = [[1,0],[2,0],[3,1],[4,1],[5,3]];
+const POS = {0:[80,60], 1:[260,60], 2:[80,200], 3:[430,60], 4:[260,200], 5:[430,200]};
+const NW = 62, NH = 40;
+
+function simulate() {
+  const graph = Array.from({length: N}, () => []);
+  const indegree = new Array(N).fill(0);
+  for (const [a, b] of EDGES) { graph[b].push(a); indegree[a]++; }
+  const steps = [];
+  const queue = [];
+  let learned = 0;
+  const state = new Array(N).fill('wait'); // wait | ready | queued | learned
+  const snap = (desc, cur, flashEdges, decNodes) => {
+    steps.push({desc: desc, queue: queue.slice(), learned: learned, indegree: indegree.slice(), state: state.slice(), cur: cur, flashEdges: flashEdges || [], decNodes: decNodes || []});
+  };
+
+  for (let i = 0; i < N; i++) if (indegree[i] === 0) { state[i] = 'ready'; }
+  snap('建图完成：边 b → a（先修指向后修）。入度统计——' + Array.from({length: N}, (_, i) => i + ':' + indegree[i]).join('、') + '。只有课程 0 入度为 0，可以直接学习', -1, [], []);
+
+  for (let i = 0; i < N; i++) if (indegree[i] === 0) { queue.push(i); state[i] = 'queued'; }
+  snap('所有入度为 0 的课程入队：队列 = [' + queue.join(', ') + ']（只有 0 没有先修要求）', -1, [], []);
+
+  while (queue.length) {
+    const course = queue.shift();
+    learned++;
+    state[course] = 'learned';
+    const dec = [];
+    const willUnlock = [];
+    for (const nxt of graph[course]) {
+      indegree[nxt]--;
+      dec.push(nxt);
+      if (indegree[nxt] === 0) willUnlock.push(nxt);
+    }
+    if (dec.length > 0) {
+      snap('出队课程 ' + course + '，学完（learned = ' + learned + '）。学完后依赖它的课程 ' + dec.join('、') + ' 入度各减 1' + (willUnlock.length ? '——其中 ' + willUnlock.join('、') + ' 入度归 0，解锁入队！' : '（尚未归零，继续等待）'), course, EDGES.filter(e => e[1] === course).map(e => e[0] + '-' + e[1]), dec);
+    } else {
+      snap('出队课程 ' + course + '，学完（learned = ' + learned + '）。它没有后继课程，无入度需要削减', course, [], []);
+    }
+    for (const nxt of willUnlock) { queue.push(nxt); state[nxt] = 'queued'; }
+    if (willUnlock.length) {
+      snap('新解锁的课程 ' + willUnlock.join('、') + ' 已入队，当前队列 = [' + queue.join(', ') + ']', -1, [], []);
+    }
+  }
+  snap('✅ 队列清空：learned = ' + learned + ' / ' + N + (learned === N ? '，全部修完，无环 → 返回 True' : '，有课修不完，存在环 → 返回 False'), -1, [], []);
+  return steps;
+}
+
+const steps = simulate();
+let cur = 0, playing = false, timer = null;
+
+const edgeLayer = document.getElementById('edgeLayer');
+const nodeLayer = document.getElementById('nodeLayer');
+const qBox = document.getElementById('qBox');
+const statQ = document.getElementById('statQ');
+const statLearned = document.getElementById('statLearned');
+const progFill = document.getElementById('progFill');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+function edgeKey(a, b) { return a + '-' + b; }
+
+function buildSvg(st) {
+  // edges
+  let eh = '';
+  for (const [a, b] of EDGES) {
+    const [ax, ay] = POS[a], [bx, by] = POS[b];
+    const x1 = ax + NW / 2, y1 = ay + NH / 2, x2 = bx - NW / 2, y2 = by + NH / 2;
+    const mx = (x1 + x2) / 2 + (ay === by ? 0 : (by > ay ? 30 : -30));
+    const my = (y1 + y2) / 2 + (ax === bx ? 0 : 0);
+    const dim = (st.state[a] === 'learned');
+    const flash = st.flashEdges.includes(edgeKey(a, b));
+    eh += '<path class="edge' + (flash ? ' flash' : (dim ? ' dim' : '')) + '" d="M' + x1 + ',' + y1 + ' Q' + mx + ',' + my + ' ' + x2 + ',' + y2 + '"/>';
+  }
+  edgeLayer.innerHTML = eh;
+  // nodes
+  let nh = '';
+  for (let i = 0; i < N; i++) {
+    const [x, y] = POS[i];
+    let cls = 'node';
+    if (st.state[i] === 'ready') cls += ' state-ready';
+    else if (st.state[i] === 'queued') cls += ' state-queued';
+    else if (st.state[i] === 'learned') cls += ' state-learned';
+    if (st.cur === i) cls += ' cur';
+    if (st.decNodes.includes(i)) cls += ' decflash';
+    nh += '<g class="' + cls + '" transform="translate(' + x + ',' + y + ')">'
+        + '<rect width="' + NW + '" height="' + NH + '" x="0" y="0" rx="10"/>'
+        + '<text x="' + (NW / 2) + '" y="17">课' + i + '</text>'
+        + '<text class="indeg" x="' + (NW / 2) + '" y="31">入度 ' + st.indegree[i] + '</text>'
+        + '</g>';
+  }
+  nodeLayer.innerHTML = nh;
+}
+
+function render(k) {
+  const st = steps[k];
+  buildSvg(st);
+
+  let qh = '';
+  if (st.queue.length === 0) qh = '<span class="q-hint">（队列为空）</span>';
+  st.queue.forEach(c => { qh += '<span class="q-item">课' + c + '</span>'; });
+  if (st.queue.length) qh += '<span class="q-hint" style="margin-left:6px">← 队尾</span>';
+  qBox.innerHTML = qh;
+
+  statQ.textContent = st.queue.length;
+  statLearned.textContent = st.learned + ' / ' + N;
+  progFill.style.width = (st.learned / N * 100) + '%';
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 1600);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>

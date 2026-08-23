@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1. 岛屿数量 · 算法详解</title>
+<style>
+:root{--bg:#F3F3F5;--card:#FFF;--text:#1F2937;--text-light:#6B7280;--primary:#3B7DD8;--primary-hover:#2E6AC0;--primary-soft:#E9EFF7;--warm:#D4744C;--warm-soft:#F5E6DE;--accent-green:#16A34A;--accent-green-soft:#DCFCE7;--accent-red:#DC2626;--accent-red-soft:#FEE2E2;--accent-yellow:#CA8A04;--accent-yellow-soft:#FEF3C7;--accent-purple:#7C3AED;--accent-purple-soft:#EDE9FE;--code-bg:#111827;--code-text:#E5E7EB;--border:#E2E5E9;--shadow:0 8px 24px rgba(15,23,42,0.05);--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;background:var(--bg);color:var(--text);font-size:14px}
+header{background:linear-gradient(135deg,#3B7DD8 0%,#5B9CF5 40%,#D4744C 100%);color:#fff;padding:40px 24px 36px;text-align:center;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(255,255,255,0.12) 0%,transparent 60%)}
+header>*{position:relative;z-index:1}
+header h1{margin:0 0 8px;font-size:32px;font-weight:700;letter-spacing:-0.5px}
+header .badge{display:inline-block;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);padding:4px 14px;border-radius:20px;font-size:13px;margin-bottom:14px}
+header .subtitle{margin:0 auto;max-width:720px;font-size:16px;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin:18px 0;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:22px;border-left:5px solid var(--primary);padding-left:12px;font-weight:600}
+.card h3{margin:20px 0 10px;font-size:17px;font-weight:600}
+.toc a{display:block;color:var(--primary);text-decoration:none;padding:5px 0;font-size:14px;border-bottom:1px solid var(--border);transition:padding-left .2s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{padding-left:4px;color:var(--primary-hover)}
+.note{padding:12px 16px;border-radius:12px;margin:14px 0;border:1px solid transparent;font-size:13.5px}
+.note.blue{background:var(--primary-soft);border-color:#CBD5E1}
+.note.green{background:var(--accent-green-soft);border-color:#BBF7D0}
+.note.red{background:var(--accent-red-soft);border-color:#FECACA}
+.note.yellow{background:var(--accent-yellow-soft);border-color:#FDE68A}
+.note.purple{background:var(--accent-purple-soft);border-color:#DDD6FE}
+.note.warm{background:var(--warm-soft);border-color:#EAD5CC}
+code{background:var(--primary-soft);color:#1E40AF;padding:2px 6px;border-radius:5px;font-family:Consolas,Monaco,"SF Mono",monospace;font-size:13px}
+pre{background:var(--code-bg);color:var(--code-text);padding:16px 18px;border-radius:14px;overflow-x:auto;font-size:13px;line-height:1.7;font-family:Consolas,Monaco,"SF Mono",monospace}
+pre code{background:transparent;color:inherit;padding:0}
+.pseudo .kw{color:#C792EA}
+.pseudo .var{color:#82AAFF}
+.pseudo .zh{color:#C3E88D;font-weight:600}
+.pseudo .cm{color:#7C8DB5;font-style:italic}
+.pseudo .num{color:#F78C6C}
+.pseudo-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:10px 0 4px;font-size:12px;color:var(--text-light)}
+.pseudo-legend span{display:inline-flex;align-items:center;gap:5px}
+.pseudo-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#F1F5F9;font-weight:600}
+.formula{background:#F1F5F9;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin:14px 0;font-family:Consolas,Monaco,monospace;font-size:15px;text-align:center}
+.viz-container{background:#FAFBFC;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:18px 0}
+.viz-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.grid-wrap{display:flex;justify-content:center;margin:14px 0}
+.g-grid{display:grid;grid-template-columns:repeat(5, 52px);gap:5px}
+.g-cell{width:52px;height:52px;border-radius:10px;border:2px solid #CBD5E1;background:#EFF6FF;display:flex;align-items:center;justify-content:center;font-family:Consolas,Monaco,monospace;font-weight:700;font-size:17px;color:#64748B;transition:all .3s;position:relative}
+.g-cell.land{border-color:#2E7D32;background:#DCFCE7;color:#15803D}
+.g-cell.water{border-color:#93C5FD;background:#DBEAFE;color:#60A5FA}
+.g-cell.sunk{border-color:#7DB4F2;background:linear-gradient(#BFDBFE,#93C5FD);color:#3B82F6}
+.g-cell.cur{border-color:var(--warm);transform:scale(1.1);box-shadow:0 4px 14px rgba(212,116,76,.35);z-index:2}
+.g-cell.start{border-color:var(--accent-purple);box-shadow:0 0 0 3px rgba(124,58,237,.25);z-index:1}
+.g-cell.found{border-color:var(--accent-purple);background:var(--accent-purple-soft)}
+.g-cell .step{position:absolute;top:-9px;right:-6px;background:var(--warm);color:#fff;font-size:9px;border-radius:8px;padding:0 5px;font-weight:700}
+.g-cell .isl{position:absolute;top:-9px;left:-6px;background:var(--accent-purple);color:#fff;font-size:9px;border-radius:8px;padding:0 5px;font-weight:700}
+.viz-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px;font-size:12px;color:var(--text-light)}
+.viz-legend span{display:inline-flex;align-items:center;gap:4px}
+.viz-legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.viz-panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+.queue-panel{flex:1.2;min-width:240px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.queue-panel h4{margin:0 0 8px;font-size:13px;color:var(--text-light)}
+.q-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:34px}
+.q-item{background:var(--warm-soft);border:1px solid var(--warm);color:var(--warm);border-radius:8px;padding:3px 10px;font-family:Consolas,Monaco,monospace;font-size:12px;font-weight:700}
+.q-hint{font-size:12px;color:var(--text-light)}
+.stats-panel{flex:1;min-width:180px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.stat-box b{font-family:Consolas,Monaco,monospace;font-size:16px}
+.stat-box .s-q{color:var(--warm)}
+.stat-box .s-ans{color:var(--accent-green)}
+.viz-controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap}
+.viz-controls button{border:1px solid var(--border);background:var(--card);color:var(--text);padding:7px 18px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:500}
+.viz-controls button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+.viz-controls button:disabled{opacity:.35;cursor:default}
+.viz-controls .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.viz-controls .btn-primary:hover{background:var(--primary-hover)}
+.viz-controls .btn-play{background:var(--warm);color:#fff;border-color:var(--warm)}
+.viz-controls .btn-play:hover{background:#C0653F}
+.viz-controls .btn-play.playing{background:var(--accent-red);border-color:var(--accent-red)}
+.viz-step-info{text-align:center;font-size:12px;color:var(--text-light);margin:6px 0;font-family:Consolas,Monaco,monospace}
+.viz-desc{text-align:center;font-size:14px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;min-height:46px;display:flex;align-items:center;justify-content:center}
+footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:640px){header h1{font-size:24px}.card{padding:16px 18px}table{font-size:12px}.g-grid{grid-template-columns:repeat(5, 40px)}.g-cell{width:40px;height:40px;font-size:14px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LeetCode 200 · 中等</div>
+  <h1>1. 岛屿数量</h1>
+  <p class="subtitle">网格即图：发现即淹没，一趟扫描数清岛屿。</p>
+</header>
+
+<main>
+<section class="card toc">
+  <h2>📋 目录</h2>
+  <a href="#understand">1. 题目理解</a>
+  <a href="#idea">2. 核心思路：发现即淹没</a>
+  <a href="#pseudo">3. 伪代码骨架</a>
+  <a href="#viz">4. 交互可视化演示</a>
+  <a href="#walkthrough">5. 详细过程模拟</a>
+  <a href="#code">6. 代码逐段解释</a>
+  <a href="#complexity">7. 复杂度分析</a>
+  <a href="#pitfalls">8. 常见易错点</a>
+  <a href="#summary">9. 总结</a>
+</section>
+
+<section class="card" id="understand">
+  <h2>1. 题目理解</h2>
+  <p>给你一个由 <code>'1'</code>（陆地）和 <code>'0'</code>（水）组成的二维网格，计算网格中<strong>岛屿的数量</strong>。岛屿总是被水包围，每座岛屿由水平/竖直方向上相邻的陆地连接形成。网格的四条边均被水包围。</p>
+  <h3>示例</h3>
+  <pre><code>输入：grid = [
+  ["1","1","0","0","0"],
+  ["1","1","0","0","0"],
+  ["0","0","1","0","0"],
+  ["0","0","0","1","1"]
+]
+输出：3
+解释：左上角一片（4 格）+ 中间一格 + 右下角两格，共 3 座岛。</code></pre>
+  <div class="note yellow">关键在「相邻」的定义：只有上下左右才算（四连通），斜对角不算——这决定了网格是一张四向图。</div>
+</section>
+
+<section class="card" id="idea">
+  <h2>2. 核心思路：发现即淹没</h2>
+  <ol>
+    <li><strong>建图视角</strong>：每个陆地格是节点，上下左右四格是它的邻居——网格是一张隐式图</li>
+    <li><strong>主循环扫描</strong>：行列双循环逐格检查，遇到 <code>'1'</code> 就意味着<strong>发现了一座新岛屿</strong>（计数 +1）</li>
+    <li><strong>BFS 淹岛</strong>：以该格为起点，队列做广度优先搜索，把整座岛的陆地<strong>就地改成 '0'</strong>（"淹没"）——这样后续扫描不会再把同一座岛数第二次</li>
+    <li><strong>就地标记</strong>：不需要 visited 数组，网格本身就是访问记录</li>
+  </ol>
+  <div class="note blue">为什么 BFS 不会重复访问？——「入队时立即标记为水」，同一格永远不会第二次进队；这与「出队时才标记」是常超时写法的分水岭。</div>
+</section>
+
+<section class="card" id="pseudo">
+  <h2>3. 伪代码骨架</h2>
+  <p>控制流与变量用代码表达，操作抽象为中文动宾短句，精确公式放在行尾注释：</p>
+  <pre class="pseudo"><code><span class="var">islands</span> = <span class="num">0</span>
+
+<span class="kw">for</span> <span class="var">r</span>, <span class="var">c</span> <span class="kw">in</span> <span class="zh">逐格扫描网格</span>:
+    <span class="kw">if</span> <span class="var">grid</span>[<span class="var">r</span>][<span class="var">c</span>] <span class="kw">==</span> <span class="zh">'1'</span>:
+        <span class="var">islands</span> += <span class="num">1</span>
+        <span class="zh">BFS 淹没整座岛</span>              <span class="cm"># 发现即淹没，防止重复计数</span>
+
+<span class="kw">def</span> <span class="zh">BFS 淹没</span>(<span class="var">r</span>, <span class="var">c</span>):
+    <span class="var">queue</span> = [(<span class="var">r</span>, <span class="var">c</span>)]; <span class="zh">起点标记为水</span>    <span class="cm"># grid[r][c] = '0'（入队即标记）</span>
+    <span class="kw">while</span> <span class="var">queue</span> <span class="zh">非空</span>:
+        <span class="var">r</span>, <span class="var">c</span> <span class="kw">=</span> <span class="zh">出队</span>
+        <span class="kw">for</span> <span class="zh">上下左右四方向</span>:
+            <span class="kw">if</span> <span class="zh">不越界且是陆地</span>:
+                <span class="zh">标记为水并入队</span>          <span class="cm"># grid[nr][nc] = '0'; queue.append(...)</span>
+
+<span class="kw">return</span> <span class="var">islands</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">一次淹岛 = 一次连通分量的完整遍历；主循环数的就是连通分量的个数。</div>
+</section>
+
+<section class="card" id="viz">
+  <h2>4. 交互可视化演示</h2>
+  <p>点击「下一步」，观察示例 2 网格的扫描与 BFS 淹岛全过程（3 座岛）。</p>
+  <div class="viz-container">
+    <div class="viz-title">📊 4×5 网格：绿=陆地，蓝=水，紫=已淹没</div>
+    <div class="grid-wrap"><div class="g-grid" id="gGrid"></div></div>
+    <div class="viz-legend">
+      <span><i style="background:var(--warm-soft);border:2px solid var(--warm)"></i>扫描指针</span>
+      <span><i style="background:var(--accent-green-soft);border:2px solid var(--accent-green)"></i>陆地</span>
+      <span><i style="background:linear-gradient(#BFDBFE,#93C5FD);border:2px solid #7DB4F2"></i>被淹没的陆地</span>
+      <span><i style="background:var(--accent-purple-soft);border:2px solid var(--accent-purple)"></i>岛屿起点</span>
+    </div>
+    <div class="viz-panel">
+      <div class="queue-panel">
+        <h4>BFS 队列（先进先出）</h4>
+        <div class="q-row" id="qBox"></div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat-box">队列长度<b class="s-q" id="statQ">0</b></div>
+        <div class="stat-box">岛屿数 islands<b class="s-ans" id="statAns">0</b></div>
+      </div>
+    </div>
+    <div class="viz-step-info" id="stepInfo">步骤 1 / 1</div>
+    <div class="viz-controls">
+      <button id="btnPrev">← 上一步</button>
+      <button id="btnNext" class="btn-primary">下一步 →</button>
+      <button id="btnPlay" class="btn-play">▶ 自动播放</button>
+      <button id="btnReset">↺ 重置</button>
+    </div>
+    <div class="viz-desc" id="vizDesc"></div>
+  </div>
+</section>
+
+<section class="card" id="walkthrough">
+  <h2>5. 详细过程模拟</h2>
+  <p>以示例 2 网格为例（行优先扫描）：</p>
+  <table>
+    <tr><th>阶段</th><th>事件</th><th>结果</th></tr>
+    <tr><td>扫描 (0,0)</td><td>发现 '1' → 岛屿 1，BFS 起点 (0,0)</td><td>islands = 1</td></tr>
+    <tr><td>BFS 扩散</td><td>(0,0)→(0,1)、(1,0)；(0,1)→(1,1)；(1,1) 无新邻居</td><td>左上 4 格全部淹没</td></tr>
+    <tr><td>扫描 (0,2)~(2,1)</td><td>全是水，跳过</td><td>—</td></tr>
+    <tr><td>扫描 (2,2)</td><td>发现 '1' → 岛屿 2，BFS 无邻居可扩</td><td>islands = 2</td></tr>
+    <tr><td>扫描 (3,3)</td><td>发现 '1' → 岛屿 3，BFS 扩散到 (3,4)</td><td>islands = 3</td></tr>
+    <tr><td>扫描结束</td><td>全部格子已处理</td><td>答案 3 ✅</td></tr>
+  </table>
+  <div class="note purple">注意 (2,2) 这座"孤岛"：BFS 只有一格也照样淹——连通分量的大小与计数无关，发现一次算一座。</div>
+</section>
+
+<section class="card" id="code">
+  <h2>6. 代码逐段解释</h2>
+  <pre><code><span style="color:#6B7280">from</span> collections <span style="color:#6B7280">import</span> deque
+<span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+
+<span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">numIslands</span>(self, grid: List[List[<span style="color:#CA8A04">str</span>]]) -&gt; <span style="color:#CA8A04">int</span>:
+        <span style="color:#6B7280">if</span> <span style="color:#6B7280">not</span> grid:
+            <span style="color:#6B7280">return</span> <span style="color:#CA8A04">0</span>
+        rows, cols = <span style="color:#D4744C">len</span>(grid), <span style="color:#D4744C">len</span>(grid[<span style="color:#CA8A04">0</span>])
+        islands = <span style="color:#CA8A04">0</span>
+        directions = [(-<span style="color:#CA8A04">1</span>, <span style="color:#CA8A04">0</span>), (<span style="color:#CA8A04">1</span>, <span style="color:#CA8A04">0</span>), (<span style="color:#CA8A04">0</span>, -<span style="color:#CA8A04">1</span>), (<span style="color:#CA8A04">0</span>, <span style="color:#CA8A04">1</span>)]  <span style="color:#6B7280"># 上下左右</span>
+
+        <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">bfs</span>(start_r, start_c):
+            queue = deque([(start_r, start_c)])
+            grid[start_r][start_c] = <span style="color:#CA8A04">'0'</span>       <span style="color:#6B7280"># 入队时立即标记（关键！）</span>
+            <span style="color:#6B7280">while</span> queue:
+                r, c = queue.popleft()
+                <span style="color:#6B7280">for</span> dr, dc <span style="color:#6B7280">in</span> directions:
+                    new_r, new_c = r + dr, c + dc
+                    <span style="color:#6B7280">if</span> (<span style="color:#CA8A04">0</span> &lt;= new_r &lt; rows <span style="color:#6B7280">and</span> <span style="color:#CA8A04">0</span> &lt;= new_c &lt; cols
+                            <span style="color:#6B7280">and</span> grid[new_r][new_c] == <span style="color:#CA8A04">'1'</span>):
+                        grid[new_r][new_c] = <span style="color:#CA8A04">'0'</span>   <span style="color:#6B7280"># 也是入队前标记</span>
+                        queue.append((new_r, new_c))
+
+        <span style="color:#6B7280">for</span> r <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(rows):
+            <span style="color:#6B7280">for</span> c <span style="color:#D4744C">range</span>(cols):
+                <span style="color:#6B7280">if</span> grid[r][c] == <span style="color:#CA8A04">'1'</span>:          <span style="color:#6B7280"># 发现新岛屿</span>
+                    islands += <span style="color:#CA8A04">1</span>
+                    bfs(r, c)                  <span style="color:#6B7280"># 立刻淹没整座岛</span>
+        <span style="color:#6B7280">return</span> islands</code></pre>
+  <h3>逐段说明</h3>
+  <ul>
+    <li><strong>方向数组</strong>：[(-1,0),(1,0),(0,-1),(0,1)] 统一表示四邻居，越界用链式比较一行搞定</li>
+    <li><strong>两次标记</strong>：起点入队前标记一次，邻居入队前标记一次——都在「入队时」而非「出队时」</li>
+    <li><strong>就地修改</strong>：grid 本身当 visited 用，O(1) 额外空间（除队列外）</li>
+  </ul>
+</section>
+
+<section class="card" id="complexity">
+  <h2>7. 复杂度分析</h2>
+  <table>
+    <tr><th></th><th>复杂度</th><th>说明</th></tr>
+    <tr><td>时间</td><td>O(m×n)</td><td>每个格子最多被扫描一次、入队一次</td></tr>
+    <tr><td>空间</td><td>O(min(m,n))</td><td>队列最大长度（对角线宽度级别）；递归 DFS 版本为 O(m×n) 栈深</td></tr>
+  </table>
+</section>
+
+<section class="card" id="pitfalls">
+  <h2>8. 常见易错点</h2>
+  <div class="note red"><strong>出队时才标记</strong>：同一格可能被多个邻居重复入队，最坏指数级膨胀导致超时——必须入队时标记。</div>
+  <div class="note yellow"><strong>忘记淹没起点</strong>：只标记邻居不标记起点，主循环会再次数到它，答案翻倍。</div>
+  <div class="note yellow"><strong>斜角也算邻居</strong>：方向数组多写四个对角方向，会把斜向相连的岛合并——题目只允许四连通。</div>
+  <div class="note red"><strong>grid 元素是字符串</strong>：与整数 1/0 比较恒 False，'1' 与 1 是两码事。</div>
+  <div class="note yellow"><strong>原地修改副作用</strong>：解法会破坏输入；本地测试要用 grid 的深拷贝。</div>
+</section>
+
+<section class="card" id="summary">
+  <h2>9. 总结</h2>
+  <ul>
+    <li><strong>图论化</strong>：网格 = 隐式图，陆地格四连通成连通分量，岛屿数 = 连通分量个数</li>
+    <li><strong>发现即淹没</strong>：扫描遇 '1' 计数 + BFS 就地清零，一趟搞定</li>
+    <li><strong>范式迁移</strong>：把 BFS 换成 DFS（递归/显式栈）同样成立，模板通用</li>
+  </ul>
+  <div class="note green">口诀：逐格扫描见一岛，计数加一速淹没；入队即标防重复，四向扩散莫越界。</div>
+</section>
+</main>
+
+<footer>岛屿数量 · 算法学习页</footer>
+
+<script>
+(function(){
+const ROWS = 4, COLS = 5;
+const INIT = [
+  [1,1,0,0,0],
+  [1,1,0,0,0],
+  [0,0,1,0,0],
+  [0,0,0,1,1]
+];
+const DIRS = [[-1,0],[1,0],[0,-1],[0,1]];
+
+function simulate(init) {
+  const grid = init.map(row => row.slice());
+  const steps = [];
+  let islands = 0;
+  const snap = (desc, scanR, scanC, queue, phase, mark, starts, sunkList) => {
+    steps.push({desc: desc, scan: [scanR, scanC], queue: queue.map(p => p.slice()), phase: phase, mark: mark || null, starts: starts || [], sunk: sunkList || [], grid: grid.map(r => r.slice()), islands: islands});
+  };
+
+  const startCells = [];
+  snap('初始：绿色为陆地，蓝色为水。开始行优先逐格扫描（扫描指针会高亮当前格）', 0, 0, [], 'init');
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (grid[r][c] === 1) {
+        islands++;
+        startCells.push([r, c]);
+        const queue = [[r, c]];
+        grid[r][c] = 0;
+        snap('扫描到 (' + r + ',' + c + ')：发现 \'1\' → 发现第 ' + islands + ' 座岛屿！islands = ' + islands + '。以它为起点开始 BFS，起点先标记为水并入队', r, c, queue, 'found', null, startCells.slice(), [[r, c]]);
+        while (queue.length) {
+          const [cr, cc] = queue.shift();
+          const nbs = [];
+          for (const [dr, dc] of DIRS) {
+            const nr = cr + dr, nc = cc + dc;
+            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && grid[nr][nc] === 1) {
+              grid[nr][nc] = 0;
+              queue.push([nr, nc]);
+              nbs.push([nr, nc]);
+            }
+          }
+          if (nbs.length) {
+            snap('出队 (' + cr + ',' + cc + ')，检查四邻居：' + nbs.map(p => '(' + p[0] + ',' + p[1] + ')').join('、') + ' 是陆地 → 标记为水并入队，继续扩散', r, c, queue, 'expand', null, startCells.slice(), nbs);
+          } else {
+            snap('出队 (' + cr + ',' + cc + ')，检查四邻居：无新的陆地（越界或已淹没），这一支扩散结束', r, c, queue, 'expand', null, startCells.slice(), []);
+          }
+        }
+        snap('第 ' + islands + ' 座岛屿已完全淹没（整座岛的陆地都改成 \'0\'），回到主循环继续扫描', r, c, [], 'islanddone', null, startCells.slice(), []);
+      } else {
+        snap('扫描 (' + r + ',' + c + ')：' + (grid[r][c] === 0 ? '是水（或已淹没），跳过' : ''), r, c, [], 'scan', null, startCells.slice(), []);
+      }
+    }
+  }
+  snap('✅ 扫描完成：共发现 ' + islands + ' 座岛屿', ROWS - 1, COLS - 1, [], 'final', null, startCells.slice(), []);
+  return steps;
+}
+
+const steps = simulate(INIT);
+let cur = 0, playing = false, timer = null;
+
+const gGrid = document.getElementById('gGrid');
+const qBox = document.getElementById('qBox');
+const statQ = document.getElementById('statQ');
+const statAns = document.getElementById('statAns');
+const stepInfo = document.getElementById('stepInfo');
+const vizDesc = document.getElementById('vizDesc');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+
+// 淹没顺序标记：为被淹没的格子标序号（第几步淹没）
+function render(k) {
+  const st = steps[k];
+
+  let h = '';
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const isStart = st.starts.some(p => p[0] === r && p[1] === c);
+      const isCur = st.scan[0] === r && st.scan[1] === c && st.phase !== 'final';
+      let cls;
+      if (st.grid[r][c] === 1) cls = 'land';
+      else cls = INIT[r][c] === 1 ? 'sunk' : 'water';
+      if (isStart && st.grid[r][c] === 0) cls += ' start';
+      if (isCur) cls += ' cur';
+      h += '<div class="g-cell ' + cls + '">' + (st.grid[r][c] === 1 ? '1' : '0') + '</div>';
+    }
+  }
+  gGrid.innerHTML = h;
+
+  let qh = '';
+  if (st.queue.length === 0) {
+    qh = '<span class="q-hint">（队列为空）</span>';
+  } else {
+    st.queue.forEach(p => { qh += '<span class="q-item">(' + p[0] + ',' + p[1] + ')</span>'; });
+  }
+  qh += '<span class="q-hint" style="margin-left:6px">← 队尾</span>';
+  qBox.innerHTML = qh;
+
+  statQ.textContent = st.queue.length;
+  statAns.textContent = st.islands;
+
+  stepInfo.textContent = '步骤 ' + (k + 1) + ' / ' + steps.length;
+  vizDesc.textContent = st.desc;
+  btnPrev.disabled = k === 0;
+  btnNext.disabled = k === steps.length - 1;
+}
+
+function go(k) { if (k >= 0 && k < steps.length) { cur = k; render(cur); } }
+function nextStep() { if (cur < steps.length - 1) go(cur + 1); else stopPlay(); }
+function prevStep() { if (cur > 0) go(cur - 1); }
+function togglePlay() { playing ? stopPlay() : startPlay(); }
+function startPlay() {
+  if (cur >= steps.length - 1) go(0);
+  playing = true;
+  btnPlay.textContent = '⏸ 暂停';
+  btnPlay.classList.add('playing');
+  timer = setInterval(() => { if (cur >= steps.length - 1) stopPlay(); else nextStep(); }, 900);
+}
+function stopPlay() {
+  playing = false;
+  btnPlay.textContent = '▶ 自动播放';
+  btnPlay.classList.remove('playing');
+  if (timer) { clearInterval(timer); timer = null; }
+}
+function resetViz() { stopPlay(); go(0); }
+
+btnNext.onclick = nextStep;
+btnPrev.onclick = prevStep;
+btnPlay.onclick = togglePlay;
+btnReset.onclick = resetViz;
+document.onkeydown = e => {
+  if (e.key === 'ArrowRight') nextStep();
+  else if (e.key === 'ArrowLeft') prevStep();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+};
+
+render(0);
+})();
+</script>
+</body>
+</html>
