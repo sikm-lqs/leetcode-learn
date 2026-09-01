@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0A101E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="磨眼睛">
+<title>磨眼睛 · LeetCode 闪卡</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<style>
+:root{
+  --bg:#0A101E; --bg2:#0D1526; --card:#131C2E; --card2:#182642;
+  --border:#243250; --border2:#2E4166;
+  --text:#E6ECF7; --dim:#8CA0BE; --faint:#5D6F8F;
+  --blue:#5B9CF6; --blue-deep:#2E6AC0; --blue-soft:rgba(91,156,246,.14);
+  --orange:#E8926C; --orange-soft:rgba(232,146,108,.14);
+  --green:#4ADE80; --yellow:#FBBF24; --red:#F87171;
+  --code-bg:#0A0F1C;
+  --kw:#C792EA; --str:#C3E88D; --cm:#7C8DB5; --num:#F78C6C; --fn:#82AAFF;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{
+  height:100dvh;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--text);overflow:hidden;
+}
+#app{height:100dvh;display:flex;flex-direction:column;max-width:620px;margin:0 auto;position:relative}
+
+/* ---------- 顶栏 ---------- */
+.topbar{
+  padding:calc(var(--safe-t) + 14px) 18px 12px;display:flex;align-items:baseline;gap:10px;
+  border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;
+}
+.topbar h1{font-size:19px;letter-spacing:.5px}
+.topbar h1 i{font-style:normal;color:var(--orange)}
+.topbar .sub{font-size:12px;color:var(--faint)}
+.topbar .ver{margin-left:auto;font-size:10px;color:var(--faint)}
+
+/* ---------- 主区 ---------- */
+main{flex:1;min-height:0;position:relative}
+.view{display:none;position:absolute;inset:0;flex-direction:column}
+.view.active{display:flex}
+
+/* ---------- 底部 Tab ---------- */
+.tabbar{
+  display:flex;border-top:1px solid var(--border);background:var(--bg2);
+  padding-bottom:var(--safe-b);flex-shrink:0;
+}
+.tabbar button{
+  flex:1;background:none;border:none;color:var(--faint);font-size:11px;
+  padding:8px 0 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;
+}
+.tabbar button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button.on{color:var(--blue)}
+
+/* ---------- 磨眼（闪卡） ---------- */
+#view-drill{padding:12px 14px 10px;gap:10px}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex-shrink:0;border:1px solid var(--border);background:var(--card);color:var(--dim);
+  border-radius:999px;padding:5px 13px;font-size:12px;cursor:pointer;transition:.15s;
+}
+.chip.on{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+
+.card-shell{flex:1;min-height:0;perspective:1400px}
+.flashcard{
+  position:relative;height:100%;transform-style:preserve-3d;
+  transition:transform .5s cubic-bezier(.25,.7,.3,1);
+}
+.flashcard.flipped{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:18px;overflow-y:auto;overscroll-behavior:contain;
+}
+.face.back{transform:rotateY(180deg);background:var(--card2)}
+
+.bmeta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.badge{font-size:11px;padding:3px 9px;border-radius:6px;line-height:1.4}
+.badge.ch{background:var(--blue-soft);color:var(--blue)}
+.badge.d1{background:rgba(74,222,128,.13);color:var(--green)}
+.badge.d2{background:rgba(251,191,36,.13);color:var(--yellow)}
+.badge.d3{background:rgba(248,113,113,.13);color:var(--red)}
+.badge.tag{background:var(--orange-soft);color:var(--orange)}
+
+.face h2{font-size:20px;margin-bottom:14px;line-height:1.35}
+.blk{margin-bottom:14px}
+.blk h3{
+  font-size:12px;color:var(--faint);letter-spacing:2px;margin-bottom:6px;
+  display:flex;align-items:center;gap:6px;
+}
+.blk h3::before{content:"";width:3px;height:12px;border-radius:2px;background:var(--blue)}
+.blk.warm h3::before{background:var(--orange)}
+.blk p{font-size:14.5px;line-height:1.75;color:#C9D6EC}
+.blk code{background:var(--code-bg);padding:2px 6px;border-radius:5px;font-size:13px;color:#A5C8F7;font-family:"SF Mono",Menlo,Consolas,monospace}
+.blk strong{color:var(--text)}
+.blk .md-pre{
+  background:var(--code-bg);border:1px solid var(--border);border-radius:9px;
+  padding:10px 12px;font-size:12.5px;line-height:1.7;color:#B8C9E4;overflow-x:auto;
+  font-family:"SF Mono",Menlo,Consolas,monospace;white-space:pre;
+}
+
+pre.code{
+  background:var(--code-bg);border:1px solid var(--border);border-radius:10px;
+  padding:13px;overflow-x:auto;font-size:12.5px;line-height:1.65;
+  font-family:"SF Mono",Menlo,Consolas,monospace;color:#D5E1F5;
+}
+pre.code .c-kw{color:var(--kw)}pre.code .c-str{color:var(--str)}
+pre.code .c-cm{color:var(--cm);font-style:italic}pre.code .c-num{color:var(--num)}
+pre.code .c-fn{color:var(--fn)}
+
+.hint{
+  margin-top:auto;padding:26px 0 8px;text-align:center;color:var(--faint);font-size:12.5px;
+}
+.flip-btn{
+  display:block;width:100%;padding:13px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,var(--blue-deep),var(--blue));color:#fff;
+  font-size:15px;font-weight:600;letter-spacing:2px;cursor:pointer;
+}
+.flip-btn.warm{background:linear-gradient(135deg,#C4633A,var(--orange))}
+.viz-link{
+  display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:10px;
+  padding:11px;border-radius:11px;text-decoration:none;font-size:13.5px;
+  background:var(--orange-soft);border:1px solid rgba(232,146,108,.4);color:var(--orange);
+}
+.viz-link svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+
+.mastery{display:flex;gap:9px;margin-top:14px}
+.mastery button{
+  flex:1;padding:12px 4px;border-radius:11px;border:1px solid var(--border);
+  background:var(--card);color:var(--text);font-size:13px;cursor:pointer;line-height:1.35;
+}
+.mastery button small{display:block;font-size:10.5px;color:var(--faint);margin-top:2px}
+.mastery button:active{transform:scale(.97)}
+.mastery .m0{border-color:rgba(248,113,113,.45);background:rgba(248,113,113,.09)}
+.mastery .m1{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.08)}
+.mastery .m2{border-color:rgba(74,222,128,.45);background:rgba(74,222,128,.09)}
+
+.skip-row{display:flex;justify-content:center;gap:22px;padding:9px 0 2px;flex-shrink:0}
+.skip-row button{background:none;border:none;color:var(--faint);font-size:13px;cursor:pointer;padding:6px 10px}
+.skip-row button:active{color:var(--dim)}
+
+/* ---------- 题库 ---------- */
+#view-library{overflow-y:auto;overscroll-behavior:contain}
+.lib-head{position:sticky;top:0;background:var(--bg);z-index:5;padding:12px 14px 8px;display:flex;flex-direction:column;gap:9px}
+.search-row{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:0 12px}
+.search-row svg{width:16px;height:16px;stroke:var(--faint);fill:none;stroke-width:2;flex-shrink:0}
+.search-row input{
+  flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;padding:11px 0;
+}
+.search-row input::placeholder{color:var(--faint)}
+.lib-chips{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.lib-chips::-webkit-scrollbar{display:none}
+.chap-group{padding:2px 14px 8px}
+.chap-head{
+  display:flex;align-items:center;gap:8px;padding:10px 2px 8px;cursor:pointer;user-select:none;
+}
+.chap-head .arr{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--faint);transition:.2s}
+.chap-group.open .chap-head .arr{transform:rotate(90deg)}
+.chap-head b{font-size:14.5px;font-weight:600}
+.chap-head .cnt{font-size:11.5px;color:var(--faint)}
+.chap-head .bar{flex:1;height:4px;border-radius:2px;background:var(--card2);overflow:hidden;margin:0 4px}
+.chap-head .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--orange))}
+.prob-row{
+  display:flex;align-items:center;gap:10px;padding:11px 12px;margin-bottom:7px;
+  background:var(--card);border:1px solid var(--border);border-radius:11px;cursor:pointer;
+}
+.prob-row:active{background:var(--card2)}
+.prob-row .no{width:26px;text-align:center;color:var(--faint);font-size:13px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.prob-row .info{flex:1;min-width:0}
+.prob-row .t{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prob-row .g{font-size:11px;color:var(--faint);margin-top:2px;display:flex;gap:6px;align-items:center}
+.prob-row .right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.l0{background:var(--red)}.dot.l1{background:var(--yellow)}.dot.l2{background:var(--green)}
+.dtag{font-size:10.5px;padding:2px 7px;border-radius:5px}
+.dtag.d1{color:var(--green);background:rgba(74,222,128,.12)}
+.dtag.d2{color:var(--yellow);background:rgba(251,191,36,.12)}
+.dtag.d3{color:var(--red);background:rgba(248,113,113,.12)}
+.viz-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);box-shadow:0 0 5px var(--orange)}
+.lib-empty{text-align:center;color:var(--faint);padding:40px 0;font-size:13.5px}
+
+/* ---------- 我的 ---------- */
+#view-me{overflow-y:auto;padding:16px 16px 26px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+.stat-card h3{font-size:13px;color:var(--dim);margin-bottom:12px;letter-spacing:1px}
+.big-stat{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.big-stat b{font-size:34px;font-weight:700;color:var(--blue)}
+.big-stat span{font-size:13px;color:var(--faint)}
+.mrow{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.mrow .lbl{width:62px;font-size:12.5px;color:var(--dim);flex-shrink:0}
+.mrow .track{flex:1;height:9px;border-radius:5px;background:var(--card2);overflow:hidden}
+.mrow .track i{display:block;height:100%;border-radius:5px;transition:width .4s}
+.mrow .n{width:34px;text-align:right;font-size:12.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+.chapter-stat{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--border);font-size:13.5px}
+.chapter-stat:last-child{border-bottom:none}
+.chapter-stat .nm{flex:1;color:#C9D6EC}
+.chapter-stat .mini{display:flex;gap:7px;font-size:12px;font-variant-numeric:tabular-nums}
+.chapter-stat .mini b{font-weight:500}
+.me-note{font-size:11.5px;color:var(--faint);line-height:1.7;padding:4px 2px}
+
+/* ---------- 题卡页（题库进入） ---------- */
+#view-card{padding:12px 14px 10px;gap:10px;background:var(--bg)}
+.cv-head{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.cv-head button{
+  background:var(--card);border:1px solid var(--border);color:var(--dim);border-radius:10px;
+  padding:8px 14px;font-size:13px;cursor:pointer;
+}
+.cv-head .pos{margin-left:auto;font-size:12.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.cv-nav{display:flex;gap:10px;flex-shrink:0}
+.cv-nav button{
+  flex:1;padding:11px;border-radius:11px;border:1px solid var(--border);background:var(--card);
+  color:var(--text);font-size:14px;cursor:pointer;
+}
+.cv-nav button:disabled{opacity:.35}
+
+/* ---------- toast ---------- */
+#toast{
+  position:fixed;left:50%;bottom:calc(var(--safe-b) + 78px);transform:translateX(-50%) translateY(20px);
+  background:var(--card2);border:1px solid var(--border2);color:var(--text);
+  padding:9px 20px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;
+  transition:.3s;z-index:99;box-shadow:0 6px 24px rgba(0,0,0,.45);white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (min-width:621px){ body{background:var(--bg2)} #app{box-shadow:0 0 60px rgba(0,0,0,.5)} }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <h1>磨<i>·</i>眼睛</h1><span class="sub" id="sub-title"></span><span class="ver" id="ver"></span>
+  </header>
+
+  <main>
+    <!-- 磨眼 -->
+    <section id="view-drill" class="view active">
+      <div class="chips" id="drill-chips"></div>
+      <div class="card-shell"><div class="flashcard" id="drill-card"></div></div>
+      <div class="skip-row">
+        <button id="btn-skip">跳过这题</button>
+        <button id="btn-known">直接标记「秒了」</button>
+      </div>
+    </section>
+
+    <!-- 题库 -->
+    <section id="view-library" class="view">
+      <div class="lib-head">
+        <div class="search-row">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" placeholder="搜索标题 / 标签 / 思路…" autocomplete="off">
+        </div>
+        <div class="lib-chips" id="lib-chips"></div>
+      </div>
+      <div id="lib-body"></div>
+    </section>
+
+    <!-- 我的 -->
+    <section id="view-me" class="view"></section>
+
+    <!-- 题卡详情 -->
+    <section id="view-card" class="view">
+      <div class="cv-head">
+        <button id="cv-back">← 返回</button>
+        <span class="pos" id="cv-pos"></span>
+      </div>
+      <div class="card-shell"><div class="flashcard" id="cv-card"></div></div>
+      <div class="cv-nav">
+        <button id="cv-prev">上一题</button>
+        <button id="cv-next">下一题</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button data-v="drill" class="on">
+      <svg viewBox="0 0 24 24"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+      磨眼
+    </button>
+    <button data-v="library">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>
+      题库
+    </button>
+    <button data-v="me">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.2-3.5 4-5 7.5-5s6.3 1.5 7.5 5"/></svg>
+      我的
+    </button>
+  </nav>
+</div>
+<div id="toast"></div>
+
+<script>
+const DATA = __DATA_JSON__;
+const VERSION = '__VERSION__';
+
+/* ================= 掌握度存储 ================= */
+const LS_KEY = 'grind-mastery-v1';
+let M = {};
+try { M = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch (e) { M = {}; }
+function saveM(id, level) {
+  M[id] = { level: level, ts: Date.now() };
+  localStorage.setItem(LS_KEY, JSON.stringify(M));
+}
+const LEVEL_NAMES = ['没思路', '有思路', '秒了'];
+
+/* ================= 工具 ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm = setTimeout(() => t.classList.remove('show'), 1600);
+}
+function plain(s) { const d = document.createElement('div'); d.innerHTML = s || ''; return d.textContent.toLowerCase(); }
+function diffTag(d) { return { '简单': 1, '中等': 2, '困难': 3 }[d] || 2; }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+/* ================= Python 高亮 ================= */
+const KW = new Set(('def class return if else elif for while in not and or is None True False lambda import from as pass break continue with try except finally raise yield global nonlocal assert del match case').split(' '));
+const BUILTIN = new Set(('self int str list dict set tuple bool float len range enumerate print sorted min max abs sum zip map filter reversed isinstance').split(' '));
+function hlPython(src) {
+  const re = /("""[\s\S]*?"""|'''[\s\S]*?'''|f"(?:\\.|[^"\\\n])*"|f'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|#[^\n]*|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b)/g;
+  let out = '', last = 0, m;
+  while ((m = re.exec(src))) {
+    out += esc(src.slice(last, m.index));
+    const t = m[0]; let cls = null;
+    if (t[0] === '#') cls = 'c-cm';
+    else if (t[0] === '"' || t[0] === "'" || t[0] === 'f') cls = 'c-str';
+    else if (/^\d/.test(t)) cls = 'c-num';
+    else if (KW.has(t)) cls = 'c-kw';
+    else if (BUILTIN.has(t)) cls = 'c-fn';
+    else if (src[m.index + t.length] === '(') cls = 'c-fn';
+    out += cls ? '<span class="' + cls + '">' + esc(t) + '</span>' : esc(t);
+    last = m.index + t.length;
+  }
+  return out + esc(src.slice(last));
+}
+
+/* ================= 闪卡渲染 ================= */
+function cardFaceFrontHTML(p) {
+  return `
+  <div class="face front">
+    <div class="bmeta">
+      <span class="badge ch">${esc(p.chName)} · ${p.num}</span>
+      <span class="badge d${diffTag(p.diff)}">${esc(p.diff)}</span>
+      ${p.tags.map(t => `<span class="badge tag">${esc(t)}</span>`).join('')}
+    </div>
+    <h2>${esc(p.num)}. ${esc(p.title)}</h2>
+    <div class="blk"><h3>题目</h3>${p.desc_html}</div>
+    <div class="blk"><h3>示例</h3>${p.ex_html}</div>
+    <div class="hint">先自己想 30 秒，再翻面看思路</div>
+    <button class="flip-btn" data-flip>翻面看答案</button>
+  </div>`;
+}
+function cardFaceBackHTML(p) {
+  const m = M[p.id];
+  const markBtn = lv => {
+    const on = m && m.level === lv;
+    return `<button class="m${lv}" data-mark="${lv}" ${on ? 'style="outline:2px solid var(--dim);outline-offset:-2px"' : ''}>${LEVEL_NAMES[lv]}<small>${on ? '当前记录' : '&nbsp;'}</small></button>`;
+  };
+  return `
+  <div class="face back">
+    <h2>${esc(p.num)}. ${esc(p.title)}</h2>
+    ${p.idea_html ? `<div class="blk"><h3>思路</h3>${p.idea_html}</div>` : ''}
+    <div class="blk"><h3>代码</h3><pre class="code">${hlPython(p.code)}</pre></div>
+    ${p.hl_html ? `<div class="blk warm"><h3>亮点</h3>${p.hl_html}</div>` : ''}
+    ${p.visual ? `<a class="viz-link" href="${p.visual}" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+      查看交互式可视化讲解</a>` : ''}
+    <div class="mastery">${markBtn(0)}${markBtn(1)}${markBtn(2)}</div>
+    <div class="hint" style="padding-top:10px">点击卡片顶部区域可翻回题目</div>
+  </div>`;
+}
+function renderFlashcard(el, p) {
+  el.classList.remove('flipped');
+  el.innerHTML = cardFaceFrontHTML(p) + cardFaceBackHTML(p);
+  el._p = p;
+  el.querySelectorAll('[data-flip]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); el.classList.add('flipped'); }));
+  el.querySelector('.face.front').addEventListener('click', e => {
+    if (e.target.closest('[data-flip]')) return;
+    el.classList.add('flipped');
+  });
+  el.querySelector('.face.back').addEventListener('click', e => {
+    if (e.target.closest('button,a,pre')) return;
+    el.classList.remove('flipped');
+  });
+  el.querySelectorAll('[data-mark]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    saveM(p.id, +b.dataset.mark);
+    el.dispatchEvent(new CustomEvent('cardmarked', { bubbles: true, detail: { id: p.id } }));
+  }));
+}
+
+/* ================= 磨眼视图 ================= */
+let drillChFilter = '全部';
+let recent = [];
+function weightedPick() {
+  let pool = DATA.problems;
+  if (drillChFilter !== '全部') pool = pool.filter(p => p.chName === drillChFilter);
+  if (!pool.length) return null;
+  let cand = pool.filter(p => !recent.includes(p.id));
+  if (cand.length < Math.min(3, pool.length)) cand = pool;
+  const W = { none: 3, 0: 6, 1: 2, 2: 0.5 };
+  const weights = cand.map(p => (p.id in M ? W[M[p.id].level] : W.none));
+  let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < cand.length; i++) { r -= weights[i]; if (r <= 0) return cand[i]; }
+  return cand[cand.length - 1];
+}
+function nextDrill() {
+  const p = weightedPick();
+  if (!p) return;
+  recent.push(p.id); if (recent.length > 10) recent.shift();
+  renderFlashcard($('#drill-card'), p);
+}
+function renderDrillChips() {
+  const names = ['全部', ...DATA.chapters.map(c => c.name)];
+  $('#drill-chips').innerHTML = names.map(n =>
+    `<button class="chip ${n === drillChFilter ? 'on' : ''}" data-ch="${esc(n)}">${esc(n)}</button>`).join('');
+  $('#drill-chips').querySelectorAll('[data-ch]').forEach(b => b.addEventListener('click', () => {
+    drillChFilter = b.dataset.ch; recent = []; renderDrillChips(); nextDrill();
+  }));
+}
+$('#drill-card').addEventListener('cardmarked', e => {
+  toast('已记录「' + LEVEL_NAMES[M[e.detail.id].level] + '」');
+  setTimeout(nextDrill, 450);
+});
+$('#btn-skip').addEventListener('click', nextDrill);
+$('#btn-known').addEventListener('click', () => {
+  const p = $('#drill-card')._p;
+  if (p) { saveM(p.id, 2); toast('已记录「秒了」'); setTimeout(nextDrill, 350); }
+});
+
+/* ================= 题库视图 ================= */
+let libDiff = '全部', libTag = '全部', libQ = '';
+let cvList = [], cvIdx = 0;
+function libFiltered() {
+  const q = libQ.trim().toLowerCase();
+  return DATA.problems.filter(p => {
+    if (libDiff !== '全部' && p.diff !== libDiff) return false;
+    if (libTag !== '全部' && !p.tags.includes(libTag)) return false;
+    if (q) {
+      const hay = (p.title + ' ' + p.tags.join(' ') + ' ' + plain(p.idea_html)).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+function renderLibChips() {
+  const diffs = ['全部', '简单', '中等', '困难'];
+  const allTags = [...new Set(DATA.problems.flatMap(p => p.tags))].sort();
+  const mk = (v, cur, key) => `<button class="chip ${v === cur ? 'on' : ''}" data-${key}="${esc(v)}">${esc(v)}</button>`;
+  $('#lib-chips').innerHTML =
+    diffs.map(d => mk(d, libDiff, 'diff')).join('') +
+    `<span style="width:1px;background:var(--border);margin:2px 4px;flex-shrink:0"></span>` +
+    allTags.map(t => mk(t, libTag, 'tag')).join('');
+  $('#lib-chips').querySelectorAll('[data-diff]').forEach(b => b.addEventListener('click', () => { libDiff = b.dataset.diff; renderLibChips(); renderLib(); }));
+  $('#lib-chips').querySelectorAll('[data-tag]').forEach(b => b.addEventListener('click', () => { libTag = b.dataset.tag; renderLibChips(); renderLib(); }));
+}
+function renderLib() {
+  const list = libFiltered();
+  if (!list.length) { $('#lib-body').innerHTML = '<div class="lib-empty">没有匹配的题目</div>'; return; }
+  const byCh = {};
+  list.forEach(p => (byCh[p.ch] = byCh[p.ch] || []).push(p));
+  let html = '';
+  DATA.chapters.forEach(c => {
+    const ps = byCh[c.id]; if (!ps) return;
+    const done = ps.filter(p => M[p.id]).length;
+    html += `<div class="chap-group open" data-chap="${esc(c.id)}">
+      <div class="chap-head">
+        <span class="arr"></span><b>${esc(c.name)}</b><span class="cnt">${done}/${ps.length}</span>
+        <span class="bar"><i style="width:${ps.length ? done / ps.length * 100 : 0}%"></i></span>
+      </div>
+      <div class="rows">${ps.map(p => {
+        const m = M[p.id];
+        return `<div class="prob-row" data-id="${esc(p.id)}">
+          <span class="no">${p.num}</span>
+          <div class="info">
+            <div class="t">${esc(p.title)}</div>
+            <div class="g">${p.tags.map(t => esc(t)).join(' · ')}${p.visual ? ' · <span style="color:var(--orange)">可视化</span>' : ''}</div>
+          </div>
+          <div class="right">
+            <span class="dtag d${diffTag(p.diff)}">${esc(p.diff)}</span>
+            ${m ? `<span class="dot l${m.level}" title="${LEVEL_NAMES[m.level]}"></span>` : ''}
+          </div>
+        </div>`;
+      }).join('')}</div>
+    </div>`;
+  });
+  $('#lib-body').innerHTML = html;
+  $$('#lib-body .chap-head').forEach(h => h.addEventListener('click', () => h.parentElement.classList.toggle('open')));
+  $$('#lib-body .prob-row').forEach(r => r.addEventListener('click', () => {
+    const id = r.dataset.id;
+    cvList = list; cvIdx = list.findIndex(p => p.id === id);
+    showView('card'); renderCv();
+  }));
+}
+$('#q').addEventListener('input', e => { libQ = e.target.value; renderLib(); });
+
+/* ================= 题卡视图 ================= */
+function renderCv() {
+  const p = cvList[cvIdx];
+  $('#cv-pos').textContent = (cvIdx + 1) + ' / ' + cvList.length;
+  $('#cv-prev').disabled = cvIdx <= 0;
+  $('#cv-next').disabled = cvIdx >= cvList.length - 1;
+  renderFlashcard($('#cv-card'), p);
+}
+$('#cv-back').addEventListener('click', () => { renderLib(); showView('library'); });
+$('#cv-prev').addEventListener('click', () => { if (cvIdx > 0) { cvIdx--; renderCv(); } });
+$('#cv-next').addEventListener('click', () => { if (cvIdx < cvList.length - 1) { cvIdx++; renderCv(); } });
+$('#cv-card').addEventListener('cardmarked', e => toast('已记录「' + LEVEL_NAMES[M[e.detail.id].level] + '」'));
+
+/* ================= 我的视图 ================= */
+function renderMe() {
+  const total = DATA.problems.length;
+  const counts = [0, 0, 0];
+  let touched = 0;
+  DATA.problems.forEach(p => { const m = M[p.id]; if (m) { counts[m.level]++; touched++; } });
+  const pct = x => total ? (x / total * 100).toFixed(1) : 0;
+  const mrow = (lbl, n, color) => `
+    <div class="mrow"><span class="lbl">${lbl}</span>
+      <span class="track"><i style="width:${pct(n)}%;background:${color}"></i></span>
+      <span class="n">${n}</span></div>`;
+  let chRows = '';
+  DATA.chapters.forEach(c => {
+    const ps = DATA.problems.filter(p => p.ch === c.id);
+    const c0 = ps.filter(p => M[p.id] && M[p.id].level === 0).length;
+    const c1 = ps.filter(p => M[p.id] && M[p.id].level === 1).length;
+    const c2 = ps.filter(p => M[p.id] && M[p.id].level === 2).length;
+    chRows += `<div class="chapter-stat">
+      <span class="nm">${esc(c.name)}</span>
+      <span class="mini">
+        <b style="color:var(--red)">${c0}</b>
+        <b style="color:var(--yellow)">${c1}</b>
+        <b style="color:var(--green)">${c2}</b>
+        <b style="color:var(--faint)">/${ps.length}</b>
+      </span></div>`;
+  });
+  $('#view-me').innerHTML = `
+    <div class="stat-card">
+      <h3>总体进度</h3>
+      <div class="big-stat"><b>${touched}</b><span>/ ${total} 题已刷过</span></div>
+      ${mrow('没思路', counts[0], 'var(--red)')}
+      ${mrow('有思路', counts[1], 'var(--yellow)')}
+      ${mrow('秒了', counts[2], 'var(--green)')}
+      ${mrow('未标记', total - touched, 'var(--border2)')}
+    </div>
+    <div class="stat-card">
+      <h3>分章节掌握度 <span style="color:var(--faint);font-size:11px">红/黄/绿 = 没思路/有思路/秒了</span></h3>
+      ${chRows}
+    </div>
+    <div class="stat-card">
+      <h3>说明</h3>
+      <div class="me-note">
+        · 掌握度标记保存在本机浏览器（localStorage），仅当前设备可见<br>
+        · 磨眼模式按掌握度加权抽题：「没思路」出现频率最高，「秒了」最低<br>
+        · 数据版本 v${VERSION.slice(0, 7)} · 构建于 ${DATA.builtAt}
+      </div>
+    </div>`;
+}
+
+/* ================= 视图切换 ================= */
+function showView(v) {
+  $$('.view').forEach(s => s.classList.remove('active'));
+  $('#view-' + v).classList.add('active');
+  $$('.tabbar button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  if (v === 'me') renderMe();
+}
+$$('.tabbar button').forEach(b => b.addEventListener('click', () => showView(b.dataset.v)));
+
+/* ================= 启动 ================= */
+$('#sub-title').textContent = 'LeetCode · ' + DATA.problems.length + ' 题';
+$('#ver').textContent = 'v' + VERSION.slice(0, 7);
+renderDrillChips();
+renderLibChips();
+renderLib();
+nextDrill();
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      reg.installing.addEventListener('statechange', e => {
+        if (e.target.state === 'installed' && navigator.serviceWorker.controller) {
+          toast('题库有更新，下次打开生效');
+        }
+      });
+    });
+  }).catch(() => {});
+}
+</script>
+</body>
+</html>
