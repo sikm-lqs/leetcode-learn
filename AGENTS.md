@@ -158,3 +158,39 @@
     </section>
 
 参考实现见 `1. 数组/visual/11. 接雨水.html` 的第 3 章。
+
+## 磨眼睛 Web App（手机刷题闪卡）
+
+本仓库自带一个手机 Web App：解析各章节 `leetcode.ipynb` 生成闪卡式 PWA，托管在 GitHub Pages，用于「磨眼睛」式刷题。
+
+### 访问
+
+- 网址：`https://sikm-lqs.github.io/leetcode-learn/`
+- 手机浏览器打开后可「添加到主屏幕」当独立 App 使用，支持完全离线（Service Worker 全量缓存题库和 visual 讲解）
+
+### App 相关文件（不影响刷题笔记本身）
+
+```
+scripts/build_app.py          # 构建脚本：解析 ipynb → dist/（唯一维护入口）
+app/index.template.html       # 单文件 SPA 模板（含 __DATA_JSON__ / __VERSION__ 占位符，勿删）
+.github/workflows/deploy.yml  # push main 时自动构建并部署 Pages
+dist/                         # 构建产物（已 gitignore，不入库）
+```
+
+### 维护方式
+
+- **日常加题**：正常往 `*/leetcode.ipynb` 末尾加题（遵循上文两单元格格式），push 到 main 后 App 自动更新，无需额外操作
+- **新题带可视化**：HTML 放到对应章节 `visual/` 下，文件名必须是 `{题号}. {题目名}.html`，构建时自动匹配为题卡上的跳转链接
+- **本地预览**：
+  ```bash
+  python3 scripts/build_app.py
+  python3 -m http.server 8000 --directory dist   # 浏览器开 http://localhost:8000
+  ```
+- **解析校验**：`python3 scripts/build_app.py --check` 只解析不产出，缺字段（如缺思路）的题目会打印提醒
+- **改 App 样式/逻辑**：只改 `app/index.template.html`，改完跑一次构建验证
+
+### 数据说明
+
+- 掌握度标记（没思路/有思路/秒了）存在手机浏览器 localStorage，仅本机可见，换设备不同步
+- 磨眼模式按掌握度加权抽题：没思路 6 > 有思路 2 > 秒了 0.5（未标记 3）
+- Service Worker 版本号 = 题库数据 hash，题库更新后旧缓存自动清理，页面提示刷新
