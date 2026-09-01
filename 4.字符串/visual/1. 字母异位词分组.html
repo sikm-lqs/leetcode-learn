@@ -170,14 +170,16 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 <section class="card" id="pseudo">
   <h2>3. 伪代码骨架</h2>
   <p>控制流和变量用代码表达，操作用<strong>中文短句</strong>概括，精确公式放在 <code>#</code> 注释里——介于「思路文字」与「真实代码」之间的一层抽象。</p>
-  <pre class="pseudo"><code><span class="var">groups</span> = <span class="zh">defaultdict(list)</span>          <span class="cm"># 空分组容器</span>
+  <pre class="pseudo"><code><span class="var">groups</span> = {}                          <span class="cm"># 空分组容器</span>
 
-<span class="kw">for</span> <span class="var">s</span> <span class="kw">in</span> <span class="zh">遍历strs</span>:
+<span class="kw">for</span> <span class="var">string</span> <span class="kw">in</span> <span class="zh">遍历strs</span>:
     <span class="var">count</span>[<span class="num">26</span>] = [<span class="num">0</span>]*<span class="num">26</span>            <span class="cm"># 每个串新建计数数组</span>
-    <span class="kw">for</span> <span class="var">char</span> <span class="kw">in</span> <span class="zh">遍历s</span>:
-        <span class="zh">该字母计数加一</span>          <span class="cm"># count[ord(char)-ord('a')]++</span>
+    <span class="kw">for</span> <span class="var">ch</span> <span class="kw">in</span> <span class="zh">遍历string</span>:
+        <span class="zh">该字母计数加一</span>          <span class="cm"># count[ord(ch)-ord('a')]++</span>
     <span class="var">key</span> = <span class="zh">tuple</span>(<span class="var">count</span>)          <span class="cm"># list 不可哈希 → 转 tuple</span>
-    <span class="var">groups</span>[<span class="var">key</span>].<span class="zh">append</span>(<span class="var">s</span>)       <span class="cm"># 相同指纹归同类</span>
+    <span class="kw">if</span> <span class="var">key</span> <span class="kw">not in</span> <span class="var">groups</span>:
+        <span class="var">groups</span>[<span class="var">key</span>] = []            <span class="cm"># 首次出现 → 初始化空组</span>
+    <span class="var">groups</span>[<span class="var">key</span>].<span class="zh">append</span>(<span class="var">string</span>)     <span class="cm"># 相同指纹归同类</span>
 
 <span class="kw">return</span> <span class="zh">list</span>(<span class="var">groups</span>.<span class="zh">values</span>())</code></pre>
   <div class="pseudo-legend">
@@ -247,28 +249,32 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
 
 <section class="card" id="code">
   <h2>6. 代码逐段解释</h2>
-  <pre><code><span style="color:#6B7280">from</span> collections <span style="color:#6B7280">import</span> defaultdict
-<span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
+  <pre><code><span style="color:#6B7280">from</span> typing <span style="color:#6B7280">import</span> List
 
 <span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution</span>:
     <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">groupAnagrams</span>(self, strs: List[str]) -> List[List[str]]:
-        groups = defaultdict(list)
+        groups = {}
 
-        <span style="color:#6B7280">for</span> s <span style="color:#6B7280">in</span> strs:
+        <span style="color:#6B7280">for</span> string <span style="color:#6B7280">in</span> strs:
             count = [<span style="color:#CA8A04">0</span>] * <span style="color:#CA8A04">26</span>
 
-            <span style="color:#6B7280">for</span> char <span style="color:#6B7280">in</span> s:
-                count[<span style="color:#D4744C">ord</span>(char) - <span style="color:#D4744C">ord</span>(<span style="color:#CE9178">'a'</span>)] += <span style="color:#CA8A04">1</span>
+            <span style="color:#6B7280">for</span> ch <span style="color:#6B7280">in</span> string:
+                count[<span style="color:#D4744C">ord</span>(ch) - <span style="color:#D4744C">ord</span>(<span style="color:#CE9178">'a'</span>)] += <span style="color:#CA8A04">1</span>
 
             key = <span style="color:#D4744C">tuple</span>(count)
-            groups[key].append(s)
+
+            <span style="color:#6B7280">if</span> key <span style="color:#6B7280">not in</span> groups:
+                groups[key] = []
+
+            groups[key].append(string)
 
         <span style="color:#6B7280">return</span> <span style="color:#D4744C">list</span>(groups.values())</code></pre>
 
-  <p><strong>groups = defaultdict(list)</strong>：用 <code>defaultdict</code> 而非普通 <code>dict</code>，访问不存在的 key 时自动初始化为空列表，省去 <code>if key not in groups</code> 的判空。</p>
-  <p><strong>count = [0] * 26</strong>：每个字符串都新建一个干净的计数数组。下标 <code>ord(char) - ord('a')</code> 把 a–z 映射到 0–25。</p>
+  <p><strong>groups = {}</strong>：普通字典。与 <code>defaultdict</code> 不同，访问不存在的 key 不会自动初始化，所以稍后需要显式 <code>if key not in groups</code> 判空。</p>
+  <p><strong>count = [0] * 26</strong>：每个字符串都新建一个干净的计数数组。下标 <code>ord(ch) - ord('a')</code> 把 a–z 映射到 0–25。</p>
   <p><strong>key = tuple(count)</strong>：<strong>全题最关键的一行</strong>。<code>list</code> 不可哈希、不能当字典 key，<code>tuple()</code> 把它转成可哈希的等价形式。指纹相同 ⇔ 异位词。</p>
-  <p><strong>groups[key].append(s)</strong>：指纹相同的字符串 key 相同，自然聚到同一组。</p>
+  <p><strong>if key not in groups: groups[key] = []</strong>：首次遇到一个新指纹时，先初始化空组，避免直接 <code>append</code> 触发 <code>KeyError</code>。</p>
+  <p><strong>groups[key].append(string)</strong>：指纹相同的字符串 key 相同，自然聚到同一组。</p>
   <p><strong>return list(groups.values())</strong>：<code>dict.values()</code> 返回的是视图，<code>list()</code> 转成题目要求的列表的列表。</p>
 
   <div class="note warm">把 <code>key = tuple(count)</code> 换成 <code>key = ''.join(sorted(s))</code> 就是排序法，代码更短但单串 O(k log k)；计数法是 O(k)。</div>
@@ -293,8 +299,8 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
   <h3>错误：以为必须排序</h3>
   <p>排序法 <code>key = ''.join(sorted(s))</code> 也正确，但单串需 O(k·log k)；计数法是 O(k)，对长串更优。两者本质都是「生成等价类指纹」。</p>
 
-  <h3>错误：用普通 dict 忘了判空</h3>
-  <p>若 <code>groups = {}</code>，直接 <code>groups[key].append(s)</code> 会 <code>KeyError</code>。需 <code>if key not in groups: groups[key] = []</code>；用 <code>defaultdict(list)</code> 可省去这一步。</p>
+  <h3>错误：普通 dict 忘了判空</h3>
+  <p>若 <code>groups = {}</code>，直接 <code>groups[key].append(string)</code> 会 <code>KeyError</code>（key 首次出现时不存在）。必须先 <code>if key not in groups: groups[key] = []</code>；本解显式处理了这一步，也可改用 <code>defaultdict(list)</code> 自动初始化来省去判空。</p>
 
   <h3>边界：字符集假设</h3>
   <p><code>ord(c) - ord('a')</code> 仅适用 26 个小写字母。若输入含大写或其他字符，需改用字典统计（<code>defaultdict(int)</code>）并把字典转成可哈希的 <code>frozenset</code> 或排序 tuple。</p>
@@ -307,7 +313,7 @@ footer{color:var(--text-light);text-align:center;padding:30px 20px;font-size:13p
     <ul style="margin:6px 0 0;padding-left:20px;">
       <li><strong>等价类指纹</strong>：用 26 元计数数组刻画「字母构成」，与顺序无关</li>
       <li><strong>tuple 化</strong>：把不可哈希的 list 转成可哈希的 tuple 才能当 key</li>
-      <li><strong>哈希分组</strong>：<code>defaultdict(list)</code> 一次遍历，相同 key 自动聚拢</li>
+      <li><strong>哈希分组</strong>：普通 dict <code>groups[key] = []</code> 初始化 + append，一次遍历，相同 key 自动聚拢</li>
       <li>时间 O(n·k)，空间 O(n·k)</li>
     </ul>
   </div>
@@ -343,7 +349,7 @@ function simulate(strs){
     });
   }
 
-  snap('init','初始：groups = defaultdict(list)，为空。思路——为每个字符串算一个「字母计数指纹」，指纹相同即字母异位词，归入同一组。',{});
+  snap('init','初始：groups = {}，为空。思路——为每个字符串算一个「字母计数指纹」，指纹相同即字母异位词，归入同一组；首次遇到新指纹先初始化空组。',{});
 
   for(let i=0;i<strs.length;i++){
     const s=strs[i];
