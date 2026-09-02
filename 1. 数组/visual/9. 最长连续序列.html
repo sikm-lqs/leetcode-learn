@@ -456,9 +456,10 @@
   <a href="#viz">4. 交互可视化演示</a>
   <a href="#walkthrough">5. 详细过程模拟</a>
   <a href="#code">6. 代码逐段解释</a>
-  <a href="#complexity">7. 复杂度分析</a>
-  <a href="#pitfalls">8. 常见易错点</a>
-  <a href="#summary">9. 总结</a>
+  <a href="#sol2">7. 解法二：排序 + 一次扫描</a>
+  <a href="#complexity">8. 复杂度分析</a>
+  <a href="#pitfalls">9. 常见易错点</a>
+  <a href="#summary">10. 总结</a>
 </section>
 
 <!-- ── 1. 题目理解 ── -->
@@ -504,7 +505,7 @@
 <section class="card" id="idea">
   <h2>2. 核心思路：用集合找起点</h2>
 
-  <p>最朴素的想法是排序后遍历：排序 O(n log n)，然后找最长连续段 O(n)。但题目要求 <strong>O(n)</strong>，所以不能用排序。</p>
+  <p>拿到题目<strong>第一反应</strong>通常是排序后扫一遍：排序 O(n log n)，再线性找最长连续段。这个想法完全正确、也很好写（见第 7 章「解法二」），但题目要求 <strong>O(n)</strong>，排序成了瓶颈——于是需要换思路。</p>
 
   <div class="grid-2">
     <div class="mini-card">
@@ -720,9 +721,95 @@ while cur + 1 in num_set:
   <p>每处理完一个序列，更新全局最大值。</p>
 </section>
 
-<!-- ── 7. 复杂度分析 ── -->
+<!-- ── 7. 解法二：排序 + 一次扫描 ── -->
+<section class="card" id="sol2">
+  <h2>7. 解法二：排序 + 一次扫描</h2>
+
+  <p>这是拿到题目<strong>最容易第一时间想到</strong>的解法：先排序，让相等的数聚在一起、连续的数变相邻，再一次线性扫描统计最长连续段。思路直白、代码好写，代价是排序引入 <strong>O(n log n)</strong>，不满足题目 O(n) 的要求。</p>
+
+  <h3>扫描时的三个判断</h3>
+  <ul>
+    <li><strong>重复</strong>：<code>nums[right] == nums[right-1]</code> → 跳过（<code>continue</code>），既不累加也不重置</li>
+    <li><strong>连续</strong>：<code>nums[right] == nums[right-1] + 1</code> → <code>cur += 1</code></li>
+    <li><strong>断开</strong>：其他情况 → <code>cur = 1</code>，从当前数重新计数</li>
+  </ul>
+
+  <h3>伪代码骨架</h3>
+  <pre class="pseudo"><code><span class="kw">if</span> <span class="zh">数组为空</span>: <span class="kw">return</span> <span class="num">0</span>       <span class="cm"># if not nums</span>
+<span class="zh">排序</span>                        <span class="cm"># nums.sort()</span>
+
+<span class="var">ans</span> = <span class="num">1</span>
+<span class="var">cur</span> = <span class="num">1</span>
+
+<span class="kw">for</span> <span class="var">right</span> <span class="kw">in</span> <span class="num">1</span> .. n-<span class="num">1</span>:
+    <span class="kw">if</span> <span class="zh">与前一数相等</span>:           <span class="cm"># nums[right] == nums[right-1]</span>
+        <span class="zh">跳过重复</span>
+    <span class="kw">elif</span> <span class="zh">与前一数差一</span>:         <span class="cm"># nums[right] == nums[right-1] + 1</span>
+        <span class="zh">连续长度加一</span>            <span class="cm"># cur += 1</span>
+    <span class="kw">else</span>:
+        <span class="zh">重置连续长度</span>            <span class="cm"># cur = 1</span>
+    <span class="zh">更新最大长度</span>                <span class="cm"># ans = max(ans, cur)</span>
+
+<span class="kw">return</span> <span class="var">ans</span></code></pre>
+  <div class="pseudo-legend">
+    <span><i style="background:#C792EA"></i>关键字</span>
+    <span><i style="background:#82AAFF"></i>变量</span>
+    <span><i style="background:#C3E88D"></i>中文操作</span>
+    <span><i style="background:#7C8DB5"></i>注释公式</span>
+  </div>
+  <div class="note blue">重复数字必须单独处理：既不能算进长度，也不能触发重置，直接 <code>continue</code> 跳过。</div>
+
+  <h3>完整代码</h3>
+  <pre><code><span style="color:#6B7280">class</span> <span style="color:#3B7DD8">Solution2</span>:
+    <span style="color:#6B7280"># 解法二：先排序再一次扫描，O(n log n)</span>
+    <span style="color:#6B7280">def</span> <span style="color:#3B7DD8">longestConsecutive</span>(self, nums: List[int]) -> int:
+        <span style="color:#6B7280">if not</span> nums:
+            <span style="color:#6B7280">return</span> <span style="color:#CA8A04">0</span>
+
+        nums.sort()
+        ans = <span style="color:#CA8A04">1</span>
+        cur = <span style="color:#CA8A04">1</span>
+
+        <span style="color:#6B7280">for</span> right <span style="color:#6B7280">in</span> <span style="color:#D4744C">range</span>(<span style="color:#CA8A04">1</span>, <span style="color:#D4744C">len</span>(nums)):
+            <span style="color:#6B7280"># 重复数字跳过</span>
+            <span style="color:#6B7280">if</span> nums[right] == nums[right - <span style="color:#CA8A04">1</span>]:
+                <span style="color:#6B7280">continue</span>
+
+            <span style="color:#6B7280">if</span> nums[right] == nums[right - <span style="color:#CA8A04">1</span>] + <span style="color:#CA8A04">1</span>:
+                <span style="color:#6B7280"># 连续</span>
+                cur += <span style="color:#CA8A04">1</span>
+            <span style="color:#6B7280">else</span>:
+                <span style="color:#6B7280"># 断开，重置</span>
+                cur = <span style="color:#CA8A04">1</span>
+
+            ans = <span style="color:#D4744C">max</span>(ans, cur)
+
+        <span style="color:#6B7280">return</span> ans</code></pre>
+
+  <h3>过程演示：nums = [1, 2, 0, 1]</h3>
+  <p>排序后：<code>[0, 1, 1, 2]</code>，右指针从下标 1 走到 3：</p>
+  <div class="array-line">
+    <span class="cell">0</span>
+    <span class="cell">1</span>
+    <span class="cell target">1</span>
+    <span class="cell">2</span>
+  </div>
+  <table>
+    <tr><th>right</th><th>比较</th><th>判断</th><th>cur</th><th>ans</th></tr>
+    <tr><td>1</td><td>1 == 0 + 1</td><td>连续</td><td>2</td><td>2</td></tr>
+    <tr><td>2</td><td>1 == 1</td><td>重复，跳过</td><td>2</td><td>2</td></tr>
+    <tr><td>3</td><td>2 == 1 + 1</td><td>连续</td><td>3</td><td>3</td></tr>
+  </table>
+  <div class="formula">最长连续序列 [0, 1, 2] 的长度 = <strong style="color: var(--accent-green);">3</strong></div>
+
+  <div class="note warm">
+    <strong>复杂度：</strong>时间 O(n log n)（排序主导，扫描只占 O(n)）；空间 O(1)（原地排序）。面试可以先快速写出这个解法证明思路正确，再优化到解法一的 O(n)。
+  </div>
+</section>
+
+<!-- ── 8. 复杂度分析 ── -->
 <section class="card" id="complexity">
-  <h2>7. 复杂度分析</h2>
+  <h2>8. 复杂度分析</h2>
 
   <table>
     <tr><th>维度</th><th>值</th><th>说明</th></tr>
@@ -749,11 +836,29 @@ while cur + 1 in num_set:
   <div class="formula">
     n 个元素，每个元素最多被检查 2 次 → 总操作 ≈ 2n → <strong>O(n)</strong>
   </div>
+
+  <h3>两种解法对比</h3>
+  <table>
+    <tr><th>解法</th><th>时间</th><th>空间</th><th>关键点</th></tr>
+    <tr>
+      <td>解法一 · 哈希集合</td>
+      <td><strong style="color: var(--accent-green);">O(n)</strong></td>
+      <td>O(n)</td>
+      <td>起点判断 <code>num - 1 not in set</code>，每个序列只遍历一次</td>
+    </tr>
+    <tr>
+      <td>解法二 · 排序 + 扫描</td>
+      <td><strong>O(n log n)</strong></td>
+      <td>O(1)</td>
+      <td>排序让连续数相邻，跳过重复、断开重置</td>
+    </tr>
+  </table>
+  <p style="color: var(--text-light); font-size: 13px;">解法二不满足题目 O(n) 要求，但胜在直观易写；解法一满足要求，是本题的标准答案。</p>
 </section>
 
-<!-- ── 8. 常见易错点 ── -->
+<!-- ── 9. 常见易错点 ── -->
 <section class="card" id="pitfalls">
-  <h2>8. 常见易错点</h2>
+  <h2>9. 常见易错点</h2>
 
   <h3>错误一：在原始数组上遍历而非集合</h3>
   <pre><code># 错误：遍历原始数组
@@ -779,9 +884,9 @@ for num in num_set:
   </table>
 </section>
 
-<!-- ── 9. 总结 ── -->
+<!-- ── 10. 总结 ── -->
 <section class="card" id="summary">
-  <h2>9. 总结</h2>
+  <h2>10. 总结</h2>
 
   <div class="note green">
     <p><strong>最长连续序列</strong> 解法精髓：</p>
